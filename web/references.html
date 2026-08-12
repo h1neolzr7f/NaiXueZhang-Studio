@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NAI 角色与画风资料库</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/shared/motion.css?v=8cc6bd1e71" />
+  <link rel="stylesheet" href="/assets/references.css?v=6e53cf7f58" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body class="ref-body">
+  <div id="siteNav"></div>
+
+  <header class="ref-topbar">
+    <div>
+      <div class="ref-eyebrow">NovelAI · 本地参考资产</div>
+      <h1>NAI 角色与画风资料库</h1>
+      <p>角色事实与画师画风分开管理；先核对资料，再准备可编辑草稿。这里不会调用生成接口。</p>
+    </div>
+    <div class="ref-top-stats" aria-live="polite">
+      <div><strong id="refTotal">0</strong><span>角色</span></div>
+      <div><strong id="refStyleTotal">0</strong><span>画风</span></div>
+      <div><strong id="refSourceCount">0</strong><span>来源</span></div>
+      <div class="safe"><strong>0</strong><span>Anlas 消耗</span></div>
+    </div>
+  </header>
+
+  <main class="ref-shell">
+    <aside class="ref-panel ref-left">
+      <div class="ref-panel-title">
+        <div><span>01</span><h2>查找与导入</h2></div>
+        <button id="refRefresh" class="ref-icon-btn" type="button" title="刷新">↻</button>
+      </div>
+
+      <div class="ref-mode-tabs" role="tablist" aria-label="资料类型">
+        <button id="refModeCharacters" class="active" type="button" role="tab" aria-selected="true">角色资料</button>
+        <button id="refModeStyles" type="button" role="tab" aria-selected="false">独立画风资料</button>
+      </div>
+
+      <label class="ref-search">
+        <span>⌕</span>
+        <input id="refQuery" type="search" autocomplete="off" placeholder="角色名、Trigger、作品…" />
+        <kbd>Enter</kbd>
+      </label>
+
+      <div id="refPrimaryFilters" class="ref-filter-grid">
+        <label id="refGenderField">性别
+          <select id="refGender">
+            <option value="">全部</option>
+            <option value="female">女性</option>
+            <option value="male">男性</option>
+            <option value="other">其他</option>
+            <option value="unknown">未标注</option>
+          </select>
+        </label>
+        <label id="refSourceField">来源
+          <select id="refSource"><option value="">全部来源</option></select>
+        </label>
+      </div>
+      <label id="refCopyrightField" class="ref-field">作品 / 系列
+        <select id="refCopyright"><option value="">全部作品</option></select>
+      </label>
+      <label id="refStyleKindField" class="ref-field hidden">画风类型
+        <select id="refStyleKind">
+          <option value="">画师与画风</option>
+          <option value="artist">只看画师</option>
+          <option value="style">只看画风</option>
+        </select>
+      </label>
+
+      <details id="refImport" class="ref-import">
+        <summary>
+          <span>导入资料文件</span>
+          <small>JSON · JSONL · CSV</small>
+        </summary>
+        <div class="ref-import-body">
+          <label class="ref-file-drop" for="refImportFile">
+            <input id="refImportFile" type="file" accept=".json,.jsonl,.ndjson,.csv,application/json,text/csv" />
+            <strong id="refFileLabel">选择 AnimaDex 导出文件</strong>
+            <span>文件只在本机解析，按 1000 条一批写入</span>
+          </label>
+          <div class="ref-filter-grid">
+            <label>来源标识<input id="refImportSource" value="animadex" maxlength="80" /></label>
+            <label>版本<input id="refImportVersion" placeholder="例如 2026-07" maxlength="120" /></label>
+          </div>
+          <label class="ref-field">数据与图片许可
+            <input id="refImportLicense" placeholder="未明确时请留空" maxlength="120" />
+          </label>
+          <small>原站代码采用 MIT，不代表导出的角色数据和图片也采用 MIT；留空时不会自动视为 MIT。</small>
+          <button id="refImportStart" class="ref-btn ref-btn-primary ref-btn-block" type="button" disabled>开始导入</button>
+          <div id="refImportProgress" class="ref-progress hidden">
+            <div><span id="refImportText">准备中…</span><b id="refImportPercent">0%</b></div>
+            <div class="ref-progress-track"><span id="refImportBar"></span></div>
+          </div>
+        </div>
+      </details>
+
+      <details id="refManualAdd" class="ref-import" style="margin-top:8px;">
+        <summary>
+          <span>手工新建角色</span>
+          <small>表单直接录入</small>
+        </summary>
+        <div class="ref-import-body">
+          <label class="ref-field">角色显示名 <span style="color:var(--accent,#e05244)">*</span>
+            <input id="refManualLabel" placeholder="例如：维什戴尔 / 自定义小狐狸" maxlength="120" />
+          </label>
+          <div class="ref-filter-grid">
+            <label>性别
+              <select id="refManualGender">
+                <option value="female">女性 (female)</option>
+                <option value="male">男性 (male)</option>
+                <option value="other">其他 (other)</option>
+              </select>
+            </label>
+            <label>作品 / 系列
+              <input id="refManualCopyright" placeholder="例如：明日方舟 / 原创 OC" maxlength="120" />
+            </label>
+          </div>
+          <label class="ref-field">英文 Trigger / 触发 Tag
+            <input id="refManualTrigger" placeholder="例如：wisadel_(arknights)" maxlength="200" />
+          </label>
+          <label class="ref-field">角色核心提示词 (Character Caption / Tag)
+            <textarea id="refManualCaption" rows="3" placeholder="例如：1girl, female_focus, wisadel_(arknights), red_eyes, black_hair, horns, white_dress" style="width:100%;box-sizing:border-box;background:var(--bg-input,#1a1a24);color:inherit;border:1px solid var(--border,#333);border-radius:4px;padding:6px;font-family:inherit;font-size:12px;resize:vertical;"></textarea>
+          </label>
+          <button id="refManualSubmit" class="ref-btn ref-btn-primary ref-btn-block" type="button">保存并加入资料库 →</button>
+        </div>
+      </details>
+
+
+      <div class="ref-note">
+        <strong>本地安全边界</strong>
+        <span>画师、画风、场景和质量词不会自动混入角色槽；应用只修改 Studio 草稿。</span>
+      </div>
+    </aside>
+
+    <section class="ref-panel ref-center">
+      <div class="ref-panel-title">
+        <div><span>02</span><h2 id="refListTitle">角色列表</h2></div>
+        <div id="refResultMeta" class="ref-result-meta">等待检索</div>
+      </div>
+      <div id="refStatus" class="ref-status" aria-live="polite"></div>
+      <div id="refList" class="ref-list">
+        <div class="ref-empty"><b>资料库还是空的</b><span>从左侧导入 AnimaDex JSON、JSONL 或 CSV 文件后即可搜索。</span></div>
+      </div>
+      <button id="refLoadMore" class="ref-btn ref-btn-block hidden" type="button">加载更多</button>
+    </section>
+
+    <aside class="ref-panel ref-right">
+      <div class="ref-panel-title">
+        <div><span>03</span><h2>资料与应用</h2></div>
+        <span class="ref-local-badge">LOCAL</span>
+      </div>
+
+      <div id="refDetailEmpty" class="ref-detail-empty">
+        <div class="ref-orb">✦</div>
+        <b>选择一个角色</b>
+        <span>这里会显示整理后的 NAI 角色资料卡。</span>
+      </div>
+
+      <div id="refStyleDetail" class="ref-detail hidden">
+        <div class="ref-hero ref-style-hero">
+          <div class="ref-hero-image"><span>STYLE</span></div>
+          <div>
+            <span id="refStyleDetailSource" class="ref-kicker"></span>
+            <h3 id="refStyleDetailName"></h3>
+            <p id="refStyleDetailKind"></p>
+          </div>
+        </div>
+
+        <div class="ref-card-block">
+          <div class="ref-card-head"><span>NAI 画风标签</span><button id="refCopyStyle" type="button">复制</button></div>
+          <pre id="refStyleDetailTag"></pre>
+        </div>
+
+        <div class="ref-detail-grid">
+          <div><span>类型</span><b id="refStyleMetricKind">—</b></div>
+          <div><span>关联角色</span><b id="refStyleLinked">0</b></div>
+          <div><span>来源</span><b id="refStyleMetricSource">—</b></div>
+          <div><span>执行成本</span><b>本地 · 0 Anlas</b></div>
+        </div>
+
+        <div class="ref-apply-box ref-style-apply-box">
+          <div>
+            <strong>准备 Remix 草稿</strong>
+            <span>选择来源作品后，复用手动画风替换链并打开 Studio</span>
+          </div>
+          <div class="ref-work-target">
+            <div><span>当前来源作品</span><strong id="refStyleTargetText">尚未选择作品</strong></div>
+            <a id="refStyleTargetLink" href="/">去图库选择</a>
+          </div>
+          <label class="ref-field">应用方式
+            <select id="refStyleMode">
+              <option value="preset">替换已识别画风（推荐）</option>
+              <option value="append">只追加，不清理原画风</option>
+            </select>
+          </label>
+          <details class="ref-advanced">
+            <summary>高级指定来源作品</summary>
+            <div class="ref-apply-row">
+              <label>图库
+                <select id="refStyleGallery">
+                  <option value="site">网站图库</option>
+                  <option value="codex">法典图库</option>
+                  <option value="qqgroup">QQ 群图库</option>
+                </select>
+              </label>
+              <label>作品 ID<input id="refStyleWorkId" inputmode="numeric" placeholder="例如 145765334" /></label>
+            </div>
+            <label class="ref-field">作品页码<input id="refStylePage" type="number" min="1" max="1000" value="1" /></label>
+          </details>
+          <button id="refStyleApply" class="ref-btn ref-btn-primary ref-btn-block" type="button" disabled>准备换画风草稿并打开 Studio →</button>
+          <small>只准备可编辑草稿；不会识图、不会开始生成，也不会消耗 NAI。</small>
+        </div>
+
+        <details class="ref-provenance">
+          <summary>来源与许可</summary>
+          <dl>
+            <div><dt>稳定 ID</dt><dd id="refStyleDetailId"></dd></div>
+            <div><dt>数据许可</dt><dd id="refStyleDetailLicense">未标注</dd></div>
+          </dl>
+        </details>
+      </div>
+
+      <div id="refDetail" class="ref-detail hidden">
+        <div class="ref-hero">
+          <div id="refDetailImage" class="ref-hero-image"><span>NAI</span></div>
+          <div>
+            <span id="refDetailSource" class="ref-kicker"></span>
+            <h3 id="refDetailName"></h3>
+            <p id="refDetailSeries"></p>
+          </div>
+        </div>
+
+        <div class="ref-card-block">
+          <div class="ref-card-head"><span>NAI 角色槽</span><button id="refCopyCaption" type="button">复制</button></div>
+          <pre id="refDetailCaption"></pre>
+        </div>
+
+        <div class="ref-detail-grid">
+          <div><span>Trigger</span><b id="refDetailTrigger">—</b></div>
+          <div><span>主体</span><b id="refDetailSubject">—</b></div>
+          <div><span>模型语法</span><b id="refDetailDialect">—</b></div>
+          <div><span>热度</span><b id="refDetailPopularity">0</b></div>
+        </div>
+
+        <div id="refAliasArea" class="ref-separated hidden">
+          <span>角色别名</span>
+          <div id="refAliasTags"></div>
+        </div>
+
+        <div id="refTraitArea" class="ref-separated hidden">
+          <span>角色特征（只进入角色槽）</span>
+          <div id="refTraitTags"></div>
+        </div>
+
+        <div id="refStyleArea" class="ref-separated hidden">
+          <span>关联画风资料（与角色槽分开）</span>
+          <div id="refStyleTags"></div>
+        </div>
+
+        <div class="ref-apply-box">
+          <div>
+            <strong>带入生图工作台</strong>
+            <span>沿用现有草稿，只替换指定角色槽</span>
+          </div>
+          <div class="ref-apply-row">
+            <label>角色槽
+              <select id="refSlot">
+                <option value="0">槽位 1</option><option value="1">槽位 2</option>
+                <option value="2">槽位 3</option><option value="3">槽位 4</option>
+                <option value="4">槽位 5</option><option value="5">槽位 6</option>
+              </select>
+            </label>
+            <label>NAI 模型
+              <select id="refModel">
+                <option value="nai-diffusion-4-5-full">V4.5 Full</option>
+                <option value="nai-diffusion-4-full">V4 Full</option>
+                <option value="nai-diffusion-3">V3</option>
+              </select>
+            </label>
+          </div>
+          <button id="refApply" class="ref-btn ref-btn-primary ref-btn-block" type="button">应用并打开 Studio →</button>
+          <small>不会自动开始生成，也不会发送图片或 Prompt 到外部服务。</small>
+        </div>
+
+        <details class="ref-provenance">
+          <summary>来源与许可</summary>
+          <dl>
+            <div><dt>来源 ID</dt><dd id="refDetailId"></dd></div>
+            <div><dt>版本</dt><dd id="refDetailVersion">—</dd></div>
+            <div><dt>数据许可</dt><dd id="refDetailLicense">未标注</dd></div>
+          </dl>
+        </details>
+      </div>
+    </aside>
+  </main>
+
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/work-bridge.js?v=e03f149e05"></script>
+  <script src="/assets/shared/ui-toast.js?v=7f77b751fa"></script>
+  <script src="/assets/references.js?v=51ea8a3ec3"></script>
+</body>
+</html>

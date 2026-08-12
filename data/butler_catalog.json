@@ -1,0 +1,326 @@
+{
+  "skills": [
+    {
+      "id": "gallery",
+      "label": "图库检索",
+      "capabilities": [
+        "搜索作品",
+        "查看详情与 Prompt",
+        "按时间/热度筛选"
+      ]
+    },
+    {
+      "id": "gallery_audit",
+      "label": "图库体检",
+      "capabilities": [
+        "识别画面问题",
+        "核对图片状态",
+        "定位缺图与不足"
+      ]
+    },
+    {
+      "id": "collection",
+      "label": "收藏与待生成",
+      "capabilities": [
+        "查看和维护收藏",
+        "维护待生成清单",
+        "把清单作为批量任务输入"
+      ]
+    },
+    {
+      "id": "remix",
+      "label": "换角与换画风",
+      "capabilities": [
+        "理解角色槽位",
+        "角色/生物替换",
+        "画风预设与 Prompt 净化"
+      ]
+    },
+    {
+      "id": "references",
+      "label": "NAI 角色资料",
+      "capabilities": [
+        "检索角色资料",
+        "核对来源与许可",
+        "按槽位准备 Studio 草稿"
+      ]
+    },
+    {
+      "id": "studio",
+      "label": "工作台",
+      "capabilities": [
+        "导入作品",
+        "调整尺寸/steps/scale/sampler/seed",
+        "准备草稿"
+      ]
+    },
+    {
+      "id": "generation",
+      "label": "生成任务",
+      "capabilities": [
+        "单次生图",
+        "按作品批量生图",
+        "读取生成队列与批任务状态"
+      ]
+    },
+    {
+      "id": "director",
+      "label": "NAI 批量导演",
+      "capabilities": [
+        "批量去背景/线稿/草图",
+        "批量上色/表情/清理",
+        "零费用预检与完成报告"
+      ]
+    },
+    {
+      "id": "generated",
+      "label": "生成结果",
+      "capabilities": [
+        "按来源系列整理",
+        "查看或确认删除成果",
+        "把本批精确交接给后处理"
+      ]
+    },
+    {
+      "id": "pipeline",
+      "label": "后处理",
+      "capabilities": [
+        "投稿前补跑放大/打码/元数据",
+        "跟踪实际进度",
+        "人工通过或剔除成果"
+      ]
+    },
+    {
+      "id": "pixiv",
+      "label": "投稿准备",
+      "capabilities": [
+        "整理多图",
+        "生成标题/简介/标签/分级",
+        "停在人工上传前"
+      ]
+    },
+    {
+      "id": "crawler",
+      "label": "采集与数据状态",
+      "capabilities": [
+        "理解采集进度与数据范围",
+        "确认后启动/停止/配置采集",
+        "重试耗尽封面"
+      ]
+    },
+    {
+      "id": "operations",
+      "label": "账号与运营",
+      "capabilities": [
+        "理解账号、分析和健康状态",
+        "敏感配置仅引导到专用页面"
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "search_gallery",
+      "label": "搜索图库",
+      "risk": "read",
+      "description": "按标题、标签、Prompt、时间和排序搜索本地图库。"
+    },
+    {
+      "name": "inspect_work",
+      "label": "查看作品",
+      "risk": "read",
+      "description": "读取一个作品的摘要、图片数量和 Prompt 片段。"
+    },
+    {
+      "name": "audit_gallery",
+      "label": "体检图库",
+      "risk": "read",
+      "description": "分批检查图库缩略图、索引与缓存状态，定位明显错误和不足。"
+    },
+    {
+      "name": "compare_gallery_candidates",
+      "label": "比较固定图库候选",
+      "risk": "read",
+      "description": "只对用户明确选定的 2 到 4 张图库图片做一次低清视觉比较。"
+    },
+    {
+      "name": "list_queue",
+      "label": "查看待生成",
+      "risk": "read",
+      "description": "查看当前待生成队列。"
+    },
+    {
+      "name": "search_character_references",
+      "label": "搜索 NAI 角色资料",
+      "risk": "read",
+      "description": "按角色名、Trigger、作品、性别或来源搜索本地 NAI 角色资料库。"
+    },
+    {
+      "name": "search_style_references",
+      "label": "搜索 NAI 画风资料",
+      "risk": "read",
+      "description": "按画师、画风标签或来源搜索独立的本地 NAI 画风资料。"
+    },
+    {
+      "name": "inspect_reference_catalog",
+      "label": "查看 NAI 资料分面",
+      "risk": "read",
+      "description": "查看本地 NAI 角色资料库的来源、系列、性别分布和导入状态。"
+    },
+    {
+      "name": "rebuild_knowledge_catalog",
+      "label": "增量更新本地知识库",
+      "risk": "read",
+      "description": "只读取内置可信软件文档并增量重建本地索引，不调用模型。"
+    },
+    {
+      "name": "prepare_character_reference",
+      "label": "应用 NAI 角色资料",
+      "risk": "draft",
+      "description": "把资料库角色放入指定 NAI 角色槽并准备 Studio 草稿，不执行生图。"
+    },
+    {
+      "name": "prepare_studio",
+      "label": "准备工作台",
+      "risk": "draft",
+      "description": "生成可应用到工作台的 Prompt 和生图参数草稿。"
+    },
+    {
+      "name": "prepare_remix",
+      "label": "准备换角/换画风",
+      "risk": "draft",
+      "description": "按类型化角色与画风配方准备 Studio 创作方案，不执行生图。"
+    },
+    {
+      "name": "inspect_production",
+      "label": "查看生产状态",
+      "risk": "read",
+      "description": "查看生成成果、生成任务、后处理与投稿草稿状态。"
+    },
+    {
+      "name": "inspect_operations",
+      "label": "查看运行健康",
+      "risk": "read",
+      "description": "查看图库健康与采集运行状态，不返回本地路径或密钥。"
+    },
+    {
+      "name": "add_to_queue",
+      "label": "加入待生成",
+      "risk": "confirm",
+      "description": "把一个或多个图库作品加入待生成队列。"
+    },
+    {
+      "name": "remove_from_queue",
+      "label": "移出待生成",
+      "risk": "confirm",
+      "description": "把一个或多个作品移出待生成队列。"
+    },
+    {
+      "name": "clear_queue",
+      "label": "清空待生成",
+      "risk": "confirm",
+      "description": "清空整个待生成队列。"
+    },
+    {
+      "name": "generate_image",
+      "label": "执行生图",
+      "risk": "confirm",
+      "description": "按来源作品或独立 Prompt 生成 1 至 20 张图片。"
+    },
+    {
+      "name": "batch_generate",
+      "label": "批量生成",
+      "risk": "confirm",
+      "description": "按作品、队列或本地标签查询结果启动最多 200 张的异步批量生成。"
+    },
+    {
+      "name": "batch_director",
+      "label": "NAI 批量导演",
+      "risk": "confirm",
+      "description": "对最多 40 个精确图片身份执行 NovelAI Director Tools；确认前只做本地预检。"
+    },
+    {
+      "name": "prepare_pixiv_submission",
+      "label": "准备投稿",
+      "risk": "confirm",
+      "description": "为已有生成图补齐后处理和投稿文案，停在人工上传前。"
+    },
+    {
+      "name": "batch_generate_and_prepare_pixiv",
+      "label": "批量生成并准备投稿",
+      "risk": "confirm",
+      "description": "批量生成后自动补齐后处理与投稿素材，完成后等待人工上传。"
+    },
+    {
+      "name": "inspect_crawler",
+      "label": "查看采集状态",
+      "risk": "auto",
+      "description": "只读查看 Pixiv 采集进程状态、任务配置与最新采集报告。"
+    },
+    {
+      "name": "start_crawler",
+      "label": "启动采集",
+      "risk": "confirm",
+      "description": "启动 Pixiv 采集进程（watch 模式，按当前任务配置循环采集），需确认。"
+    },
+    {
+      "name": "stop_crawler",
+      "label": "停止采集",
+      "risk": "confirm",
+      "description": "停止 Pixiv 采集进程，需确认。"
+    },
+    {
+      "name": "configure_crawler",
+      "label": "修改采集配置",
+      "risk": "confirm",
+      "description": "更新 Pixiv 采集任务配置（启用/通道/搜索词/榜单/间隔/代理/浏览器渲染），需确认。"
+    },
+    {
+      "name": "retry_exhausted_previews",
+      "label": "重试隔离区",
+      "risk": "confirm",
+      "description": "重试隔离区中的失败作品，需确认。"
+    },
+    {
+      "name": "read_logs",
+      "label": "读取运行日志",
+      "risk": "auto",
+      "description": "只读返回本机运行日志尾部（server/crawler/watchdog/heartbeat），用于排查故障。"
+    },
+    {
+      "name": "diagnose_error",
+      "label": "故障诊断",
+      "risk": "auto",
+      "description": "根据报错文本与运行日志诊断常见问题（网络代理、端口占用、采集失败、配置缺失等），给出原因与修复步骤。"
+    },
+    {
+      "name": "product_guide",
+      "label": "使用指南",
+      "risk": "auto",
+      "description": "按主题返回产品使用指南（采集/生成/投稿/设置/故障排查），帮助用户完成操作。"
+    },
+    {
+      "name": "inspect_config",
+      "label": "查看全局配置",
+      "risk": "auto",
+      "description": "只读查看服务端口、AI 模型配置状态、采集任务、代理与健康状态概览（不暴露密钥）。"
+    },
+    {
+      "name": "modify_setting",
+      "label": "修改软件配置",
+      "risk": "confirm",
+      "description": "修改本机软件配置（白名单项，不含密钥）：ai_model/ai_api_base 改 AI 模型与接口地址；port 改服务端口（重启后生效）；enabled/source_mode/search_queries/user_ids/rankings/request_delay_sec/proxy_url/browser_mode/watch_interval_sec 改采集任务。"
+    },
+    {
+      "name": "set_auto_mode",
+      "label": "最大权限自动化",
+      "risk": "confirm",
+      "description": "开启/关闭应用内最大权限自动化：开启后确认类工具不再逐次询问（上传、密钥、任意文件仍被禁止），并允许自动修复常见故障。"
+    },
+    {
+      "name": "auto_repair",
+      "label": "自动修复故障",
+      "risk": "confirm",
+      "description": "自动诊断常见故障并尝试修复：清理失效代理环境变量、重启采集进程、调整请求间隔、重试隔离区；无法自动修复的给出人工步骤。"
+    }
+  ]
+}

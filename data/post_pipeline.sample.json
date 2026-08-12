@@ -1,0 +1,19 @@
+{
+  "anr_root": "",
+  "upscale": {
+    "enabled": false,
+    "scale": 2
+  },
+  "mosaic": {
+    "enabled": false,
+    "method": "pixel",
+    "intensity": 24,
+    "parts": []
+  },
+  "metadata": {
+    "enabled": true,
+    "custom_note": ""
+  },
+  "auto_after_generate": true,
+  "keep_original": true
+}

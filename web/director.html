@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>批量导演 · NovelAI Director Tools</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/shared/motion.css?v=8cc6bd1e71" />
+  <link rel="stylesheet" href="/assets/director.css?v=91816025e7" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body class="director-body">
+  <nav id="siteNav"></nav>
+  <main class="director-page">
+    <header class="director-hero">
+      <div>
+        <p class="director-kicker">NovelAI Director Tools · 独立批处理</p>
+        <h1>批量导演</h1>
+        <p>从生成结果或三图库精确选图，一次预检后逐张执行；失败不会自动重扣，完成后保留完整交付报告。</p>
+      </div>
+      <div class="director-readiness" id="directorReadiness" data-state="loading">
+        <span class="director-live-dot"></span>
+        <div><strong>正在检查 NAI 导演能力</strong><small>预检不会调用上游</small></div>
+      </div>
+    </header>
+
+    <section class="director-start-guide" id="directorStartGuide" aria-labelledby="directorStartTitle">
+      <div>
+        <span>从这里开始</span>
+        <strong id="directorStartTitle">先选一组来源图，再选择导演工具</strong>
+        <small>不确定时先按系列选图；零费用预检会核对数量与参数，预检不扣费。</small>
+      </div>
+      <ol>
+        <li><b>1</b><span>点选来源图<strong>Ctrl 可多选系列</strong></span></li>
+        <li><b>2</b><span>选择工具<strong>先看用途说明</strong></span></li>
+        <li><b>3</b><span>完成预检<strong>确认后才会执行</strong></span></li>
+      </ol>
+    </section>
+
+    <section class="director-steps" aria-label="批量导演流程">
+      <span class="active" data-step="select"><b>1</b> 选图</span>
+      <i></i>
+      <span data-step="recipe"><b>2</b> 选工具</span>
+      <i></i>
+      <span data-step="preview"><b>3</b> 零费用预检</span>
+      <i></i>
+      <span data-step="run"><b>4</b> 确认执行</span>
+      <i></i>
+      <span data-step="report"><b>5</b> 查看报告</span>
+    </section>
+
+    <div class="director-layout">
+      <section class="director-panel director-source-panel">
+        <div class="director-panel-head">
+          <div><span class="director-number">01</span><h2>选择来源图</h2></div>
+          <button type="button" class="director-button ghost" id="directorClearSelection">清空</button>
+        </div>
+        <div class="director-tabs" role="tablist" aria-label="来源图库">
+          <button type="button" class="active" data-source-kind="generated">生成结果</button>
+          <button type="button" data-source-kind="gallery">三图库作品</button>
+        </div>
+        <div class="director-pick-modes" id="directorPickModes" role="tablist" aria-label="生成图选择方式">
+          <button type="button" class="active" data-pick-mode="series">按系列</button>
+          <button type="button" data-pick-mode="single">单张</button>
+          <span id="directorPickHint">点封面选择整组，Ctrl+点击可多选系列</span>
+        </div>
+        <div class="director-source-tools">
+          <select id="directorGallery" aria-label="图库" hidden>
+            <option value="site">网站图库</option>
+            <option value="codex">自选库</option>
+            <option value="qqgroup">Q群图库</option>
+          </select>
+          <input id="directorSearch" type="search" placeholder="搜索图片 ID、作品或模型" autocomplete="off" />
+          <button type="button" class="director-button" id="directorSearchButton">搜索</button>
+        </div>
+        <div class="director-selection-summary">
+          <strong id="directorSelectedCount">已选 0 / 40</strong>
+          <span>按精确图片身份保存，刷新页面不会丢失</span>
+        </div>
+        <div class="director-source-grid" id="directorSourceGrid" aria-live="polite">
+          <div class="director-empty">正在读取本地图片…</div>
+        </div>
+        <div class="director-pager">
+          <button type="button" class="director-button ghost" id="directorPrevPage">上一页</button>
+          <span id="directorPageInfo">第 1 页</span>
+          <button type="button" class="director-button ghost" id="directorNextPage">下一页</button>
+        </div>
+      </section>
+
+      <aside class="director-side">
+        <section class="director-panel" id="directorRecipe">
+          <div class="director-panel-head">
+            <div><span class="director-number">02</span><h2>导演工具</h2></div>
+          </div>
+          <label class="director-field">
+            <span>要做什么</span>
+            <select id="directorTool"></select>
+          </label>
+          <p class="director-tool-description" id="directorToolDescription"></p>
+          <div class="director-dynamic-fields" id="directorDynamicFields"></div>
+          <div class="director-official-note" id="directorOfficialNote">
+            使用 NovelAI 官方 <code>/ai/augment-image</code>；当前固定单路逐张执行，减少上游压力与重复扣费风险。
+          </div>
+        </section>
+
+        <section class="director-panel director-preview-panel">
+          <div class="director-panel-head">
+            <div><span class="director-number">03</span><h2>预检与确认</h2></div>
+          </div>
+          <div class="director-preview" id="directorPreviewResult">
+            <div class="director-empty compact">选好图片和工具后，先做零费用预检。</div>
+          </div>
+          <button type="button" class="director-button primary full" id="directorPreviewButton">零费用预检</button>
+          <label class="director-confirm" id="directorConfirmWrap">
+            <input type="checkbox" id="directorConfirmBilling" disabled />
+            <span>我已核对图片和预计输出数量，并确认实际导演调用可能产生 Anlas 消耗。</span>
+          </label>
+          <button type="button" class="director-button execute full" id="directorRunButton" disabled>确认并开始批量导演</button>
+        </section>
+
+        <section class="director-panel director-task-panel" id="directorTaskPanel">
+          <div class="director-panel-head">
+            <div><span class="director-number">04</span><h2>执行与交付</h2></div>
+            <span class="director-task-badge" id="directorTaskBadge">待开始</span>
+          </div>
+          <div class="director-task-empty" id="directorTaskEmpty">任务开始后，这里会实时显示当前图片、完成比例、下一步和最终报告。</div>
+          <div class="director-task" id="directorTask" hidden aria-live="polite" aria-atomic="false">
+            <div class="director-task-title">
+              <strong id="directorTaskMessage">准备中</strong>
+              <span id="directorTaskPercent">0%</span>
+            </div>
+            <div class="director-progress" id="directorProgress" role="progressbar" aria-label="批量导演进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="directorProgressBar"></span></div>
+            <div class="director-task-stats" id="directorTaskStats"></div>
+            <div class="director-current-step" id="directorCurrentStep"></div>
+            <div class="director-current-step" id="directorNextStep"></div>
+            <div class="director-current-step" id="directorEta"></div>
+            <div class="director-task-actions">
+              <button type="button" class="director-button danger" id="directorCancelButton">安全停止</button>
+              <button type="button" class="director-button" id="directorRetryButton" hidden>只重试失败项</button>
+              <a class="director-button ghost" href="/generated">打开生成结果</a>
+            </div>
+            <div class="director-report" id="directorReport" hidden></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/escape.js?v=cf491c2912"></script>
+  <script src="/assets/director.js?v=733e2d9adf"></script>
+</body>
+</html>

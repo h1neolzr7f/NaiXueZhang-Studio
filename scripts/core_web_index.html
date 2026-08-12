@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#eaf4fb" />
+  <title>Nai学长工作室 · 本地图库</title>
+  <link rel="stylesheet" href="/assets/core-theme.css" />
+</head>
+<body data-ui="nai-atlas" data-page="gallery">
+  <main class="atlas-shell">
+    <nav class="atlas-nav" aria-label="主导航">
+      <a class="atlas-brand" href="/" aria-label="Nai学长工作室 首页">
+        <span class="atlas-brand-mark" aria-hidden="true">NA</span>
+        <span class="atlas-brand-copy"><strong>Nai学长工作室</strong><small>local visual archive</small></span>
+      </a>
+      <div class="atlas-links">
+        <a href="/" aria-current="page">图库</a>
+        <a href="/nai-tags">分类图谱</a>
+        <a href="/progress">采集舱</a>
+        <a href="/maintenance">维护站</a>
+      </div>
+      <span class="atlas-local-badge">仅在本机运行</span>
+    </nav>
+
+    <header class="archive-hero">
+      <div>
+        <span class="eyebrow blue">NAI verified · PIXIV intake</span>
+        <h1><span>本地灵感</span><span class="accent-word">图谱档案</span></h1>
+      </div>
+      <aside class="hero-note">
+        <strong>只留下可验证的 NAI 图像</strong>
+        <p>原图、提示词和分类索引都留在你的电脑里。搜索、浏览和备份不依赖外部图库站点。</p>
+      </aside>
+    </header>
+
+    <section class="search-console" aria-label="图库搜索">
+      <form id="searchForm" role="search">
+        <input id="query" aria-label="作品搜索" autocomplete="off" placeholder="标题、画师、Pixiv 标签或作品 ID" />
+        <input id="prompt" aria-label="提示词搜索" autocomplete="off" placeholder="搜索 NAI prompt" />
+        <button class="atlas-button" type="submit">检索图谱</button>
+      </form>
+      <select class="atlas-select" id="sort" aria-label="排序方式">
+        <option value="new">最近入库</option>
+        <option value="bookmarks">收藏最多</option>
+        <option value="views">浏览最多</option>
+      </select>
+    </section>
+
+    <section aria-labelledby="archiveTitle">
+      <div class="archive-results-head">
+        <div>
+          <span class="micro-label">Archive stream</span>
+          <h2 id="archiveTitle">作品流</h2>
+        </div>
+        <div>
+          <div id="resultCount" class="result-count">等待索引</div>
+          <div id="status" class="status-line" role="status">正在读取本地图谱…</div>
+        </div>
+      </div>
+      <div id="grid" class="archive-grid" aria-live="polite"></div>
+      <div class="pager" aria-label="图库翻页">
+        <button class="atlas-button secondary" id="previous" type="button">上一页</button>
+        <span id="pageText">01</span>
+        <button class="atlas-button blue" id="next" type="button">下一页</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="detail" class="detail-sheet" aria-labelledby="detailTitle">
+    <div class="detail-head">
+      <strong id="detailTitle">作品详情</strong>
+      <div class="action-row">
+        <button class="atlas-button secondary" id="copyPrompt" type="button" disabled>复制提示词</button>
+        <button class="atlas-button blue" id="closeDetail" type="button">关闭</button>
+      </div>
+    </div>
+    <div id="detailBody" class="detail-body"></div>
+  </dialog>
+  <script src="/assets/core-gallery.js"></script>
+</body>
+</html>

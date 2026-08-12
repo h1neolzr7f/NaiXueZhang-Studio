@@ -1,0 +1,16 @@
+Nai学长工作室 发行包说明
+============================
+
+1. 本项目是非官方工具，与 pixiv Inc.、NovelAI（Anlatan Inc.）及其他第三方平台不存在隶属、授权或合作关系。
+2. 发行包只包含程序、空数据库和公开配置示例，不包含爬取的 Pixiv 图片、用户图库或生成结果。
+3. 不包含 refresh_token、access_token、API Key、Cookie、收藏、发布记录、用户偏好、采集断点或本地回收区。
+4. 软件默认仅监听 127.0.0.1；NovelAI Token 与 Pixiv refresh_token 在 Windows 上使用 DPAPI 加密保存在本机。
+5. 代码按 MIT License 发布。代码许可不授予任何第三方图片、Prompt、角色、商标或平台数据的权利。
+6. 使用者应自行确认访问、下载、保存、处理和发布行为符合适用法律、平台规则及第三方权利要求。
+7. 官方版本不提供规避验证码、访问控制、限流、账号限制或干扰平台运行的技术支持。
+8. core 发布 profile 不包含 Butler、Director、生图/ComfyUI、Live2D、测试与非运行必需脚本；full profile 用于保留完整套件兼容。不同 profile 不改变用户对源代码的 MIT 权利。
+9. 文件名带 one-click-windows 的便携包额外包含 CPython 和锁定依赖；完整解压后双击“一键启动.bat”即可运行。
+10. 官方 Release 应同时公布版本、Commit SHA 和发布包 SHA-256。任何其他来源或不同哈希的构建均应视为第三方版本。
+
+官方仓库：https://github.com/h1neolzr7f/pixiv-nai-gallery
+完整条款：DISCLAIMER.md / RESPONSIBLE_USE.md / SECURITY.md

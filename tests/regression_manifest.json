@@ -1,0 +1,11 @@
+{
+  "app_js_version": "f165edb714",
+  "app_js_sha256_12": "f165edb7143e",
+  "entry_versions": {
+    "app-core.js": "6f0fefcda6",
+    "gallery-list-runtime.js": "03774f9d4c",
+    "app-online-remix.js": "b5310e07ea",
+    "app-detail.js": "0c27aee90e",
+    "app.js": "f165edb714"
+  }
+}

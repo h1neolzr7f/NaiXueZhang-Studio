@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Pixiv NAI Gallery 的本地角色库与 AITag 在线资产草稿入口" />
+  <title>AI 资产工作台 | Pixiv NAI Gallery</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/tag-assets.css?v=db885c0095" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body class="asset-page">
+  <nav id="siteNav"></nav>
+  <main class="asset-shell">
+    <section class="asset-hero" aria-labelledby="assetTitle">
+      <div class="asset-eyebrow">ASSET WORKBENCH · AITAG → NAI STUDIO</div>
+      <div class="asset-hero-row">
+        <div>
+          <h1 id="assetTitle">角色资产工作台</h1>
+          <p>没有本地资产也能从 AITag 在线作品建立可编辑草稿。选图、保存角色和换角都只准备 Studio 草稿；只有在 Studio 明确点击生成才会产生请求或费用。</p>
+        </div>
+        <div class="asset-source-status" aria-live="polite">
+          <span id="sourceBadge" class="asset-badge">本地离线</span>
+          <span id="sourceStatus">无需联网</span>
+        </div>
+      </div>
+      <div class="asset-safety" role="note"><strong>安全边界</strong><span>本页不调用生成接口 · 草稿响应必须为 generation_calls: 0</span></div>
+    </section>
+
+    <section class="asset-panel asset-controls" aria-labelledby="assetControlsTitle">
+      <div class="asset-section-heading">
+        <div>
+          <span class="asset-section-kicker">DISCOVER</span>
+          <h2 id="assetControlsTitle">选择来源与发现方式</h2>
+        </div>
+        <span class="asset-control-note">AITag 在线结果按需读取；保存角色是显式操作</span>
+      </div>
+      <div class="asset-control-grid">
+        <label id="assetSourceField" class="asset-field">
+          <span>资产来源</span>
+          <select id="assetSource" aria-label="资产来源">
+            <option value="local" selected>本地角色 / 作品库</option>
+            <option value="aitag-online">AITag 在线初始库</option>
+          </select>
+        </label>
+        <label class="asset-field asset-field-grow">
+          <span>关键词</span>
+          <input id="assetQuery" autocomplete="off" placeholder="角色、tag、作品或 prompt；在线留空可浏览榜单" />
+        </label>
+        <label id="assetSortField" class="asset-field" hidden>
+          <span>在线排序</span>
+          <select id="assetSort" aria-label="在线排序">
+            <option value="popular">热门榜单</option>
+            <option value="recent">最新收录</option>
+            <option value="relevance">相关优先</option>
+          </select>
+        </label>
+        <div class="asset-control-actions">
+          <button id="assetSearch" class="asset-button asset-button-primary" type="button">搜索资产</button>
+          <button id="assetClear" class="asset-button asset-button-secondary" type="button">清空</button>
+        </div>
+      </div>
+      <div class="asset-options">
+        <label class="asset-check"><input id="assetNaiOnly" type="checkbox" checked /> <span>在线仅显示 NAI</span></label>
+        <label class="asset-check"><input id="assetSafeOnly" type="checkbox" checked /> <span>隐藏成人标签</span></label>
+        <span id="sourceHint" class="asset-hint">本地来源可离线搜索；在线来源用于首次安装时发现可用资产。</span>
+      </div>
+    </section>
+
+    <section class="asset-panel asset-quick" aria-labelledby="quickTitle">
+      <div class="asset-section-heading asset-section-heading-compact">
+        <div><span class="asset-section-kicker">SHORTCUTS</span><h2 id="quickTitle">快速入口</h2></div>
+        <span class="asset-control-note">点击后只搜索，不建立草稿</span>
+      </div>
+      <div id="quickTags" class="asset-quick-list"></div>
+    </section>
+
+    <section class="asset-panel asset-results-panel" aria-labelledby="resultsTitle">
+      <div class="asset-section-heading">
+        <div>
+          <span class="asset-section-kicker">RESULTS</span>
+          <h2 id="resultsTitle">资产结果</h2>
+          <p id="resultInfo" class="asset-result-info" aria-live="polite">输入关键词，或切换到在线库浏览初始资产。</p>
+        </div>
+        <span id="assetLoading" class="asset-loading" role="status" hidden><i></i>正在读取</span>
+      </div>
+      <div id="assetError" class="asset-alert asset-alert-error" role="alert" hidden></div>
+      <div id="assetEmpty" class="asset-empty" hidden><strong>没有符合当前条件的资产</strong><span>换一个关键词或来源试试。</span></div>
+      <div id="assetResults" class="asset-grid" aria-live="polite"></div>
+      <button id="assetLoadMore" class="asset-button asset-button-load" type="button" hidden>加载更多</button>
+    </section>
+
+    <section id="assetDetailPanel" class="asset-panel asset-detail-panel" aria-labelledby="detailTitle" hidden>
+      <div class="asset-section-heading">
+        <div><span class="asset-section-kicker">SOURCE RECIPE</span><h2 id="detailTitle">在线作品详情与多图选择</h2></div>
+        <button id="assetDetailClose" class="asset-button asset-button-secondary" type="button">关闭详情</button>
+      </div>
+      <div id="assetDetailLoading" class="asset-detail-loading" hidden>正在读取在线作品详情…</div>
+      <div id="assetDetail" class="asset-detail-layout">
+        <div>
+          <div id="assetDetailImage" class="asset-detail-image"></div>
+          <div id="assetImageChoices" class="asset-image-choices" role="listbox" aria-label="选择作品图片"></div>
+        </div>
+        <div class="asset-detail-copy">
+          <span id="assetDetailSource" class="asset-badge">AITag Online</span>
+          <h3 id="assetDetailName">—</h3>
+          <p id="assetDetailMeta" class="asset-result-info"></p>
+          <p id="assetDetailLicense" class="asset-result-info"></p>
+          <div id="assetDetailTags" class="asset-card-tags"></div>
+          <details class="asset-prompt-detail"><summary>查看作品 Prompt / 元数据</summary><pre id="assetDetailPrompt"></pre></details>
+          <div id="assetSourceCandidates" class="asset-source-candidates" hidden></div>
+          <div class="asset-detail-actions">
+            <button id="assetSaveSource" class="asset-button asset-button-secondary" type="button">保存当前图片到本地角色库</button>
+            <a id="assetExternalLink" class="asset-button asset-button-link" target="_blank" rel="noreferrer">查看 AITag 原页</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="assetDraftPanel" class="asset-panel asset-draft-panel" aria-labelledby="draftTitle" hidden>
+      <div class="asset-section-heading">
+        <div>
+          <span class="asset-section-kicker">DRAFT ONLY</span>
+          <h2 id="draftTitle">选择换角目标并打开 Studio</h2>
+          <p class="asset-result-info">不选目标时，直接把当前在线作品做成可编辑草稿；选择目标时，只改指定角色槽。</p>
+        </div>
+        <span id="assetDraftSafety" class="asset-badge">0 次生成调用</span>
+      </div>
+      <div class="asset-target-controls">
+        <label class="asset-field">
+          <span>目标来源</span>
+          <select id="assetTargetSource">
+            <option value="none">不换角色，仅建立原作品草稿</option>
+            <option value="local">选择本地角色</option>
+            <option value="aitag-online">查找在线候选并显式保存</option>
+          </select>
+        </label>
+        <label class="asset-field">
+          <span>目标角色槽</span>
+          <select id="assetSlot">
+            <option value="0">槽位 1</option><option value="1">槽位 2</option><option value="2">槽位 3</option>
+            <option value="3">槽位 4</option><option value="4">槽位 5</option><option value="5">槽位 6</option>
+          </select>
+        </label>
+        <label id="assetTargetQueryField" class="asset-field asset-field-grow" hidden>
+          <span>目标角色搜索</span>
+          <input id="assetTargetQuery" autocomplete="off" placeholder="角色名、Trigger、作品名或 tag" />
+        </label>
+        <button id="assetTargetSearch" class="asset-button asset-button-secondary" type="button" hidden>查找目标</button>
+      </div>
+      <div id="assetTargetStatus" class="asset-result-info" aria-live="polite">当前不换角色。</div>
+      <div id="assetTargetResults" class="asset-target-results"></div>
+      <div id="assetTargetSelection" class="asset-target-selection" hidden></div>
+      <div class="asset-draft-actions">
+        <button id="assetPrepareDraft" class="asset-button asset-button-primary" type="button">建立草稿并打开 Studio →</button>
+        <span>不会自动生成；进入 Studio 后仍需人工确认 Prompt、角色槽和参数。</span>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/escape.js?v=cf491c2912"></script>
+  <script type="module" src="/assets/tag-assets.js?v=abbe3bccee"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070a11" />
+  <title>Nai学长工作室 · 分类图谱</title>
+  <link rel="stylesheet" href="/assets/core-theme.css?v=0158aeb657" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
+</head>
+<body data-ui="nai-atlas" data-page="tags">
+  <nav class="atlas-nav" id="siteNav" aria-label="主导航"></nav>
+  <main class="atlas-shell">
+
+    <header class="page-heading">
+      <div>
+        <span class="eyebrow blue">Prompt taxonomy · NAI only</span>
+        <h1>分类图谱</h1>
+      </div>
+      <p>像逛灵感板一样组合角色、作品、画师、动作、服装、场景与构图。这里的标签只来自已验证原图里的 NAI 提示词。</p>
+    </header>
+
+    <section class="facet-workbench" aria-label="NAI 标签分类工作台">
+      <aside class="facet-rail">
+        <div class="facet-rail-head">FACET CHANNELS / 08</div>
+        <div class="facet-tabs" id="facetTabs">
+          <button class="facet-tab active" data-facet="character" type="button" aria-pressed="true"><span>01</span><span>角色</span></button>
+          <button class="facet-tab" data-facet="copyright" type="button" aria-pressed="false"><span>02</span><span>作品系列</span></button>
+          <button class="facet-tab" data-facet="artist" type="button" aria-pressed="false"><span>03</span><span>画师</span></button>
+          <button class="facet-tab" data-facet="action" type="button" aria-pressed="false"><span>04</span><span>动作</span></button>
+          <button class="facet-tab" data-facet="clothing" type="button" aria-pressed="false"><span>05</span><span>服装</span></button>
+          <button class="facet-tab" data-facet="scene" type="button" aria-pressed="false"><span>06</span><span>场景</span></button>
+          <button class="facet-tab" data-facet="composition" type="button" aria-pressed="false"><span>07</span><span>构图</span></button>
+          <button class="facet-tab" data-facet="other" type="button" aria-pressed="false"><span>08</span><span>其他</span></button>
+        </div>
+      </aside>
+      <div class="tag-field">
+        <div class="tag-field-head">
+          <div>
+            <span class="micro-label">Live local index</span>
+            <h2>热门标签</h2>
+          </div>
+          <span id="status" class="status-line" role="status">正在读取本地索引…</span>
+        </div>
+        <div class="tag-cloud" id="tagCloud" aria-live="polite"></div>
+        <div class="selection-strip">
+          <div>
+            <span class="micro-label" id="selectionCount">已选择 0 项</span>
+            <div class="selected-tags" id="selectedTags"></div>
+          </div>
+          <button class="atlas-button ghost" id="clearSelections" type="button" disabled>清空组合</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="atlas-results" aria-labelledby="resultTitle">
+      <div class="results-toolbar">
+        <div>
+          <span class="micro-label">Filtered archive</span>
+          <h2 id="resultTitle">全部图库作品</h2>
+        </div>
+        <select class="atlas-select" id="sort" aria-label="作品排序">
+          <option value="new">最近入库</option>
+          <option value="bookmarks">收藏最多</option>
+          <option value="views">浏览最多</option>
+        </select>
+      </div>
+      <div class="works-grid" id="workGrid" aria-live="polite"></div>
+      <div class="pager" aria-label="分类结果翻页">
+        <button class="atlas-button secondary" id="previous" type="button">上一页</button>
+        <span id="pageText">01 / 01</span>
+        <button class="atlas-button blue" id="next" type="button">下一页</button>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/nai-tags.js?v=c92a232282"></script>
+</body>
+</html>

@@ -1,0 +1,1172 @@
+/* ==========================================================================
+   Nai学长工作室 · 深空二次元主题（studio-theme.css）
+   2026-08 全面重构：单一设计系统，替代 unified-light.css 补丁层。
+   加载顺序：必须在所有页面样式之后（最后引入）。
+   设计语言：深空底 + 电光青主色 + 樱花粉点缀，发光描边，细腻网格。
+   ========================================================================== */
+
+/* ---------- 1. 设计令牌（同时接管旧变量名，旧组件自动换肤） ---------- */
+:root {
+  color-scheme: dark;
+
+  /* 新令牌 */
+  --bg0: #070a11;
+  --bg1: #0c1119;
+  --bg2: #111927;
+  --bg3: #182334;
+  --line: rgba(120, 180, 235, 0.14);
+  --line-strong: rgba(120, 180, 235, 0.32);
+  --text: #e8f1fa;
+  --muted: #93a5ba;
+  --faint: #63748a;
+  --cyan: #5de4ff;
+  --cyan-deep: #1d83d4;
+  --pink: #ff9ec6;
+  --ok: #3ddc97;
+  --warn: #ffd166;
+  --err: #ff7a90;
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 9px;
+  --glow: 0 0 24px rgba(93, 228, 255, 0.16);
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.38);
+  --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* 旧变量接管（styles.css / core-theme.css / gallery-atlas.css / 内联运营页） */
+  --bg: var(--bg0);
+  --card: var(--bg2);
+  --badge: var(--cyan-deep);
+  --accent: var(--cyan-deep);
+  --paper: var(--bg1);
+  --paper-deep: var(--bg2);
+  --surface: var(--bg2);
+  --ink: var(--text);
+  --ink-soft: var(--muted);
+  --line-soft: var(--line);
+  --acid: var(--cyan);
+  --acid-soft: rgba(93, 228, 255, 0.14);
+  --coral: var(--pink);
+  --coral-soft: rgba(255, 158, 198, 0.14);
+  --cobalt: var(--cyan-deep);
+  --cobalt-soft: rgba(29, 131, 212, 0.18);
+  --mint: #4ae3b5;
+  --danger: var(--err);
+  --shadow-small: 0 6px 16px rgba(0, 0, 0, 0.4);
+  --atlas-paper: var(--bg2);
+  --atlas-paper-2: var(--bg3);
+  --atlas-sky: var(--bg0);
+  --atlas-ink: var(--text);
+  --atlas-night: #0a1220;
+  --atlas-navy: #101b2e;
+  --atlas-blue: var(--cyan-deep);
+  --atlas-electric: var(--cyan);
+  --atlas-wash: var(--bg1);
+  --atlas-line: var(--line);
+  --atlas-line-strong: var(--line-strong);
+  --atlas-muted: var(--muted);
+  --atlas-shadow: var(--shadow-soft);
+
+  /* 页面级旧变量族 */
+  --butler-panel: rgba(17, 25, 39, 0.92);
+  --butler-border: var(--line);
+  --butler-muted: var(--muted);
+  --butler-blue: var(--cyan-deep);
+  --director-bg: var(--bg0);
+  --director-panel: rgba(17, 25, 39, 0.94);
+  --director-panel-soft: var(--bg2);
+  --director-line: var(--line);
+  --director-text: var(--text);
+  --director-muted: var(--muted);
+  --director-blue: var(--cyan-deep);
+  --settings-bg: var(--bg0);
+  --settings-card: rgba(17, 25, 39, 0.94);
+  --settings-line: var(--line);
+  --settings-text: var(--text);
+  --settings-muted: var(--muted);
+  --ref-bg: var(--bg0);
+  --ref-panel: var(--bg2);
+  --ref-panel-2: var(--bg3);
+  --ref-line: var(--line);
+  --ref-line-soft: var(--line);
+  --ref-text: var(--text);
+  --ref-muted: var(--muted);
+  --cs-bg-main: var(--bg0);
+  --cs-bg-card: var(--bg2);
+  --cs-bg-panel: var(--bg3);
+  --cs-text-main: var(--text);
+  --cs-text-muted: var(--muted);
+  --cs-border: var(--line);
+}
+
+/* ---------- 2. 基底 ---------- */
+
+/* gallery-atlas.css 在 body[data-ui] 上定义了浅色的 --atlas-* 变量，
+   特异性高于 :root，这里按同特异性覆盖回深色。 */
+body[data-ui="nai-atlas-full"],
+body[data-ui="nai-atlas"] {
+  --atlas-night: #0a1220;
+  --atlas-navy: #101b2e;
+  --atlas-blue: #38b6f0;
+  --atlas-electric: #5de4ff;
+  --atlas-paper: #111927;
+  --atlas-wash: #0c1119;
+  --atlas-line: rgba(120, 180, 235, 0.14);
+  --atlas-muted: #93a5ba;
+  color: var(--text);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: var(--bg0) !important;
+  background-image:
+    radial-gradient(900px 480px at 88% -8%, rgba(93, 228, 255, 0.09), transparent 60%),
+    radial-gradient(760px 520px at -10% 30%, rgba(255, 158, 198, 0.05), transparent 55%),
+    linear-gradient(rgba(93, 228, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(93, 228, 255, 0.035) 1px, transparent 1px) !important;
+  background-size: auto, auto, 36px 36px, 36px 36px !important;
+  background-attachment: fixed !important;
+  color: var(--text) !important;
+  font: 15px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  background: transparent !important;
+  content: none !important;
+}
+
+::selection { background: rgba(93, 228, 255, 0.32); color: #fff; }
+
+a { color: var(--cyan); }
+a:hover { color: #9bedff; }
+
+h1, h2, h3, h4, h5, h6 { color: var(--text); letter-spacing: 0.01em; }
+
+p, label, .muted, .hint, .sub { color: var(--muted); }
+
+:focus-visible {
+  outline: 2px solid var(--cyan) !important;
+  outline-offset: 2px;
+}
+
+img { user-select: none; }
+
+/* 滚动条 */
+* { scrollbar-color: #274b66 transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: #1d3a52;
+  border-radius: 8px;
+  border: 2px solid var(--bg0);
+}
+*::-webkit-scrollbar-thumb:hover { background: #2b5878; }
+
+/* ---------- 3. 全局导航（shared/site-nav.js 渲染 .site-nav；此处仅保留快捷键按钮样式） ---------- */
+body[data-ui="nai-atlas-full"] #siteNav { display: block !important; }
+
+.nv-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(93, 228, 255, 0.06);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.nv-kbd:hover { border-color: var(--line-strong); color: var(--text); box-shadow: var(--glow); }
+.nv-kbd-key {
+  font: 700 10px/1 var(--mono);
+  color: var(--cyan);
+  border: 1px solid rgba(93, 228, 255, 0.35);
+  border-radius: 5px;
+  padding: 3px 5px;
+}
+
+@media (max-width: 560px) {
+  .nv-kbd-text { display: none; }
+}
+
+/* ---------- 4. 通用组件 ---------- */
+
+/* 按钮族：默认深色描边 / primary 青光 / danger 粉 */
+button, .btn, .px-btn, .studio-btn, .settings-button, .director-button,
+.ref-btn, .back-btn, .load-more-btn, .page-btn, .btn-mini, .af-btn {
+  border: 1px solid var(--line-strong) !important;
+  border-radius: var(--r-sm) !important;
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease, background 0.18s ease;
+}
+button:hover:not(:disabled), .btn:hover, .px-btn:hover, .studio-btn:hover,
+.settings-button:hover, .director-button:hover, .ref-btn:hover,
+.back-btn:hover, .load-more-btn:hover, .page-btn:hover {
+  border-color: rgba(93, 228, 255, 0.55) !important;
+  background: #1b2940 !important;
+  box-shadow: var(--glow) !important;
+}
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.primary, .btn.primary, .px-btn.primary, .studio-btn.primary, .studio-gen-btn,
+.settings-button.primary, .director-button.execute, .ref-btn-primary,
+.page-btn.active, .btn-restart, .inspiration-btn.primary, .char-swap-btn.primary,
+.butler-confirm, .atlas-search-submit {
+  border: 1px solid rgba(93, 228, 255, 0.6) !important;
+  background: linear-gradient(135deg, #4fd2f5, #1d83d4) !important;
+  color: #04121e !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 20px rgba(29, 131, 212, 0.35) !important;
+  text-shadow: none !important;
+}
+button.primary:hover, .btn.primary:hover, .atlas-search-submit:hover {
+  box-shadow: 0 8px 26px rgba(93, 228, 255, 0.45) !important;
+}
+
+button.danger, .btn.danger, .px-btn.danger, .gen-item-del, .gen-del-group {
+  border-color: rgba(255, 122, 144, 0.5) !important;
+  background: rgba(255, 122, 144, 0.1) !important;
+  color: var(--err) !important;
+}
+
+.btn.outline, .btn.ghost, .fc-blocklist-row .btn.outline {
+  background: transparent !important;
+}
+
+/* 表单 */
+input:not([type="checkbox"]):not([type="radio"]), textarea, select {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-sm) !important;
+  background: var(--bg1) !important;
+  color: var(--text) !important;
+  font: inherit;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+input::placeholder, textarea::placeholder { color: var(--faint) !important; opacity: 1; }
+input:focus, textarea:focus, select:focus {
+  border-color: rgba(93, 228, 255, 0.6) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(93, 228, 255, 0.14) !important;
+}
+select option { background: var(--bg2); color: var(--text); }
+
+/* 通用面板 */
+.panel, .card, .advanced-card, .toggle-card, .readiness-card, .field-card, .usage-grid article, .knowledge-metrics article, .fc-panel, .fc-search-panel, .hover-preview, .generated-empty, .workflow-empty-card, .crawler-card, .crawler-panel, .progress-card, .status-card, .queue-card, .panel-paper {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-lg) !important;
+  background: linear-gradient(165deg, rgba(24, 35, 52, 0.6), rgba(13, 19, 29, 0.85)) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+/* 代码 / 元数据块 */
+pre, code, .json-box, .output, .log, .logs, .json-content {
+  border-color: var(--line) !important;
+  background: #0a0f18 !important;
+  color: #c9dcf0 !important;
+}
+.json-box { border: 1px solid var(--line); border-radius: var(--r-md); }
+.json-box .json-header, .json-box .json-header .json-header-line { color: var(--cyan) !important; opacity: 1 !important; }
+.json-box .k { color: #7fd0ff !important; }
+.json-box .s { color: #9fe8c0 !important; }
+.json-box.nai .s { color: #d6ecff !important; }
+.json-box .n { color: #ffd479 !important; }
+.json-box .b { color: #ff9aa2 !important; }
+.json-box .sd { color: #56c2ff !important; }
+.json-box .sd-lora { color: #ffab63 !important; }
+.json-box .json-actions,
+.json-box .json-bottom { opacity: 1 !important; }
+
+/* 标签 / 芯片 */
+.chip, .studio-chip, .studio-token, .tag, .pill, .studio-kbd {
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  background: var(--bg3) !important;
+  color: var(--muted) !important;
+}
+.chip:hover, .tag:hover { border-color: var(--line-strong) !important; color: var(--text) !important; }
+.chip.nai, .type-pill.nai { background: linear-gradient(135deg, #35b6f2, #1d83d4) !important; color: #04121e !important; border-color: transparent !important; }
+.chip.sd, .type-pill.sd { background: #b96a1b !important; color: #fff !important; border-color: transparent !important; }
+.chip.comfyui, .type-pill.comfyui { background: #7a4fd0 !important; color: #fff !important; border-color: transparent !important; }
+.type-pill.naix-flag, .chip.naix-flag { background: #c2334d !important; color: #fff !important; }
+.chip.tag-chip, .chip.tag-chip .tag-zh { color: var(--text) !important; }
+.chip.tag-chip .tag-jp { color: var(--faint) !important; opacity: 1 !important; }
+.chip.tag-chip.tag-translated .tag-zh { color: var(--cyan) !important; }
+.chip.tag-chip.tag-danbooru .tag-zh { color: var(--ok) !important; }
+
+/* 状态色 */
+.ok, .ready, .completed, .succeeded, .px-status.ok { color: var(--ok) !important; }
+.warn, .warning, .partial, .pending, .waiting { color: var(--warn) !important; }
+.bad, .err, .error, .failed, .cancelled, .px-status.err { color: var(--err) !important; }
+
+/* 开关 */
+.fc-switch { color: var(--text) !important; }
+.fc-switch-track { background: var(--bg3) !important; box-shadow: inset 0 0 0 1px var(--line-strong) !important; }
+.fc-switch-input:checked + .fc-switch-track { background: var(--cyan-deep) !important; }
+.fc-switch-thumb { background: #eaf6ff !important; }
+
+/* ---------- 5. 首页（图库） ---------- */
+
+/* 顶部通知条：合并视觉重量 */
+.atlas-notice {
+  border: 1px solid var(--line) !important;
+  border-left: 3px solid var(--cyan-deep) !important;
+  border-radius: var(--r-md) !important;
+  background: rgba(13, 20, 31, 0.8) !important;
+  color: var(--muted) !important;
+  box-shadow: none !important;
+}
+.atlas-notice strong { color: var(--cyan); letter-spacing: 0.06em; }
+.atlas-notice a { color: var(--cyan); }
+.atlas-notice-alert {
+  border-left-color: var(--pink) !important;
+  background: rgba(255, 158, 198, 0.07) !important;
+  color: #f3c4d8 !important;
+}
+
+/* Hero：修复幽灵字（旧渐变透明填充），改为实色 + 青光强调 */
+.site-header.atlas-gallery-head {
+  min-height: 0 !important;
+  padding: clamp(36px, 6vh, 64px) 4px 30px !important;
+  background: transparent !important;
+  text-align: left !important;
+}
+.hero-intro { text-align: left !important; margin-left: 0 !important; margin-right: 0 !important; max-width: none !important; }
+.atlas-hero-copy { text-align: left !important; }
+.atlas-hero-lead { margin-left: 0 !important; margin-right: 0 !important; }
+.site-header.atlas-gallery-head .hero-title,
+.hero-title {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+  font-size: clamp(34px, 4.6vw, 68px) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.12 !important;
+  text-shadow: none !important;
+}
+.atlas-title-accent {
+  color: var(--cyan) !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: 0 0 26px rgba(93, 228, 255, 0.45) !important;
+}
+.atlas-hero-lead { color: var(--muted) !important; }
+.eyebrow, .micro-label {
+  color: var(--cyan) !important;
+  font: 700 10px/1.4 var(--mono) !important;
+  letter-spacing: 0.16em !important;
+}
+.eyebrow, .eyebrow.blue, .eyebrow.acid {
+  display: inline-flex;
+  width: max-content;
+  padding: 7px 12px !important;
+  border: 1px solid rgba(93, 228, 255, 0.45) !important;
+  border-radius: 999px !important;
+  background: rgba(93, 228, 255, 0.08) !important;
+  color: var(--cyan) !important;
+  box-shadow: 0 0 14px rgba(93, 228, 255, 0.12) !important;
+}
+.atlas-signal-row span {
+  border: 1px solid var(--line) !important;
+  background: rgba(17, 25, 39, 0.7) !important;
+  color: var(--muted) !important;
+}
+.atlas-signal-row b { color: var(--cyan) !important; }
+.atlas-hero-note {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-lg) !important;
+  background: linear-gradient(160deg, rgba(24, 35, 52, 0.7), rgba(12, 17, 25, 0.9)) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+.atlas-hero-note::after { border-color: rgba(93, 228, 255, 0.16) !important; }
+.atlas-note-index { color: var(--faint) !important; }
+.gallery-disclosure summary { color: var(--text); }
+.gallery-about summary span, .hero-desc, .hero-desc p { color: var(--muted) !important; }
+.hero-announcement p { color: var(--warn) !important; }
+
+/* 检索台：深色玻璃，不再是浅色页里的孤岛 */
+.atlas-search-deck {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-lg) !important;
+  background: rgba(10, 15, 24, 0.85) !important;
+  box-shadow: var(--shadow-soft) !important;
+  overflow: hidden;
+}
+.atlas-search-label { color: var(--text) !important; }
+.atlas-search-label span { color: var(--cyan) !important; }
+.atlas-search-deck .search-row { background: transparent !important; }
+.atlas-search-field {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-md) !important;
+  background: var(--bg1) !important;
+}
+.atlas-search-field span { color: var(--faint) !important; }
+.atlas-search-field input { color: var(--text) !important; }
+.atlas-search-submit { border-radius: var(--r-md) !important; }
+
+/* 数据域切换 */
+.gallery-source-label { color: var(--faint) !important; }
+.gallery-source-button {
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+}
+.gallery-source-button[aria-pressed="true"] {
+  background: rgba(93, 228, 255, 0.14) !important;
+  border-color: rgba(93, 228, 255, 0.5) !important;
+  color: var(--cyan) !important;
+}
+
+/* 高级筛选抽屉 */
+.atlas-filter-drawer { border-color: var(--line) !important; background: rgba(10, 18, 32, 0.6) !important; color: var(--text) !important; }
+.atlas-filter-drawer .af-title { color: var(--cyan) !important; }
+.atlas-filter-drawer #advancedFilterSummary { color: var(--muted) !important; }
+.atlas-filter-drawer .af-field label { color: var(--faint) !important; }
+.atlas-filter-drawer input, .atlas-filter-drawer select { color: var(--text) !important; font-size: 14px !important; }
+.gallery-advanced-body { background: transparent !important; border-top-color: var(--line) !important; }
+.af-field label { color: var(--faint) !important; }
+
+/* 结果区 */
+.atlas-results-head h2 { color: var(--text); }
+.atlas-results-head p, #galleryResultsHelp { color: var(--muted) !important; }
+.search-status { border-color: var(--line) !important; background: rgba(13, 20, 31, 0.7) !important; color: var(--muted) !important; }
+.spinner { border-color: rgba(93, 228, 255, 0.25) !important; border-top-color: var(--cyan) !important; }
+
+/* 卡片 */
+.gallery-grid .card, .card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md) !important;
+  background: var(--bg2) !important;
+  box-shadow: var(--shadow-soft) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.gallery-grid .card:hover, .card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(93, 228, 255, 0.45);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5), 0 0 22px rgba(93, 228, 255, 0.12) !important;
+}
+.meta {
+  background: rgba(6, 10, 17, 0.78) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(120, 180, 235, 0.12);
+  border-radius: var(--r-sm) !important;
+  color: var(--text) !important;
+}
+.meta-caption, .meta-date { color: var(--muted) !important; }
+.badge { background: linear-gradient(135deg, #4fd2f5, #1d83d4) !important; color: #04121e !important; }
+.card-metrics .cm-view { color: var(--cyan) !important; background: rgba(6, 10, 17, 0.72) !important; }
+.card-metrics .cm-bookmark { color: var(--muted) !important; background: rgba(6, 10, 17, 0.72) !important; }
+
+/* 分页 / 加载 */
+.page-btn.active { color: #04121e !important; }
+.loading, .no-result { color: var(--muted) !important; }
+
+/* 浮动页码芯片 */
+.fc-chip {
+  border: 1px solid rgba(93, 228, 255, 0.5) !important;
+  background: rgba(10, 15, 24, 0.9) !important;
+  color: var(--cyan) !important;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 20px rgba(93, 228, 255, 0.2) !important;
+  backdrop-filter: blur(10px);
+}
+.fc-icon { color: var(--cyan) !important; }
+.fc-panel { border-radius: var(--r-md) !important; }
+.fc-panel-title {
+  color: var(--text) !important;
+  background: linear-gradient(180deg, var(--bg2) 78%, transparent) !important;
+}
+.fc-divider { background: var(--line) !important; }
+.fc-label { color: var(--muted) !important; }
+
+/* 悬浮预览 & 详情 */
+.hover-preview { border-radius: var(--r-md) !important; }
+.hp-count { background: var(--bg3) !important; color: var(--cyan) !important; }
+.hp-hint { color: var(--faint) !important; }
+.detail-view { background: var(--bg0) !important; }
+.detail-header { background: rgba(7, 10, 17, 0.92) !important; border-bottom-color: var(--line) !important; backdrop-filter: blur(12px); }
+.detail-header h2 { color: var(--text) !important; }
+.detail-meta { color: var(--muted) !important; }
+.dm-title { color: var(--text) !important; }
+.dm-caption { color: #c2d2e4 !important; }
+.detail-images .img-card { background: var(--bg1) !important; border: 1px solid var(--line); border-radius: var(--r-md); }
+
+/* 详情浮层里的浅色遗留（gallery-atlas.css 硬编码 rgba(247,251,255)） */
+.detail-view .detail-info-disclosure {
+  border-color: var(--line) !important;
+  background: rgba(17, 25, 39, 0.75) !important;
+}
+.detail-view .detail-info-disclosure > summary { color: var(--text) !important; }
+.detail-view .detail-info-disclosure > summary span { color: var(--faint) !important; }
+.detail-send-row .detail-more-actions > summary {
+  border: 1px dashed var(--line-strong) !important;
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+}
+.detail-view .chip {
+  border-color: var(--line) !important;
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+}
+.detail-view .chip:hover { border-color: rgba(93, 228, 255, 0.5) !important; color: var(--cyan) !important; }
+
+/* 灵感侧边栏 */
+.inspiration-sidebar {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-lg) !important;
+  background: rgba(12, 17, 25, 0.94) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+.inspiration-head {
+  border-bottom-color: var(--line) !important;
+  background: rgba(24, 35, 52, 0.55) !important;
+}
+.inspiration-head strong { color: var(--text) !important; }
+.inspiration-toggle {
+  border: 1px solid rgba(93, 228, 255, 0.5) !important;
+  background: rgba(93, 228, 255, 0.12) !important;
+  color: var(--cyan) !important;
+}
+.inspiration-thumb { border-color: var(--line) !important; background: var(--bg1) !important; border-radius: var(--r-sm) !important; }
+.inspiration-title { color: var(--text) !important; }
+.inspiration-head span { color: var(--cyan) !important; }
+.inspiration-empty, .inspiration-meta { color: var(--muted) !important; }
+.inspiration-prompt {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-sm) !important;
+  background: var(--bg1) !important;
+  color: var(--muted) !important;
+}
+.inspiration-btn { width: 100%; }
+
+/* 页脚 */
+.atlas-gallery-footer { color: var(--faint) !important; }
+.storage-path-footer { color: var(--faint) !important; }
+
+/* ---------- 6. 跨页共享皮肤（单页家族皮肤已拆到各自 CSS） ---------- */
+
+/* 保存浮坞：studio 与 settings 共用 */
+.save-dock, .studio-action-bar {
+  border-color: var(--line) !important;
+  background: rgba(10, 15, 24, 0.94) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* 运营 / 采集等内联样式页 */
+.wrap { color: var(--text) !important; }
+.ops-wrap .hero, .wrap > .panel, .wrap .grid > .card {
+  border-color: var(--line) !important;
+  background: var(--bg2) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+/* 分类图谱 / 维护站（atlas 壳页面） */
+.page-heading h1 { color: var(--text) !important; }
+.page-heading p { color: var(--muted) !important; }
+.atlas-local-badge {
+  border: 1px solid rgba(93, 228, 255, 0.4) !important;
+  background: rgba(93, 228, 255, 0.1) !important;
+  color: var(--cyan) !important;
+}
+
+/* ---------- 7. 快捷面板（quick-dock.js 渲染） ---------- */
+.qd-launcher {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 410;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(93, 228, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(10, 15, 24, 0.88);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-soft);
+  transition: color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.qd-launcher:hover { color: var(--text); border-color: var(--cyan); box-shadow: var(--glow); }
+.qd-launcher .nv-kbd-key { font-size: 10px; }
+
+.qd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14vh;
+  background: rgba(4, 7, 12, 0.66);
+  backdrop-filter: blur(6px);
+  animation: qdFade 0.16s ease;
+}
+@keyframes qdFade { from { opacity: 0; } to { opacity: 1; } }
+
+.qd-panel {
+  width: min(560px, 92vw);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: rgba(12, 17, 25, 0.98);
+  box-shadow: var(--shadow), 0 0 40px rgba(93, 228, 255, 0.1);
+  overflow: hidden;
+  animation: qdPop 0.18s cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+@keyframes qdPop { from { transform: translateY(10px) scale(0.98); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.qd-input {
+  width: 100%;
+  padding: 16px 18px;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--text) !important;
+  font-size: 15px;
+  box-shadow: none !important;
+}
+.qd-input:focus { box-shadow: none !important; }
+
+.qd-list { max-height: 46vh; overflow-y: auto; padding: 8px; }
+.qd-group-title {
+  padding: 8px 12px 4px;
+  color: var(--cyan);
+  font: 700 10px/1 var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.qd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent !important;
+  color: var(--text) !important;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+.qd-item small { margin-left: auto; color: var(--faint); font-size: 11px; }
+.qd-item.is-active { background: rgba(93, 228, 255, 0.12) !important; color: var(--cyan) !important; }
+.qd-empty { padding: 22px; text-align: center; color: var(--faint); font-size: 13px; }
+.qd-foot {
+  display: flex;
+  gap: 14px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 11px;
+}
+.qd-foot b { color: var(--muted); font-weight: 600; }
+
+@media (max-width: 640px) {
+  .qd-launcher { left: 12px; bottom: 12px; padding: 9px 13px; }
+  .qd-launcher .qd-launcher-text { display: none; }
+  .qd-overlay { padding-top: 8vh; }
+}
+
+/* ---------- 8. 动效收敛 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- 9. 图库首屏密度：以图为主 ----------
+   目标：1440×900 视口首屏必须露出第一排作品。
+   原则：hero 压缩为信息带，通知条瘦身，检索台降高，网格加密。 */
+
+.atlas-shell { padding-top: 12px !important; }
+
+/* 通知条：两行变细条 */
+.atlas-notice {
+  margin-top: 8px !important;
+  padding: 7px 14px !important;
+  font-size: 11px !important;
+  gap: 12px !important;
+}
+
+/* Hero：从"海报"压缩为"信息带" */
+.site-header.atlas-gallery-head {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px) !important;
+  gap: 24px !important;
+  align-items: center !important;
+  padding: 18px 4px 14px !important;
+}
+.site-header.atlas-gallery-head .hero-title,
+.hero-title {
+  font-size: clamp(24px, 2.5vw, 36px) !important;
+  line-height: 1.15 !important;
+  margin: 8px 0 8px !important;
+}
+.atlas-hero-lead {
+  font-size: 13px !important;
+  max-width: 640px !important;
+}
+.eyebrow, .eyebrow.blue, .eyebrow.acid { padding: 4px 10px !important; }
+.atlas-signal-row { margin-top: 10px !important; gap: 6px !important; }
+.atlas-signal-row span { padding: 5px 9px !important; font-size: 10px !important; }
+
+/* 关于图库卡片：紧凑化，装饰环去掉 */
+.atlas-hero-note { padding: 14px 16px !important; }
+.atlas-hero-note::after { content: none !important; }
+.atlas-note-index { margin-bottom: 6px !important; font-size: 10px !important; }
+.atlas-hero-note .gallery-about summary { padding: 0 !important; min-height: 0 !important; }
+.atlas-hero-note .hero-desc p { font-size: 12px !important; line-height: 1.55 !important; }
+
+/* 检索台：降高 */
+.atlas-search-deck { margin-bottom: 18px !important; }
+.atlas-search-label { min-height: 0 !important; padding: 12px 14px !important; }
+.atlas-search-label strong { font-size: 14px !important; margin-top: 3px !important; }
+.atlas-search-deck .search-row { padding: 10px !important; }
+.atlas-search-field { padding: 5px 11px !important; }
+.atlas-search-submit { min-width: 104px !important; }
+.gallery-source-bar { padding: 0 10px 10px !important; gap: 8px !important; }
+.gallery-source-button { min-height: 30px !important; padding: 4px 11px !important; }
+.atlas-filter-drawer { margin: 0 10px 10px !important; }
+.atlas-filter-drawer > summary { min-height: 34px !important; padding: 6px 12px !important; }
+
+/* 结果区标题：压缩 */
+.atlas-results-head { margin-bottom: 8px !important; }
+.atlas-results-head h2 { font-size: 18px !important; margin: 2px 0 !important; }
+.atlas-results-head p { font-size: 12px !important; margin: 0 !important; }
+
+/* 网格加密：主区自适应列宽，同屏更多图 */
+.gallery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)) !important;
+  gap: 14px !important;
+  padding: 4px 0 12px !important;
+}
+.meta { padding: 6px 8px !important; font-size: 11px !important; }
+.meta-caption { -webkit-line-clamp: 2 !important; }
+
+/* 侧边栏跟 grid 对齐 */
+.atlas-gallery-layout { gap: 18px !important; }
+
+/* 移动端：hero 进一步瘦身，首屏直接见图 */
+@media (max-width: 1040px) {
+  .site-header.atlas-gallery-head {
+    grid-template-columns: 1fr !important;
+    padding: 14px 2px 10px !important;
+  }
+  .atlas-hero-note { display: none !important; }
+}
+@media (max-width: 640px) {
+  .atlas-notice { font-size: 10px !important; padding: 6px 10px !important; }
+  .site-header.atlas-gallery-head .hero-title, .hero-title { font-size: 21px !important; margin: 6px 0 !important; }
+  .atlas-hero-lead { font-size: 12px !important; }
+  .atlas-signal-row span { padding: 4px 8px !important; }
+  .atlas-search-deck { grid-template-columns: 1fr !important; }
+  .atlas-search-label { display: none !important; }
+  .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+}
+
+/* ---------- 10. 首屏再压缩（第二轮实测后追加） ---------- */
+
+/* 桌面：hero 标题两段同行排列（"Pixiv NAI 本地图库 · 可检索的图谱"一行） */
+@media (min-width: 1041px) {
+  .site-header.atlas-gallery-head .hero-title > span:not(.lang-en) { display: inline !important; }
+  .site-header.atlas-gallery-head .hero-title .atlas-title-accent::before { content: "· "; color: var(--faint); -webkit-text-fill-color: var(--faint); text-shadow: none; }
+  .atlas-hero-lead {
+    max-width: 760px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* 移动端：只留标题一行，隐藏导语与信号芯片，检索台纵向堆叠 */
+@media (max-width: 640px) {
+  .eyebrow, .eyebrow.blue, .eyebrow.acid { display: none !important; }
+  .site-header.atlas-gallery-head .hero-title > span:not(.lang-en) { display: inline !important; }
+  .atlas-hero-lead, .atlas-signal-row { display: none !important; }
+  .site-header.atlas-gallery-head { padding: 10px 2px 8px !important; }
+  .atlas-results-head p { display: none !important; }
+}
+
+/* ---------- 11. 首屏第三次压缩（实测驱动） ---------- */
+
+/* 桌面 hero 改双行带： eyebrow+标题 一行，导语+信号 一行 */
+@media (min-width: 1041px) {
+  .atlas-hero-copy {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "eyebrow title"
+      "lead signals";
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 8px;
+  }
+  .atlas-hero-copy .eyebrow { grid-area: eyebrow; margin: 0 !important; }
+  .atlas-hero-copy .hero-title { grid-area: title; margin: 0 !important; }
+  .atlas-hero-copy .atlas-hero-lead { grid-area: lead; margin: 0 !important; }
+  .atlas-hero-copy .atlas-signal-row { grid-area: signals; margin: 0 !important; justify-self: end; }
+  .site-header.atlas-gallery-head { padding: 14px 4px 12px !important; }
+  .atlas-results-head { margin-bottom: 4px !important; }
+  .atlas-results-head .micro-label { display: none !important; }
+  .atlas-results-head h2 { font-size: 16px !important; }
+}
+
+/* 移动端：修复检索台子项 grid-column:2 掉列造成的空隙 */
+@media (max-width: 640px) {
+  .atlas-search-deck { display: block !important; }
+  .atlas-search-deck .search-row { display: flex !important; gap: 8px !important; }
+  .atlas-search-deck .search-row .atlas-search-field { flex: 1 1 auto; min-width: 0; }
+  .atlas-search-deck .search-row .atlas-search-submit { flex: 0 0 auto; }
+  .gallery-source-bar { padding: 0 10px 8px !important; }
+  .atlas-filter-drawer { margin: 0 10px 8px !important; }
+}
+
+/* ---------- 12. 移动端空隙修复 ---------- */
+
+/* 高级筛选：折叠时必须真正隐藏主体（覆盖作者的 display:grid 压过 details 折叠行为） */
+.atlas-filter-drawer:not([open]) .gallery-advanced-body { display: none !important; }
+
+/* ≤1040：灵感侧边栏回到文档流末尾（原 grid-row:1 把它顶到结果上方） */
+@media (max-width: 1040px) {
+  .inspiration-sidebar { grid-row: auto !important; }
+}
+
+/* ≤640：空状态侧边栏直接隐藏，有内容时也只占紧凑一条 */
+@media (max-width: 640px) {
+  .inspiration-sidebar { max-height: none !important; }
+  .inspiration-empty { padding: 12px 14px !important; font-size: 12px !important; }
+}
+
+/* ---------- 13. 桌面标题单行收尾 ---------- */
+@media (min-width: 1041px) {
+  .site-header.atlas-gallery-head .hero-title,
+  .hero-title { font-size: clamp(22px, 2.1vw, 30px) !important; white-space: nowrap; }
+}
+
+@media (min-width: 1041px) {
+  .site-header.atlas-gallery-head .hero-title { display: block !important; }
+}
+
+/* ---------- 14. core-theme 组件修正（--ink 语义冲突：浅色皮肤里它是深色面） ---------- */
+.facet-workbench {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--r-lg) !important;
+  background: var(--bg2) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+.facet-rail {
+  border-right: 1px solid var(--line) !important;
+  background: rgba(10, 18, 32, 0.85) !important;
+}
+.facet-rail-head { color: var(--cyan) !important; }
+.facet-tab {
+  border: 1px solid var(--line) !important;
+  background: transparent !important;
+  color: var(--text) !important;
+}
+.facet-tab span:first-child { color: var(--cyan) !important; }
+.facet-tab:hover { border-color: rgba(93, 228, 255, 0.5) !important; background: rgba(93, 228, 255, 0.08) !important; }
+.facet-tab.active {
+  border-color: rgba(93, 228, 255, 0.6) !important;
+  background: linear-gradient(135deg, #4fd2f5, #1d83d4) !important;
+  color: #04121e !important;
+}
+.facet-tab.active span:first-child { color: #04121e !important; }
+
+/* 维护站提示条深色化 */
+.safety-note {
+  border: 1px solid rgba(255, 209, 102, 0.3) !important;
+  border-radius: var(--r-sm) !important;
+  background: rgba(255, 209, 102, 0.07) !important;
+  color: #e8cf9a !important;
+}
+
+/* 空结果框深色化 */
+.no-result {
+  border: 1px dashed var(--line-strong) !important;
+  border-radius: var(--r-lg) !important;
+  background: rgba(17, 25, 39, 0.6) !important;
+  color: var(--muted) !important;
+}
+.no-result button { margin-top: 10px; }
+
+/* ---------- 15. 在线换角：源槽与本地槽位行同款（紧凑） ---------- */
+.online-remix-panel .online-source-candidates {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+.online-source-slot {
+  cursor: pointer;
+  padding: 8px 10px !important;
+  gap: 8px !important;
+}
+.online-source-slot:hover { border-color: rgba(93, 228, 255, 0.45) !important; }
+.online-source-slot.active {
+  border-color: rgba(93, 228, 255, 0.65) !important;
+  box-shadow: 0 0 0 1px rgba(93, 228, 255, 0.25), var(--glow) !important;
+  background: rgba(93, 228, 255, 0.07) !important;
+}
+.online-source-slot.is-weak { opacity: 0.72; }
+.online-source-slot.is-swapped {
+  border-color: rgba(61, 220, 151, 0.55) !important;
+  background: rgba(61, 220, 151, 0.08) !important;
+  box-shadow: 0 0 0 1px rgba(61, 220, 151, 0.22);
+}
+.online-source-slot.is-swapped .char-swap-tag-role {
+  color: #a7f3d0 !important;
+  font-weight: 700;
+}
+.online-page-tab.has-swap {
+  border-color: rgba(61, 220, 151, 0.55) !important;
+  color: #a7f3d0 !important;
+}
+.online-page-tab.has-swap::after {
+  content: '·换';
+  margin-left: 2px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.online-slot-usable { flex: 0 0 auto; display: inline-flex; align-items: center; }
+.online-remix-panel .online-source-slot .char-swap-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+.online-remix-panel .online-source-slot .char-swap-actions .char-swap-btn {
+  padding: 2px 8px;
+  font-size: 0.76rem;
+  min-height: 0;
+}
+.online-slot-swapped {
+  color: #6ee7b7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-left: 4px;
+}
+@media (max-width: 720px) {
+  .online-source-slot { align-items: flex-start; }
+  .online-slot-usable { order: 4; }
+  .online-remix-panel .online-source-slot .char-swap-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* 在线一键替换：复用本地 char-swap-quick-presets */
+.online-remix-panel .online-quick-row.char-swap-quick-presets,
+.online-remix-panel #onlineQuickSwapRow {
+  margin: 6px 0 8px;
+  padding: 6px 10px;
+  gap: 5px;
+}
+.online-quick-chip {
+  border-radius: 999px !important;
+  padding: 2px 9px !important;
+  font-size: 0.78rem !important;
+}
+
+/* 在线现场替换结果框（紧凑） */
+.online-remix-result {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(61, 220, 151, 0.4);
+  border-radius: var(--r-md);
+  background: rgba(61, 220, 151, 0.06);
+}
+.online-remix-result.hidden { display: none; }
+.online-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.online-result-head strong { color: var(--ok); font-size: 13px; }
+.online-result-badge {
+  padding: 2px 8px;
+  border: 1px solid rgba(93, 228, 255, 0.4);
+  border-radius: 999px;
+  color: var(--cyan);
+  font: 700 10px/1.4 var(--mono);
+  letter-spacing: 0.06em;
+}
+.online-result-prompt {
+  margin: 6px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg1);
+  color: var(--muted);
+  font: 12px/1.6 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 140px;
+  overflow: auto;
+}
+.online-result-actions { display: flex; gap: 8px; }
+.online-slot-swapped {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(61, 220, 151, 0.14);
+  color: var(--ok);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ---------- 16. 自选库 / 角色资产工作台 深色化 ---------- */
+
+/* codex 自选库（内联浅色样式） */
+#dropzone {
+  border: 2px dashed var(--line-strong) !important;
+  background: rgba(17, 25, 39, 0.7) !important;
+  color: var(--muted) !important;
+}
+#dropzone:hover { border-color: rgba(93, 228, 255, 0.5) !important; }
+#dropzone.drag { border-color: var(--cyan) !important; background: rgba(93, 228, 255, 0.08) !important; }
+#dropzone .big { color: var(--text) !important; }
+.codex-wrap .sub { color: var(--muted) !important; }
+.codex-wrap .result-box { background: var(--bg2) !important; color: var(--muted) !important; border: 1px solid var(--line); }
+.codex-wrap .result-box.ok { background: rgba(61, 220, 151, 0.08) !important; border-color: rgba(61, 220, 151, 0.4) !important; color: var(--ok) !important; }
+.codex-wrap .result-box.err, .codex-wrap .result-box.error { background: rgba(255, 122, 144, 0.08) !important; border-color: rgba(255, 122, 144, 0.4) !important; color: var(--err) !important; }
+
+/* tag-assets 角色资产工作台（asset-* 家族） */
+[class^="asset-"], [class*=" asset-"] {
+  border-color: var(--line) !important;
+  color: var(--text) !important;
+}
+.asset-page { background: transparent !important; }
+.asset-hero, .asset-panel, .asset-card, .asset-empty, .asset-detail-layout,
+.asset-options, .asset-field, .asset-image-choices, .asset-loading,
+.asset-detail-loading, .asset-alert {
+  background: var(--bg2) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+.asset-hero {
+  background: radial-gradient(circle at 88% 12%, rgba(93, 228, 255, 0.12), transparent 17rem), linear-gradient(160deg, rgba(24, 35, 52, 0.75), rgba(12, 17, 25, 0.92)) !important;
+}
+.asset-hero::after { opacity: 0.25 !important; }
+.asset-eyebrow { color: var(--cyan) !important; }
+.asset-hint, .asset-control-note, .asset-detail-copy, .asset-empty { color: var(--muted) !important; }
+.asset-badge {
+  border: 1px solid rgba(93, 228, 255, 0.4) !important;
+  background: rgba(93, 228, 255, 0.1) !important;
+  color: var(--cyan) !important;
+}
+.asset-button {
+  border: 1px solid var(--line-strong) !important;
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+}
+.asset-button:hover { border-color: rgba(93, 228, 255, 0.55) !important; box-shadow: var(--glow) !important; }
+.asset-alert { background: rgba(255, 209, 102, 0.08) !important; color: var(--warn) !important; }
+
+/* tag-assets 自有变量族接管（定义在 .asset-page 上，需更高特异性） */
+body.asset-page {
+  --asset-ink: #e8f1fa;
+  --asset-muted: #93a5ba;
+  --asset-line: rgba(120, 180, 235, 0.14);
+  --asset-paper: rgba(17, 25, 39, 0.94);
+  --asset-paper-soft: rgba(24, 35, 52, 0.9);
+  --asset-blue: #38b6f0;
+  --asset-blue-dark: #5de4ff;
+  --asset-cyan: #5de4ff;
+}
+.asset-alert, .asset-alert-error, .asset-hint-box {
+  border: 1px solid rgba(255, 209, 102, 0.3) !important;
+  background: rgba(255, 209, 102, 0.07) !important;
+  color: #e8cf9a !important;
+}
+.asset-alert b, .asset-alert strong { color: var(--warn) !important; }
+
+.asset-safety {
+  border-color: rgba(93, 228, 255, 0.3) !important;
+  background: rgba(93, 228, 255, 0.07) !important;
+  color: var(--muted) !important;
+}
+.asset-safety strong { color: var(--cyan) !important; }
+
+/* 桌面标题防裁切：收窄字号并允许省略 */
+@media (min-width: 1041px) {
+  .site-header.atlas-gallery-head .hero-title,
+  .hero-title {
+    font-size: clamp(20px, 1.9vw, 26px) !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Favorites / queue: compact shelf chrome (no full gallery search hero) */
+body.mode-favorites .atlas-search-deck,
+body.mode-queue .atlas-search-deck,
+body.mode-favorites .gallery-source-bar,
+body.mode-queue .gallery-source-bar,
+body.mode-favorites #localBanner,
+body.mode-queue #localBanner,
+body.mode-favorites #setupBanner,
+body.mode-queue #setupBanner,
+body.mode-favorites #advancedFilters,
+body.mode-queue #advancedFilters,
+body.mode-favorites #galleryHeroSignals,
+body.mode-queue #galleryHeroSignals,
+body.mode-favorites .atlas-hero-note,
+body.mode-queue .atlas-hero-note {
+  display: none !important;
+}
+
+body.mode-favorites .hero-intro.list-shelf-hero,
+body.mode-queue .hero-intro.list-shelf-hero,
+body.mode-favorites #hero-intro.list-shelf-hero,
+body.mode-queue #hero-intro.list-shelf-hero {
+  margin: 8px 0 12px !important;
+  padding: 12px 14px !important;
+  min-height: 0 !important;
+}
+
+body.mode-favorites .hero-intro .hero-title,
+body.mode-queue .hero-intro .hero-title {
+  font-size: 22px !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+  margin: 0 0 6px !important;
+}
+
+body.mode-favorites .hero-intro .atlas-hero-lead,
+body.mode-favorites .hero-intro .hero-desc,
+body.mode-queue .hero-intro .atlas-hero-lead,
+body.mode-queue .hero-intro .hero-desc {
+  font-size: 13px !important;
+  margin: 0 !important;
+  max-width: 52rem !important;
+}
+
+body.mode-favorites .atlas-gallery-head,
+body.mode-queue .atlas-gallery-head {
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}

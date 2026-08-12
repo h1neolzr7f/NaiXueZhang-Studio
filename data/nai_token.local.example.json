@@ -1,0 +1,20 @@
+{
+  "token": "",
+  "tokens": [
+    {
+      "provider": "novelai",
+      "label": "NAI #1",
+      "token": "pst-...",
+      "enabled": true
+    },
+    {
+      "provider": "xianyun",
+      "label": "Xianyun #1",
+      "token": "xianyun-api-key",
+      "enabled": true,
+      "api_base": "https://api.idlecloud.cc/api",
+      "proxy": ""
+    }
+  ],
+  "updated_at": ""
+}

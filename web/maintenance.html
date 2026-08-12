@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070a11" />
+  <title>Nai学长工作室 · 维护站</title>
+  <link rel="stylesheet" href="/assets/core-theme.css?v=0158aeb657" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
+</head>
+<body data-ui="nai-atlas" data-page="maintenance">
+  <nav class="atlas-nav" id="siteNav" aria-label="主导航"></nav>
+  <main class="atlas-shell">
+
+    <header class="page-heading">
+      <div>
+        <span class="eyebrow blue">System upkeep · RECOVERABLE</span>
+        <h1>图库维护站</h1>
+      </div>
+      <p>把容量、缩略图、分类索引、孤儿文件和离线快照放在一个可核对的控制面板里。每次操作都会留下易读回执。</p>
+    </header>
+
+    <section class="maintenance-overview panel-paper" aria-labelledby="storageTitle">
+      <div>
+        <span class="micro-label">Local asset footprint</span>
+        <h2 id="storageTitle">当前图库占用</h2>
+        <div class="storage-value" id="assetSize">—</div>
+        <p id="storageDetail">正在读取存储状态…</p>
+      </div>
+      <div>
+        <div class="section-head">
+          <span class="micro-label">Quota meter</span>
+          <button class="atlas-button ghost" id="refreshStorage" type="button">刷新</button>
+        </div>
+        <div class="storage-meter" role="meter" aria-label="图库容量使用率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="storageMeter"></span>
+        </div>
+        <p class="safety-note">没有设置图库上限时，进度条按当前磁盘已用空间估算；设置上限后按图库配额计算。</p>
+      </div>
+    </section>
+
+    <section class="maintenance-grid" aria-label="维护操作">
+      <article class="maintenance-card">
+        <span class="module-number">M01 / PREVIEW LAYER</span>
+        <div><h2>补齐缩略图</h2><p>为缺失预览的原图生成最长边 512px 的 WebP，降低列表滚动时的磁盘和内存压力。</p></div>
+        <div class="action-row"><button class="atlas-button blue" id="rebuildThumbs" type="button">开始补齐</button></div>
+      </article>
+      <article class="maintenance-card">
+        <span class="module-number">M02 / TAXONOMY</span>
+        <div><h2>重建 NAI 分类</h2><p>重新解析已验证原图里的提示词，建立角色、系列、画师、动作、服装、场景和构图索引。</p></div>
+        <div class="action-row"><button class="atlas-button secondary" id="rebuildNaiTags" type="button">重建图谱</button></div>
+      </article>
+      <article class="maintenance-card">
+        <span class="module-number">M03 / RECONCILE</span>
+        <div><h2>核对孤儿文件</h2><p>先列出数据库没有引用的原图和缩略图；只有再次确认后才执行永久清理。</p></div>
+        <div class="action-row">
+          <button class="atlas-button secondary" id="previewOrphans" type="button">只预览</button>
+          <button class="atlas-button danger" id="cleanOrphans" type="button">确认清理</button>
+        </div>
+      </article>
+      <article class="maintenance-card">
+        <span class="module-number">M04 / SNAPSHOT</span>
+        <div><h2>创建离线快照</h2><p>使用 SQLite 在线备份并记录每个图库资产的 SHA-256；Pixiv 账号凭据不会被打进快照。</p></div>
+        <div class="action-row"><button class="atlas-button" id="createSnapshot" type="button">立即备份</button></div>
+        <p class="safety-note">恢复时先关闭图库，再把快照 ZIP 拖到 RESTORE_GALLERY.bat。恢复失败会自动回滚。</p>
+      </article>
+      <article class="maintenance-card">
+        <span class="module-number">M05 / PERMANENT SKIPS</span>
+        <div>
+          <h2>无数据永久跳过</h2>
+          <p>查看因缺少 NAI 元数据而被记录、以后不再重复下载的作品；可顺带清理爬虫 staging 残留。</p>
+          <p id="permanentSkipSummary" class="safety-note">尚未读取。</p>
+        </div>
+        <div class="action-row">
+          <button class="atlas-button secondary" id="refreshPermanentSkips" type="button">查看跳过清单</button>
+          <button class="atlas-button secondary" id="previewStaging" type="button">预览 staging</button>
+          <button class="atlas-button danger" id="cleanStaging" type="button">清理 staging</button>
+        </div>
+      </article>
+      <article class="maintenance-card">
+        <span class="module-number">M06 / WEBP MIGRATE</span>
+        <div>
+          <h2>旧原图压缩迁移</h2>
+          <p>把库里已有的 PNG/JPEG 原图批量转成 WebP（元数据仍在数据库）。先预估体积，再确认执行。</p>
+        </div>
+        <div class="action-row">
+          <button class="atlas-button secondary" id="previewWebpMigrate" type="button">只预估</button>
+          <button class="atlas-button blue" id="runWebpMigrate" type="button">确认迁移</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="receipt-console" aria-labelledby="receiptTitle">
+      <div>
+        <span class="micro-label">Operation receipt</span>
+        <h2 id="receiptTitle">最近回执</h2>
+        <p id="message" class="action-message" role="status" aria-live="polite">尚未执行维护操作。</p>
+      </div>
+      <ul id="receiptList" class="receipt-list"><li><span>状态</span><strong>等待操作</strong></li></ul>
+    </section>
+  </main>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/gallery-maintenance.js?v=ec37bf05fa"></script>
+</body>
+</html>

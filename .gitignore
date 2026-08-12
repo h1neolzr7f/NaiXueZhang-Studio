@@ -1,0 +1,103 @@
+# Local configuration and credentials
+config.json
+progress.md
+
+# Internal working docs (local paths, review notes)
+findings.md
+task_plan.md
+DEBT.md
+BUG_REPORT.md
+CONTEXT.md
+notes/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime/user state and generated material
+runtime/
+logs/
+scripts/logs/
+backups/
+reports/
+cases/
+data/
+!data/
+# data/ is deny-by-default. Only reviewed, reproducible seeds and empty
+# credential examples may enter a public repository.
+data/*
+# Kept explicit for quality gates and reviewers even though data/* is deny-all.
+data/user_prefs.json
+data/galleries/
+!data/ark_char_library.json
+!data/butler_catalog.json
+!data/char_presets.json
+!data/char_tag_groups.json
+!data/char_tag_index.json
+!data/danbooru_arknights.json
+!data/danbooru_creature.json
+!data/danbooru_recognition.json
+!data/danbooru_style_tags.json
+!data/director_catalog.json
+!data/pixiv_upload_selectors.json
+!data/sanitize_blocklist.json
+!data/tag_dict.json
+!data/nai_token.local.example.json
+!data/pixiv_accounts.local.example.json
+!data/ai.local.example.json
+!data/pixiv_launch.sample.json
+!data/post_pipeline.sample.json
+!data/seed_manifest.json
+!data/.gitkeep
+
+# Source/editor backups must not be served or published
+web.backup*/
+*.bak
+*.bak-*
+*.backup
+*.backup-*
+*.old
+*.orig
+*~
+
+# Logs, databases, archives and generated artifacts outside data/
+*.log
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.zip
+*.7z
+*.bug.log
+*.trace.log
+pyarmor.bug.log
+.pixiv-nai-release-stage
+release_manifest.json
+verify_hashes_*.json
+
+# Build, test and tool state
+dist/
+release/
+output/
+work/
+update/
+packaging/build/
+packaging/dist/
+.playwright-cli/
+.pytest_cache/
+.pyarmor/
+node_modules/
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Local profiling/repair helpers
+_check_mosaic*.py
+_eta*.py
+_prof_swap*.py

@@ -1,0 +1,89 @@
+{
+  "gender_male": ["1boy", "2boys", "3boys", "male_focus", "boys_only", "yaoi"],
+  "gender_female": ["1girl", "2girls", "3girls", "female_focus", "girls_only", "yuri"],
+  "body": [
+    "muscular", "tall", "short", "petite", "slim", "curvy", "plump", "fat",
+    "small_breasts", "medium_breasts", "large_breasts", "huge_breasts",
+    "flat_chest", "futanari", "thick_thighs", "wide_hips", "abs", "toned",
+    "skinny", "chubby", "mature_female", "mature_male", "loli", "shota"
+  ],
+  "appearance_suffixes": ["_hair", "_eyes", "_skin", "_ears", "_tail", " hair", " eyes", " skin", " ears"],
+  "face_strip_exact": [
+    "face", "facial_hair", "beard", "mustache", "stubble", "goatee", "sideburns",
+    "portrait", "close-up", "close_up",
+    "blush", "nose_blush", "full-face_blush", "cheek_bulge",
+    "smile", "grin", "smirk", "frown", "pout", "light_smile",
+    "open_mouth", "closed_mouth", "mouth_hold", "mouth_drool", "saliva",
+    "tongue", "tongue_out", "teeth", "fang", "fangs", "clenched_teeth",
+    "crying", "tears", "streaming_tears", "crying_with_eyes_open",
+    "eyelashes", "eyeshadow", "lipstick", "makeup", "lipgloss",
+    "eye_contact", "ahegao", "torogao", "expressionless",
+    "glasses", "eyepatch", "sunglasses", "goggles_on_head",
+    "looking_at_viewer", "looking_at_another", "looking_back", "looking_down",
+    "looking_up", "looking_to_the_side", "looking_away", "staring",
+    "heterochromia", "one_eye_closed", "wink", "closed_eyes", "half-closed_eyes",
+    "wide-eyed", "narrowed_eyes", "rolling_eyes", "blank_eyes", "empty_eyes",
+    "hair_over_eyes", "hair_between_eyes", "eyes_visible_through_hair",
+    "forehead", "cheeks", "chin", "jaw", "lips", "nose"
+  ],
+  "face_strip_substrings": [
+    "_eyes", "_eye", "_pupil", "_eyebrow", "_lash", "_mouth", "_lips", "_lip",
+    "_teeth", "_nose", "_cheek", "_face", "_jaw", "_chin", "_forehead",
+    "looking_at_", "closed_eye", "half-closed", "wide-eyed", "narrowed_eye"
+  ],
+  "face_keep_exact": ["faceless", "hood", "hood_up", "hooded", "no_face", "hidden_face"],
+  "appearance_exact": [
+    "horns", "animal_ears", "cat_ears", "fox_ears", "rabbit_ears",
+    "long_hair", "short_hair", "medium_hair", "very_long_hair",
+    "blonde_hair", "silver_hair", "white_hair", "black_hair", "brown_hair",
+    "red_hair", "blue_hair", "pink_hair", "purple_hair", "green_hair",
+    "grey_hair", "multicolored_hair", "gradient_hair",
+    "red_eyes", "blue_eyes", "green_eyes", "yellow_eyes", "purple_eyes",
+    "heterochromia", "glasses", "eyepatch", "fang", "blush"
+  ],
+  "action_prefixes": ["source#", "target#", "mutual#"],
+  "creature": [
+    "horse", "pony", "unicorn", "centaur", "donkey", "mule", "zebra", "equine",
+    "horse_girl", "horse_boy", "horse_humanoid", "umamusume",
+    "dog", "dogs", "black_dog", "white_dog", "wolf", "wolves", "canine", "canines",
+    "knot", "knotted", "knotting",
+    "insect", "bug", "spider", "arthropod", "bee", "wasp", "butterfly", "moth",
+    "ant", "larva", "caterpillar", "mosquito", "fly", "dragonfly", "beetle",
+    "scorpion", "centipede", "millipede", "cricket", "grasshopper", "locust",
+    "alien", "extraterrestrial", "monster", "creature", "eldritch_abomination",
+    "interspecies", "bestiality", "feral", "quadruped", "animalization",
+    "slime", "slime_(creature)", "tentacles", "tentacle", "tentacle_sex",
+    "snake", "serpent", "pig", "boar", "sheep", "cow", "bull", "goat",
+    "frog", "lizard", "crocodile", "octopus", "squid",
+    "furry", "kemono", "animal", "beast", "kaiju",
+    "parasite", "parasitic", "oviposition", "egg_laying", "ovipositor",
+    "body_horror", "zoophilia", "beastiality"
+  ],
+  "creature_substrings": [
+    "horse", "pony", "equine", "dog", "wolf", "canine", "knot",
+    "insect", "bug", "spider", "arthropod",
+    "alien", "monster", "interspecies", "bestiality", "feral", "quadruped",
+    "tentacle", "slime", "serpent", "centaur", "kaiju", "parasit", "ovipos",
+    "animalization", "beastiality", "zoophilia"
+  ],
+  "creature_exclude_exact": [
+    "cowboy", "cowboy_shot", "cowboy shot", "cowboy_hat", "cowboy_boots", "cowboy_western",
+    "cowboy_bebop", "cowboy_fringe", "upper_body", "lower_body", "full_body",
+    "portrait", "close-up", "close_up", "closeup", "wide_shot", "medium_shot",
+    "full_shot", "very_wide_shot", "aerial_view", "birds-eye_view", "bird's-eye_view",
+    "from_above", "from_below", "from_side", "from_behind", "from_outside",
+    "dutch_angle", "fisheye", "pov", "first-person_view", "third-person_view",
+    "cropped", "out_of_frame", "head_out_of_frame", "feet_out_of_frame",
+    "multiple_views", "split_screen", "zoom_layer", "silhouette", "asymmetrical_framing",
+    "camera", "film_grain", "depth_of_field", "bokeh", "motion_blur", "motion_lines",
+    "perspective", "vanishing_point", "foreshortening", "panorama", "wide-angle",
+    "wide_angle", "telephoto", "macro", "selfie", "mirror_selfie", "reflection"
+  ],
+  "framing_suffixes": ["_shot", "_body", "_angle", "_view", "_framing"],
+  "character_appearance_defaults": {
+    "togawa sakiko": ["blonde hair", "long hair", "yellow eyes"],
+    "togawa_sakiko": ["blonde hair", "long hair", "yellow eyes"],
+    "nagasaki soyo": ["light pink hair", "long hair", "green eyes"],
+    "nagasaki_soyo": ["light pink hair", "long hair", "green eyes"]
+  }
+}

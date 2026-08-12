@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pipeline 工作台</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <style>
+    body { background:#0f1117; color:#e8eaf0; }
+    .wrap { max-width:1100px; margin:0 auto; padding:22px; }
+    .panel { background:#151923; border:1px solid #263044; border-radius:14px; padding:16px; margin:14px 0; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+    .card { background:#101620; border:1px solid #263044; border-radius:12px; padding:12px; }
+    button { background:#2563eb; color:white; border:0; border-radius:10px; padding:10px 14px; cursor:pointer; }
+    pre { white-space:pre-wrap; overflow:auto; background:#0b0d12; border-radius:12px; padding:12px; }
+    .muted { color:#9aa7bd; }
+  </style>
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body>
+  <nav id="siteNav"></nav>
+  <main class="wrap">
+    <h1>Pipeline 工作台</h1>
+    <p class="muted">后处理、打码、放大、发布前检查的可视化入口。当前版本聚合已有 pipeline API。</p>
+    <section class="panel">
+      <button id="refreshPipeline">刷新状态</button>
+      <a href="/generated" style="margin-left:12px;color:#93c5fd">打开生成图库</a>
+    </section>
+    <section class="grid">
+      <div class="card"><h2>配置</h2><pre id="pipelineConfig">加载中...</pre></div>
+      <div class="card"><h2>运行状态</h2><pre id="pipelineStatus">加载中...</pre></div>
+      <div class="card"><h2>待处理队列</h2><pre id="pipelineBacklog">加载中...</pre></div>
+    </section>
+  </main>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/pipeline.js?v=56de1e4b48"></script>
+</body>
+</html>

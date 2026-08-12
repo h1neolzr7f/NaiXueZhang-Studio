@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>小镜 · 图库智能管家</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/butler.css?v=a24ee4595a" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body class="butler-body">
+  <nav id="siteNav"></nav>
+  <main class="butler-page">
+    <header class="butler-hero">
+      <div>
+        <p class="butler-kicker">你的本地图库伙伴</p>
+        <h1><span data-assistant-name>小镜</span> <span class="butler-title-soft">· 图库智能管家</span></h1>
+        <p>像聊天一样告诉我你想找什么、生成什么。复杂步骤我来拆解，花钱、写入或投稿前一定先问你。</p>
+      </div>
+      <div class="butler-hero-side">
+        <div class="butler-readiness" id="butlerReadiness" aria-live="polite">正在检查能力…</div>
+        <a class="butler-settings-link" href="/settings#ai-service">配置 API 与模型 <span>→</span></a>
+      </div>
+    </header>
+
+    <section class="butler-start-guide" id="butlerStartGuide" aria-labelledby="butlerStartTitle">
+      <div class="butler-start-copy">
+        <span>从这里开始</span>
+        <strong id="butlerStartTitle">先选一个目标，再补充范围</strong>
+        <small>下面的快捷任务只填入，不会立即执行；涉及生图、写入或投稿时，小镜仍会再次确认。</small>
+      </div>
+      <div class="butler-start-actions">
+        <button type="button" data-command="帮我检查图库状态，并告诉我最需要先处理的三件事"><b>检查</b><span>先看图库状态</span></button>
+        <button type="button" data-command="帮我找适合继续生成的热门素材，先给候选，不要执行生图"><b>找图</b><span>先给候选素材</span></button>
+        <button type="button" data-command="把最新的生成结果整理成 Pixiv 投稿草稿，不要上传"><b>投稿</b><span>只准备草稿</span></button>
+      </div>
+    </section>
+
+    <section class="butler-layout">
+      <aside class="butler-avatar-panel" id="assistantPortrait" aria-label="小镜的 Live2D 伙伴形象">
+        <div class="butler-stage-head">
+          <div>
+            <span class="butler-live-dot" aria-hidden="true"></span>
+            <strong><span data-assistant-name>小镜</span> · LIVE</strong>
+          </div>
+          <button type="button" class="butler-companion-toggle" id="toggleLive2d" hidden>隐藏形象</button>
+        </div>
+        <div class="butler-stage-shell">
+          <div class="butler-stage-grid" aria-hidden="true"></div>
+          <div class="butler-stage-aura" aria-hidden="true"></div>
+          <div class="butler-live2d-stage" id="live2dStage">
+            <div class="butler-companion-fallback" id="live2dFallback" aria-hidden="true">
+              <span>镜</span>
+              <small>你的图库伙伴</small>
+            </div>
+          </div>
+          <div class="butler-stage-nameplate">
+            <span>AITAG COMPANION</span>
+            <strong data-assistant-name>小镜</strong>
+          </div>
+        </div>
+        <div class="butler-companion-status" data-mood="ready">
+          <span class="butler-status-orb" aria-hidden="true"></span>
+          <p id="assistantMood" aria-live="polite">正在为你整理工作台…</p>
+        </div>
+        <div class="butler-stage-shortcuts">
+          <a href="/settings#ai-service"><strong>API 设置</strong><span>一次配置，全局使用</span></a>
+          <button type="button" id="stageAttachImage"><strong>让她看图</strong><span>识别、评价、给建议</span></button>
+          <button type="button" id="stageAuditGallery" class="wide"><strong>检查图库状态</strong><span>不识图，检查缺图、索引和采集状态</span></button>
+        </div>
+      </aside>
+
+      <div class="butler-chat-panel">
+        <div class="butler-chat-head">
+          <div>
+            <strong>和<span data-assistant-name>小镜</span>聊聊</strong>
+            <span id="butlerModel">模型未读取</span>
+          </div>
+          <div class="butler-chat-actions">
+            <button type="button" class="butler-ghost" id="loadOlderHistory" hidden>更早记录</button>
+            <button type="button" class="butler-ghost" id="clearChat">清空记录</button>
+          </div>
+        </div>
+
+        <div class="butler-messages" id="butlerMessages" aria-live="polite" aria-label="与小镜的对话">
+          <article class="butler-message assistant" data-welcome-message>
+            <div class="butler-avatar" aria-hidden="true">镜</div>
+            <div class="butler-bubble">
+              <p>欢迎回来呀。告诉我你想找的作品，或者想完成的图库任务，剩下的交给我就好。</p>
+            </div>
+          </article>
+        </div>
+
+        <section class="butler-compare-workspace" id="butlerCompareWorkspace" aria-label="固定候选对比工作区">
+          <div class="butler-compare-head">
+            <div><strong>固定候选对比</strong><span id="butlerCompareCount">0/4 · 先从搜索结果加入图片</span></div>
+            <button type="button" id="clearGalleryCompare">清空</button>
+          </div>
+          <div class="butler-compare-grid" id="butlerCompareGrid">
+            <div class="butler-compare-empty">候选会固定保存在本机；加入、移除和查看都不会消耗 Token。</div>
+          </div>
+          <div class="butler-compare-actions">
+            <input id="galleryCompareQuestion" maxlength="300" value="这几张哪个更好看？请比较构图、完成度和明显不足。" aria-label="比较标准" />
+            <button type="button" id="runGalleryCompare" disabled>请小镜比较 · 会调用识图</button>
+          </div>
+        </section>
+
+        <div class="butler-template-tools">
+          <div><strong>常用任务</strong><span>点击只会填入，不会立即执行</span></div>
+          <button type="button" id="saveTemplateBtn">保存当前指令</button>
+        </div>
+        <div class="butler-examples" id="butlerTemplates" aria-label="常用任务">
+          <button type="button" data-command="找最近一个月收藏最多的 6 个明日方舟作品">找热门素材</button>
+          <button type="button" data-command="把待生成队列里的作品每个生成 3 张，steps 32、scale 5.5">批量调参生图</button>
+          <button type="button" data-command="把网站图库作品 145765334 的全部图片换成 Granblue 画风，每张生成 2 张">换画风生成</button>
+          <button type="button" data-command="查看我的收藏，然后把网站图库作品 145765334 加入收藏">管理收藏</button>
+          <button type="button" data-command="按全局配置补跑所有缺失的后处理，完成后报告成功和失败数量">补跑后处理</button>
+          <button type="button" data-command="把待生成队列里的作品每个生成 2 张，生成完补齐后处理和 Pixiv 标题、简介、标签，最后等我上传">生成并准备投稿</button>
+          <button type="button" data-command="把最新 3 个生成系列合并准备成一篇 Pixiv 多页投稿，不要上传">整理投稿草稿</button>
+        </div>
+
+        <form class="butler-composer" id="butlerForm">
+          <label for="butlerInput">想让<span data-assistant-name>小镜</span>帮你做什么？</label>
+          <div class="butler-image-preview" id="imagePreview" hidden>
+            <img id="imagePreviewThumb" alt="待识别图片预览" />
+            <div><strong id="imagePreviewName">已选择图片</strong><span>发送时临时识别，不写入聊天数据库</span></div>
+            <button type="button" id="removeImage" aria-label="移除图片">移除</button>
+          </div>
+          <div class="butler-composer-row">
+            <label class="butler-attach-button" for="imageInput" title="添加一张图片">
+              <span aria-hidden="true">＋</span><span>图片</span>
+            </label>
+            <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            <textarea id="butlerInput" maxlength="4000" rows="3" placeholder="例如：从待生成里挑 10 个作品，每个出 2 张横图，steps 30；完成后跑完后处理并准备投稿，等我最后上传。"></textarea>
+            <button type="submit" id="butlerSend">发送</button>
+          </div>
+          <small>Enter 发送 · Shift+Enter 换行 · 图片会先在浏览器压缩 · 文字对话保存在本机</small>
+        </form>
+      </div>
+
+      <aside class="butler-rail">
+        <section class="butler-rail-card butler-task-center" id="taskCenter">
+          <div class="butler-card-title">
+            <h2>任务中心</h2>
+            <button type="button" class="butler-link-button" id="refreshTasks">刷新</button>
+          </div>
+          <div class="butler-card-title butler-latest-title"><strong>最近任务</strong><span id="workflowBadge">空闲</span></div>
+          <div id="workflowPanel" class="butler-workflow">暂无管家后台任务</div>
+          <div id="taskList" class="butler-task-list" aria-label="小镜任务列表"></div>
+          <div id="taskDetail" class="butler-task-detail" aria-live="polite"></div>
+        </section>
+
+        <details class="butler-rail-card butler-collapsible">
+          <summary class="butler-card-title"><strong>已掌握的技能</strong><span id="skillCount">0</span></summary>
+          <div id="skillList" class="butler-skill-list"></div>
+        </details>
+
+        <section class="butler-rail-card">
+          <div class="butler-card-title"><h2>安全边界</h2></div>
+          <ul class="butler-safety-list">
+            <li><span class="dot auto"></span>找图和整理草稿可以自动完成</li>
+            <li><span class="dot confirm"></span>生图、收藏、删除成果、采集和投稿准备会先问你</li>
+            <li><span class="dot locked"></span>真实上传、账号和密钥始终由你控制</li>
+          </ul>
+        </section>
+
+        <details class="butler-rail-card butler-collapsible">
+          <summary class="butler-card-title"><strong>脱敏执行记录</strong><span>本机</span></summary>
+          <div id="auditList" class="butler-audit-list">暂无记录</div>
+        </details>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/comparison-workspace.js?v=5f74cfb2d6"></script>
+  <script src="/assets/butler.js?v=f853e8c255"></script>
+</body>
+</html>
