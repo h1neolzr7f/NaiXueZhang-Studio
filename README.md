@@ -6,13 +6,13 @@
 
 **素材发现 · NAI 元数据验证 · Prompt 资产管理 · 角色换角 · 批量生成 · 后处理 · Pixiv 发布**
 
-[![Tests](https://github.com/h1neolzr7f/pixiv-nai-gallery/actions/workflows/tests.yml/badge.svg)](https://github.com/h1neolzr7f/pixiv-nai-gallery/actions/workflows/tests.yml)
+[![Tests](https://github.com/h1neolzr7f/NaiXueZhang-Studio/actions/workflows/tests.yml/badge.svg)](https://github.com/h1neolzr7f/NaiXueZhang-Studio/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Local First](https://img.shields.io/badge/Privacy-Local--first-7A5AF8)
 
-[下载 Releases](https://github.com/h1neolzr7f/pixiv-nai-gallery/releases) ·
+[下载 Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) ·
 [查看路线图](ROADMAP.md) ·
 [参与贡献](CONTRIBUTING.md) ·
 [责任与来源](RESPONSIBLE_USE.md)
@@ -40,6 +40,20 @@ flowchart LR
     H --> D
     H --> E
 ```
+
+## 界面预览
+
+当前深色工作台（2026-08 构建）：
+
+<p align="center">
+  <img src="docs/screenshots/01-gallery.png" alt="本地图库：检索、作品流与灵感栏" width="900">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/02-studio.png" alt="生图工作台：咒语编辑与生成参数" width="440">
+  &nbsp;
+  <img src="docs/screenshots/03-butler.png" alt="小镜管家：对话拆解本地图库任务" width="440">
+</p>
 
 ## ✨ 核心亮点
 
@@ -73,7 +87,7 @@ flowchart LR
 
 ### 方式一：下载 Windows 版本
 
-从 [Releases](https://github.com/h1neolzr7f/pixiv-nai-gallery/releases) 下载便携包或单文件 EXE。程序启动后会打开：
+从 [Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) 下载便携包或单文件 EXE。程序启动后会打开：
 
 ```text
 http://127.0.0.1:8797/
@@ -86,8 +100,8 @@ http://127.0.0.1:8797/
 需要 Windows 10/11 与 Python 3.13：
 
 ```powershell
-git clone https://github.com/h1neolzr7f/pixiv-nai-gallery.git
-cd pixiv-nai-gallery
+git clone https://github.com/h1neolzr7f/NaiXueZhang-Studio.git
+cd NaiXueZhang-Studio
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.core.lock.txt
