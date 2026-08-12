@@ -1,0 +1,89 @@
+"""将 config 中的相对路径解析为基于项目根目录的绝对路径。"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+_DATA_DIR_CACHE: Path | None = None
+
+
+def project_root() -> Path:
+    """Runtime data root. In a frozen bundle this is the directory that holds
+    the executable (writable); in source mode it is the project directory."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+def bundled_web_dir() -> Path | None:
+    """Directory of bundled web assets inside a PyInstaller onefile bundle."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    if getattr(sys, "frozen", False) and meipass:
+        candidate = Path(meipass) / "web"
+        if candidate.is_dir():
+            return candidate
+    return None
+
+
+def resolve_path(root: Path, value: str | Path) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else (root / path).resolve()
+
+
+def normalize_config(config: dict, root: Path | None = None) -> dict:
+    root = root or project_root()
+    out = dict(config)
+    for key in ("data_dir", "web_dir"):
+        if key in out and out[key]:
+            out[key] = str(resolve_path(root, out[key]))
+    return out
+
+
+def data_dir(root: Path | None = None) -> Path:
+    """读取 config.json 的 data_dir（已解析为绝对路径）。"""
+    global _DATA_DIR_CACHE
+    if _DATA_DIR_CACHE is not None:
+        return _DATA_DIR_CACHE
+    root = root or project_root()
+    config_path = root / "config.json"
+    if config_path.exists():
+        cfg = normalize_config(
+            json.loads(config_path.read_text(encoding="utf-8")),
+            root,
+        )
+        _DATA_DIR_CACHE = Path(cfg["data_dir"])
+    else:
+        _DATA_DIR_CACHE = (root / "data").resolve()
+    return _DATA_DIR_CACHE
+
+
+def normalize_image_relative(path: str | None) -> str:
+    """把 work_images.local_path 统一为相对 images_dir 的形式。
+
+    历史写入存在两种约定：intake 写 ``NAI/...``（相对 images_dir），
+    旧 crawler 写 ``images/NAI/...``（相对 data_dir）。读取侧一律先过这个
+    函数再拼接 images_dir；新写入必须直接使用本函数输出的规范形式。
+    """
+
+    relative = str(path or "").replace("\\", "/").lstrip("/")
+    for prefix in ("data/images/", "images/"):
+        if relative.startswith(prefix):
+            relative = relative[len(prefix) :]
+            break
+    return relative
+
+
+def storage_paths(config: dict, root: Path | None = None) -> dict[str, str]:
+    """返回图库相关目录的绝对路径（供进度页/图库页展示）。"""
+    root = root or project_root()
+    cfg = normalize_config(config, root)
+    data_dir = Path(cfg["data_dir"])
+    return {
+        "project_root": str(root.resolve()),
+        "data_dir": str(data_dir),
+        "images_dir": str(data_dir / "images"),
+        "database_path": str(data_dir / "aitag.db"),
+        "generated_dir": str(data_dir / "generated"),
+    }

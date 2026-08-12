@@ -1,0 +1,42 @@
+﻿{
+    "schema_version":  1,
+    "release_profile":  "full",
+    "generation_calls":  0,
+    "files":  [
+                  {
+                      "path":  "data/ark_char_library.json",
+                      "bytes":  653560,
+                      "sha256":  "89c825b157fbbe038340aac2dd97ada619069a9dc431949c2663c188054a8632"
+                  },
+                  {
+                      "path":  "data/char_presets.json",
+                      "bytes":  1713,
+                      "sha256":  "1cc45d32ec5b864b2a8437420254ac0d6bfa182052ba310532d623784bdd3736"
+                  },
+                  {
+                      "path":  "data/char_tag_index.json",
+                      "bytes":  11039317,
+                      "sha256":  "f61014c2835807d4ecab87831b9c299f3705a1a26d922215d494d337efbf57a0"
+                  },
+                  {
+                      "path":  "data/danbooru_arknights.json",
+                      "bytes":  73327,
+                      "sha256":  "c895bc40b28fd2235ab54653491990d1d75c56f932a2d86b5651a24d6a403b44"
+                  },
+                  {
+                      "path":  "data/danbooru_creature.json",
+                      "bytes":  255331,
+                      "sha256":  "c61272a2ef5feb7db1d4a3dd9b177b2eb27f5d360cb6dfca159ebbd673e354a1"
+                  },
+                  {
+                      "path":  "data/danbooru_recognition.json",
+                      "bytes":  10766600,
+                      "sha256":  "7e8d863bdf9f1dcd85f72f0f90ec4e785a979e2532888be3add640444f8203bc"
+                  },
+                  {
+                      "path":  "data/danbooru_style_tags.json",
+                      "bytes":  788,
+                      "sha256":  "df3b14e25e303df5cb614c87ab6e0487153b10fe147fb50df65bba421adeb25d"
+                  }
+              ]
+}

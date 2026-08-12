@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>换角洗稿 | NAI Remix</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/studio.css?v=e72ee264f7" />
+  <link rel="stylesheet" href="/assets/workflow-pages.css?v=d45735e67c" />
+  <link rel="stylesheet" href="/assets/plugins/char-swap/char-swap.css?v=220e25d883" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body>
+  <div id="siteNav"></div>
+  <div class="remix-shell">
+    <header class="remix-head">
+      <div>
+        <span class="workflow-eyebrow">角色与画风</span>
+        <h1>换角洗稿</h1>
+        <p>从作品详情直接开始换角；原图和原始咒语不会被修改。</p>
+      </div>
+      <a href="/" class="workflow-link-secondary">返回图库</a>
+    </header>
+    <section class="workflow-empty-card remix-empty" id="remixEmpty">
+      <div class="workflow-empty-icon" aria-hidden="true">↻</div>
+      <div>
+        <h2>选择一件作品开始换角</h2>
+        <p>推荐先在图库中打开作品详情，再点「角色换角」；会直接展开该作品的角色与画风草稿。</p>
+        <div class="workflow-empty-actions">
+          <a class="workflow-primary-link" href="/">去图库选择作品</a>
+          <span>不会自动替你选择近期作品</span>
+        </div>
+      </div>
+    </section>
+    <form class="remix-loader" id="remixLoader" aria-busy="false" novalidate>
+      <div>
+        <h2>或者，直接输入作品 ID</h2>
+        <p>适合已经知道作品编号时快速载入，支持完整长 ID。</p>
+      </div>
+      <div class="remix-loader-controls">
+        <label class="workflow-sr-only" for="remixWorkId">作品 ID</label>
+        <input id="remixWorkId" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="作品 ID" placeholder="作品 ID" />
+        <button type="submit" class="studio-btn primary" id="remixLoadBtn">加载作品</button>
+      </div>
+      <div class="remix-status" id="remixStatus" role="status" aria-live="polite"></div>
+    </form>
+    <div id="remixHost"></div>
+  </div>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/work-bridge.js?v=e03f149e05"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/remix.js?v=7aac6493e3"></script>
+</body>
+</html>

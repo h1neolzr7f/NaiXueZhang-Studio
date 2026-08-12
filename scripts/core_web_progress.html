@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#eaf4fb" />
+  <title>Nai学长工作室 · 采集舱</title>
+  <link rel="stylesheet" href="/assets/core-theme.css" />
+</head>
+<body data-ui="nai-atlas" data-page="intake">
+  <main class="atlas-shell">
+    <nav class="atlas-nav" aria-label="主导航">
+      <a class="atlas-brand" href="/" aria-label="Nai学长工作室 首页">
+        <span class="atlas-brand-mark" aria-hidden="true">NA</span>
+        <span class="atlas-brand-copy"><strong>Nai学长工作室</strong><small>local visual archive</small></span>
+      </a>
+      <div class="atlas-links">
+        <a href="/">图库</a>
+        <a href="/nai-tags">分类图谱</a>
+        <a href="/progress" aria-current="page">采集舱</a>
+        <a href="/maintenance">维护站</a>
+      </div>
+      <span class="atlas-local-badge">凭据仅存本机</span>
+    </nav>
+
+    <header class="page-heading">
+      <div>
+        <span class="eyebrow blue">Intake control · PIXIV</span>
+        <h1>采集任务舱</h1>
+      </div>
+      <p>先用只读预检确认来源和 NAI 命中率，再决定单轮采集或持续监听。只有通过原图元数据验证的内容才会进入图库。</p>
+    </header>
+
+    <div class="intake-layout">
+      <section class="account-vault" aria-labelledby="accountTitle">
+        <header class="module-head">
+          <div>
+            <span class="module-number">01 / LOCAL VAULT</span>
+            <h2 id="accountTitle">Pixiv 账号保险库</h2>
+          </div>
+        </header>
+        <div class="module-body">
+          <div class="form-stack">
+            <label class="field"><span>账号备注</span><input id="accountLabel" placeholder="例如：主账号" autocomplete="off" /></label>
+            <label class="field"><span>Refresh token</span><input id="accountToken" type="password" autocomplete="off" placeholder="保存后不再明文显示" /></label>
+            <label class="field"><span>当前账号</span><select id="accountSelect" aria-label="当前 Pixiv 账号"></select></label>
+          </div>
+          <div class="action-row">
+            <button class="atlas-button blue" id="accountAdd" type="button">保存新账号</button>
+            <button class="atlas-button secondary" id="accountSwitch" type="button">设为当前</button>
+            <button class="atlas-button ghost" id="accountTest" type="button">检测登录</button>
+          </div>
+          <p id="accountMessage" class="action-message" role="status" aria-live="polite"></p>
+          <p class="safety-note">令牌保存在当前安装目录的本地凭据文件中，不会进入备份包或开源发布包。</p>
+        </div>
+      </section>
+
+      <section class="mission-board" id="pixivNaiPanel" aria-labelledby="missionTitle">
+        <header class="module-head coral">
+          <div>
+            <span class="module-number">02 / DISCOVERY MISSION</span>
+            <h2 id="missionTitle">发现任务参数</h2>
+          </div>
+          <label class="toggle-field"><input id="pixivEnabled" type="checkbox" /><span>启用直连采集</span></label>
+        </header>
+        <div class="module-body">
+          <div class="form-grid">
+            <label class="field"><span>账号 ID</span><input id="pixivAccountId" readonly /></label>
+            <label class="field"><span>采集通道</span><select id="pixivSourceMode"><option value="auto">自动：有账号走 API，无账号走公网页面</option><option value="api">Pixiv App API（需要账号）</option><option value="public">Pixiv 公网页面（无需账号）</option></select></label>
+            <label class="field"><span>每轮 API 页数</span><input id="pixivMaxPages" type="number" min="1" max="50" value="3" /></label>
+            <label class="field"><span>每轮作品上限</span><input id="pixivMaxWorks" type="number" min="1" max="1000" value="60" /></label>
+            <label class="field"><span>请求间隔 / 秒（API 最低 0.5）</span><input id="pixivDelay" type="number" min="0" step="0.1" value="1.2" /></label>
+            <label class="field"><span>HTTP 代理（可选）</span><input id="pixivProxy" type="text" placeholder="http://127.0.0.1:7897" autocomplete="off" /></label>
+            <label class="toggle-field"><input id="pixivBrowserMode" type="checkbox" /><span>浏览器渲染（更稳）</span></label>
+            <label class="toggle-field"><input id="pixivThumbOnly" type="checkbox" checked /><span>多页只存首图原图（省空间）</span></label>
+            <label class="field"><span>图库容量 / GiB（0 = 不限）</span><input id="pixivStorageQuotaGiB" type="number" min="0" step="1" value="0" /></label>
+            <label class="toggle-field"><input id="pixivAiPrefilter" type="checkbox" checked /><span>使用 Pixiv AI 标记做下载前预筛</span></label>
+            <label class="field"><span>发现排序</span><select id="pixivSortMode"><option value="date_desc">最新发布</option><option value="popular_desc">收藏热度</option></select></label>
+            <label class="field span-2"><span>搜索标签 / 每行一个</span><textarea id="pixivSearchQueries" placeholder="例如：original\n女の子"></textarea></label>
+            <label class="field"><span>画师 UID / 每行一个</span><textarea id="pixivUserIds" inputmode="numeric"></textarea></label>
+            <label class="toggle-field span-3"><input id="pixivRanking" type="checkbox" /><span>把 Pixiv 日榜加入本轮发现范围</span></label>
+          </div>
+
+          <div class="action-row">
+            <button class="atlas-button secondary" id="pixivSave" type="button">保存参数</button>
+            <button class="atlas-button" id="pixivPreflight" data-target="pixiv" type="button">只读预检</button>
+            <button class="atlas-button blue" id="pixivRunOnce" data-target="pixiv" type="button">运行一轮</button>
+            <button class="atlas-button blue" id="pixivStartWatch" data-target="pixiv" type="button">持续采集</button>
+            <button class="atlas-button danger" id="pixivStop" data-target="pixiv" type="button">停止任务</button>
+          </div>
+          <p id="pixivActionMsg" class="action-message" role="status" aria-live="polite"></p>
+
+          <div class="telemetry-stack">
+            <section class="telemetry-panel">
+              <header><span>只读预检</span><span>NO WRITE</span></header>
+              <pre id="pixivPreflightReport" role="status" aria-live="polite" hidden>尚未运行预检。</pre>
+            </section>
+            <section class="telemetry-panel">
+              <header><span>采集遥测</span><span>AUTO REFRESH · 5S</span></header>
+              <pre id="pixivNaiReport">正在读取最近一次采集报告…</pre>
+              <div class="action-row">
+                <a href="/?gallery=site" target="_blank" rel="noopener">去图库看新入库 →</a>
+                <button class="atlas-button secondary" type="button" id="pixivRetryQuarantine" disabled>重试隔离项</button>
+                <span class="muted" id="pixivQuarantineInfo"></span>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="/assets/shared/api-client.js"></script>
+  <script src="/assets/core-intake.js"></script>
+  <script src="/assets/pixiv-intake-control.js"></script>
+</body>
+</html>

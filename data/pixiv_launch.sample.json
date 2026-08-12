@@ -1,0 +1,56 @@
+{
+  "ai": {
+    "provider": "",
+    "api_base": "",
+    "model": "",
+    "timeout": 120,
+    "max_tokens": 2048
+  },
+  "account": {
+    "persona": {
+      "account_name_suggestion": "",
+      "persona_summary": "",
+      "bio_template": "",
+      "voice_tone": "",
+      "content_pillars": [],
+      "posting_rhythm": "",
+      "tag_strategy": "",
+      "hashtag_style": "",
+      "sample_greetings": "",
+      "source": "manual"
+    },
+    "direction": "",
+    "nickname_hint": "",
+    "style": "",
+    "language": "zh",
+    "default_tags": [],
+    "nsfw_level": "sfw"
+  },
+  "upload": {
+    "restrict": 0,
+    "illust_type": 0,
+    "ai_type": 1,
+    "x_restrict": "none",
+    "browser_headless": false,
+    "use_processed": true,
+    "auto_pipeline": false,
+    "auto_generate_copy": false,
+    "visibility": "private"
+  },
+  "pipeline": {
+    "only_missing": true,
+    "upscale": {
+      "enabled": false,
+      "scale": 2
+    },
+    "mosaic": {
+      "enabled": false
+    },
+    "metadata": {
+      "enabled": true,
+      "custom_note": "",
+      "custom_note_key": "aitag-mirror",
+      "png_text": {}
+    }
+  }
+}

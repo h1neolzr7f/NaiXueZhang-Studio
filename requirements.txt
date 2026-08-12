@@ -1,0 +1,24 @@
+httpx>=0.27.0
+fastapi>=0.115.0
+uvicorn>=0.32.0
+aiofiles>=24.1.0
+aiosqlite>=0.22.1
+Pillow>=10.0.0
+playwright>=1.49.0
+psutil>=7.0.0
+langgraph>=1.2.9
+langgraph-checkpoint-sqlite>=3.1.0
+
+# ANR 打码后处理（post_pipeline mosaic）
+gradio>=5.49.0
+ujson>=5.11.0
+requests>=2.32.0
+loguru>=0.7.3
+python-dotenv>=1.2.0
+numpy>=2.0.0
+send2trash>=1.8.0
+tqdm>=4.67.0
+opencv-python-headless>=4.8.0
+ultralytics>=8.0.0
+pydantic-settings>=2.11.0
+GitPython>=3.1.0

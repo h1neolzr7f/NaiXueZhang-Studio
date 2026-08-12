@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>生图工作台 | NAI Studio</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/shared/motion.css?v=8cc6bd1e71" />
+  <link rel="stylesheet" href="/assets/studio.css?v=e72ee264f7" />
+  <link rel="stylesheet" href="/assets/workflow-pages.css?v=d45735e67c" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body class="studio-body">
+  <div id="siteNav"></div>
+
+  <header class="studio-top">
+    <div class="studio-top-left">
+      <h1>生图工作台</h1>
+      <p>从图库资产出发 · 编辑咒语 · 一键生成（参考 NovelAI / WebUI 布局）</p>
+    </div>
+    <div class="studio-ready" id="studioReady">
+      <span class="studio-chip warn" data-chip="token">Token</span>
+      <span class="studio-chip warn" data-chip="source">来源</span>
+      <span class="studio-chip warn" data-chip="prompt">咒语</span>
+    </div>
+    <div class="studio-top-actions">
+      <a class="studio-btn ghost" href="/">图库</a>
+      <a class="studio-btn ghost" href="/tag-assets">资产工作台</a>
+      <a class="studio-btn ghost" href="/generated">生成结果</a>
+      <a class="studio-btn ghost" href="/settings">设置</a>
+      <details class="studio-more">
+        <summary class="studio-btn ghost">更多</summary>
+        <div class="studio-more-menu">
+          <a class="studio-btn ghost" href="/queue">待生成</a>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <nav class="workflow-steps" aria-label="生图步骤">
+    <a href="#studioAssetStep"><span>1</span><strong>选择来源</strong><small>图库、队列或空白开始</small></a>
+    <a href="#studioPromptStep"><span>2</span><strong>编辑咒语</strong><small>调整角色、场景与参数</small></a>
+    <a href="#studioGenerateStep"><span>3</span><strong>检查并生成</strong><small>确认设置后提交任务</small></a>
+  </nav>
+
+  <div class="studio-shell studio-shell-3">
+    <!-- LEFT: asset + queue -->
+    <aside class="studio-panel studio-col-left" id="studioAssetStep">
+      <div class="studio-panel-head">
+        <h2>资产</h2>
+      </div>
+      <div id="studioSourceBar" class="studio-source-bar">
+        <div id="studioSourceThumb" class="studio-source-thumb"></div>
+        <div class="studio-source-meta">
+          <div id="studioSource" class="studio-source">未选择来源 · 从图库或待生成队列带入</div>
+          <div id="studioAitagPages" class="studio-aitag-pages hidden" aria-label="在线草稿多页"></div>
+          <div class="studio-source-actions">
+            <a id="studioBackDetail" class="studio-btn ghost hidden" href="/">详情</a>
+            <button type="button" class="studio-btn ghost hidden" id="studioRestoreOriginal">恢复原文</button>
+            <button type="button" class="studio-btn ghost" id="studioImportById">按 ID 导入</button>
+            <button type="button" class="studio-btn ghost" id="studioClearSource">空白新建</button>
+          </div>
+        </div>
+      </div>
+
+      <details class="studio-section studio-disclosure" id="studioQueueDisclosure">
+        <summary>从待生成队列导入</summary>
+        <div class="studio-disclosure-body">
+          <div id="studioQueueList" class="studio-queue-list">
+            <div class="studio-muted">加载中…</div>
+          </div>
+          <button type="button" class="studio-btn ghost studio-btn-block" id="studioRefreshQueue">刷新队列</button>
+        </div>
+      </details>
+
+      <details class="studio-section studio-disclosure" id="studioReferenceDisclosure">
+        <summary>添加参考图（可选）</summary>
+        <div class="studio-disclosure-body">
+          <div class="studio-field">
+            <label>作品 ID</label>
+            <div class="studio-ref-row">
+              <input id="studioRefWorkId" type="number" min="1" placeholder="图库 ID" />
+              <button type="button" class="studio-btn" id="studioUseSourceRef">用来源</button>
+            </div>
+          </div>
+          <div class="studio-field">
+            <label for="studioVibeUrl">Vibe URL（闲云风格）</label>
+            <input id="studioVibeUrl" type="text" placeholder="https://… 或 /data/images/…" />
+          </div>
+          <div class="studio-field">
+            <label for="studioCharRefUrl">角色参考 URL</label>
+            <input id="studioCharRefUrl" type="text" placeholder="可选" />
+          </div>
+          <div class="studio-field">
+            <label for="studioVibeStrength">参考强度 <span id="studioStrengthVal">0.60</span></label>
+            <input id="studioVibeStrength" type="range" min="0" max="1" step="0.05" value="0.6" />
+          </div>
+          <div class="studio-ref-actions">
+            <button type="button" class="studio-btn" id="studioApplyVibe">应用 Vibe</button>
+            <button type="button" class="studio-btn" id="studioApplyCharRef">应用角色参考</button>
+          </div>
+        </div>
+      </details>
+    </aside>
+
+    <!-- CENTER: prompts + params -->
+    <section class="studio-panel studio-col-main" id="studioPromptStep">
+      <div class="studio-panel-head">
+        <h2>咒语编辑</h2>
+        <div class="studio-head-tools">
+          <button type="button" class="studio-btn ghost" id="studioCopyPrompt" title="复制主 Prompt">复制</button>
+          <button type="button" class="studio-btn ghost" id="studioPastePrompt" title="粘贴到主 Prompt">粘贴</button>
+        </div>
+      </div>
+      <div id="studioStatus" class="studio-status"></div>
+
+      <div class="studio-scroll">
+        <div class="studio-field">
+          <label for="studioPrompt">主 Prompt <span class="studio-kbd">Ctrl+Enter 生成</span></label>
+          <textarea id="studioPrompt" rows="5" placeholder="主咒语 / 或作为 base 使用"></textarea>
+        </div>
+        <div class="studio-field">
+          <label for="studioBase">Base / 场景（v4 base_caption）</label>
+          <textarea id="studioBase" rows="3" placeholder="场景、氛围、镜头…"></textarea>
+        </div>
+        <div class="studio-field">
+          <label for="studioCharCaptions">角色槽（每行一个 char_caption）</label>
+          <textarea id="studioCharCaptions" rows="4" placeholder="角色1&#10;角色2"></textarea>
+        </div>
+        <div class="studio-field">
+          <label for="studioUc">Negative / UC</label>
+          <textarea id="studioUc" rows="3" placeholder="负面提示词"></textarea>
+        </div>
+
+        <div class="studio-section">
+          <div class="studio-section-title">尺寸预设</div>
+          <div class="studio-size-presets" id="studioSizePresets"></div>
+        </div>
+
+        <div class="studio-params">
+          <div class="studio-field"><label>宽</label><input id="studioWidth" type="number" step="64" min="64" /></div>
+          <div class="studio-field"><label>高</label><input id="studioHeight" type="number" step="64" min="64" /></div>
+          <div class="studio-field"><label>Steps</label><input id="studioSteps" type="number" min="1" max="50" /></div>
+          <div class="studio-field"><label>CFG / Scale</label><input id="studioScale" type="number" step="0.1" min="1" max="20" /></div>
+          <div class="studio-field">
+            <label>Seed</label>
+            <div class="studio-ref-row">
+              <input id="studioSeed" type="text" placeholder="空=随机" />
+              <button type="button" class="studio-btn" id="studioRandomSeed" title="随机 Seed">🎲</button>
+            </div>
+          </div>
+          <div class="studio-field">
+            <label for="studioSampler">Sampler</label>
+            <select id="studioSampler"></select>
+          </div>
+          <div class="studio-field">
+            <label for="studioBatchCount">连续张数</label>
+            <input id="studioBatchCount" type="number" min="1" max="8" value="1" />
+          </div>
+          <div class="studio-field">
+            <label for="studioOptimizeMode">提示词处理</label>
+            <select id="studioOptimizeMode">
+              <option value="smart">智能优化</option>
+              <option value="sanitize">仅净化</option>
+              <option value="anima_epic">Anima V2（本地）</option>
+              <option value="native">保持原样</option>
+            </select>
+            <small class="workflow-field-help">选择处理方式后，在下方应用；不会立即生成图片。</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-action-bar" id="studioGenerateStep">
+        <div class="workflow-action-copy">
+          <strong>最后检查</strong>
+          <span>可先处理提示词并对比，确认后再提交生成。</span>
+        </div>
+        <div class="studio-actions">
+          <button type="button" class="studio-btn" id="studioOptimize">应用所选优化</button>
+          <button type="button" class="studio-btn ghost" id="studioUndo">撤销上一步</button>
+          <button type="button" class="studio-btn primary studio-gen-btn" id="studioGenerate">开始生成</button>
+        </div>
+        <div id="studioToken" class="studio-token"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: preview + history -->
+    <aside class="studio-panel studio-col-right">
+      <div class="studio-panel-head">
+        <h2>预览</h2>
+        <a href="/generated" id="studioOpenGenerated" class="studio-btn ghost">图库 ↗</a>
+      </div>
+      <div id="studioThumb" class="studio-preview studio-preview-src"></div>
+      <div class="studio-preview studio-preview-out">
+        <img id="studioPreviewImg" alt="generation" />
+        <div class="studio-preview-empty" id="studioPreviewEmpty">生成结果会出现在这里</div>
+      </div>
+      <div class="studio-gen-progress hidden" id="studioGenProgress">
+        <div class="studio-gen-progress-label" id="studioGenProgressLabel">生成中…</div>
+        <div class="studio-gen-bar"><span id="studioGenBar"></span></div>
+      </div>
+      <div class="studio-compare">
+        <div>
+          <div class="studio-field"><label>优化前</label><pre id="studioBefore"></pre></div>
+        </div>
+        <div>
+          <div class="studio-field"><label>优化后</label><pre id="studioAfter"></pre></div>
+        </div>
+      </div>
+      <div class="studio-section">
+        <div class="studio-section-title">本会话历史</div>
+        <div id="studioHistory" class="studio-history"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="/assets/shared/work-bridge.js?v=e03f149e05"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/ui-toast.js?v=7f77b751fa"></script>
+  <script src="/assets/shared/escape.js?v=cf491c2912"></script>
+  <script src="/assets/studio.js?v=0e9a5fd93c"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+  "tools": [
+    {
+      "id": "remove_background",
+      "label": "移除背景",
+      "req_type": "bg-removal",
+      "description": "一次保留 NovelAI 返回的遮罩、重绘和混合候选。",
+      "outputs_per_source": 3,
+      "fields": []
+    },
+    {
+      "id": "line_art",
+      "label": "提取线稿",
+      "req_type": "lineart",
+      "description": "把成图还原为可继续加工的线稿。",
+      "outputs_per_source": 1,
+      "fields": []
+    },
+    {
+      "id": "sketch",
+      "label": "生成草图",
+      "req_type": "sketch",
+      "description": "生成更接近构思阶段的草图版本。",
+      "outputs_per_source": 1,
+      "fields": []
+    },
+    {
+      "id": "colorize",
+      "label": "智能上色",
+      "req_type": "colorize",
+      "description": "给线稿或已有图像重新上色，可用标签引导颜色。",
+      "outputs_per_source": 1,
+      "fields": [
+        "prompt",
+        "defry"
+      ]
+    },
+    {
+      "id": "emotion",
+      "label": "修改表情",
+      "req_type": "emotion",
+      "description": "批量修改单人正脸角色的表情，可补充外观标签。",
+      "outputs_per_source": 1,
+      "fields": [
+        "emotion",
+        "prompt",
+        "level"
+      ]
+    },
+    {
+      "id": "declutter",
+      "label": "画面清理",
+      "req_type": "declutter",
+      "description": "清理漂浮文字、杂物和视觉噪点。",
+      "outputs_per_source": 1,
+      "fields": []
+    }
+  ],
+  "emotions": [
+    "neutral",
+    "happy",
+    "sad",
+    "angry",
+    "scared",
+    "surprised",
+    "tired",
+    "excited",
+    "nervous",
+    "smug"
+  ]
+}

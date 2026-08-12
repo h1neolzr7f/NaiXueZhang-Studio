@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-08-12",
+  "notes": "Pixiv 投稿页 DOM 选择器包。站点改版时优先更新本文件并 bump updated_at，无需改代码；每组按顺序 fallback，命中第一个存在的元素。",
+  "packs": {
+    "default": {
+      "upload": [
+        "input[name='files[]']",
+        "input[type='file'][accept*='image']",
+        "input[type='file']"
+      ],
+      "title": [
+        "input[name='title']",
+        "input[placeholder*='タイトル']",
+        "input[placeholder*='title' i]"
+      ],
+      "tags": [
+        "input[placeholder='标签']",
+        "input[placeholder*='タグ']",
+        "input[placeholder*='tag' i]",
+        "input[name*='tag' i]"
+      ],
+      "caption": [
+        "textarea[name='comment']",
+        "textarea[placeholder*='キャプション']",
+        "textarea[placeholder*='caption' i]"
+      ],
+      "submit": [
+        "button:has-text('投稿する')",
+        "button:has-text('投稿')",
+        "button[type='submit']"
+      ],
+      "overlay_dismiss": [
+        "button:has-text('同意')",
+        "button:has-text('接受')",
+        "button:has-text('知道了')",
+        "button:has-text('关闭')"
+      ],
+      "confirm_dialog": [
+        "[role='dialog'] button:has-text('投稿')",
+        "[role='dialog'] button:has-text('确定')",
+        "[role='dialog'] button:has-text('确认')",
+        "button:has-text('确定投稿')"
+      ]
+    }
+  }
+}

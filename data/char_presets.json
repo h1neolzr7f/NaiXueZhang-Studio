@@ -1,0 +1,55 @@
+{
+  "female": [
+    {
+      "id": "suzuran_f",
+      "label": "铃兰",
+      "gender": "female",
+      "identity": ["suzuran_(arknights)", "1girl", "female_focus"],
+      "body": ["petite", "small_breasts"],
+      "appearance": ["blonde_hair", "long_hair", "fox_ears", "fox_tail", "blue_eyes"]
+    },
+    {
+      "id": "skadi_f",
+      "label": "斯卡蒂",
+      "gender": "female",
+      "identity": ["skadi_(arknights)", "1girl", "female_focus"],
+      "body": ["tall", "large_breasts"],
+      "appearance": ["red_eyes", "very_long_hair", "white_hair"]
+    },
+    {
+      "id": "degenbrecher_f",
+      "label": "锏",
+      "gender": "female",
+      "identity": ["degenbrecher_(arknights)", "1girl", "female_focus"],
+      "body": ["tall", "muscular"],
+      "appearance": ["blonde_hair", "long_hair", "horns"]
+    }
+  ],
+  "male": [
+    {
+      "id": "silverash_m",
+      "label": "银灰",
+      "gender": "male",
+      "identity": ["silverash_(arknights)", "1boy", "male_focus"],
+      "body": ["tall", "muscular"],
+      "appearance": ["white_hair", "short_hair", "grey_eyes", "animal_ears"]
+    },
+    {
+      "id": "texas_m",
+      "label": "德克萨斯（男版人设参考）",
+      "gender": "male",
+      "identity": ["texas_(arknights)", "1boy", "male_focus"],
+      "body": ["tall", "slim"],
+      "appearance": ["black_hair", "long_hair", "wolf_ears", "wolf_tail", "yellow_eyes"]
+    },
+    {
+      "id": "doctor_m",
+      "label": "博士（兜帽男）",
+      "gender": "male",
+      "hooded": true,
+      "identity": ["doctor_(arknights)", "male_doctor_(arknights)", "1boy", "male_focus"],
+      "body": ["average", "hood", "hood_up", "hooded"],
+      "appearance": ["faceless"]
+    }
+  ]
+}

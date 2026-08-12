@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+  <title>合规与来源管理 · Nai学长工作室</title>
+  <style>
+    body { font-family: system-ui, "Microsoft YaHei", sans-serif; background: #f4f6f9; margin: 0; padding: 24px; color: #222; }
+    .card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 15px; margin: 0 0 12px; color: #444; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    .muted { color: #777; font-size: 12px; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    input, select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+    button { padding: 6px 12px; border: 0; border-radius: 6px; background: #4a7dff; color: #fff; cursor: pointer; font-size: 13px; }
+    button:disabled { opacity: .6; cursor: wait; }
+    button.danger { background: #e5484d; }
+    button.ghost { background: #eee; color: #333; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    th { color: #666; font-weight: 600; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+    .badge.red { background: #fde8e8; color: #c0392b; }
+    .badge.gray { background: #eee; color: #666; }
+    .notice-banner { background: #fff7e6; border: 1px solid #ffd591; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: #614700; }
+    .terms { max-height: 300px; overflow-y: auto; background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 12px; font-size: 12px; line-height: 1.7; }
+    a { color: #4a7dff; }
+  </style>
+</head>
+<body>
+  <div id=\"siteNav\"></div>
+  <h1>合规与来源管理</h1>
+  <div class="muted">作者排除、作品排除、来源同步、可恢复清理与责任说明。所有记录仅保存在本地。</div>
+
+  <div class="notice-banner" id="noticeBanner" style="display:none;">
+    <strong>非官方项目与使用责任提示</strong><br />
+    本项目与 pixiv Inc.、NovelAI 及其他第三方平台不存在隶属、授权或合作关系。使用者应自行确认访问、下载、处理与发布行为符合适用法律、平台规则及第三方权利要求。项目维护者不为绕过访问控制、干扰平台运行、未经授权的数据采集或侵权传播提供支持。<br />
+    <button id="acceptNotice" style="margin-top:10px;">我已阅读并理解</button>
+    <button id="viewTerms" class="ghost" style="margin-top:10px;">查看完整条款</button>
+  </div>
+
+  <div class="card">
+    <h2>作者排除与本地清理</h2>
+    <div class="row">
+      <input id="blAuthorId" placeholder="作者 ID（数字）" style="width:120px;" />
+      <input id="blAuthorName" placeholder="作者名" style="width:140px;" />
+      <select id="blScope">
+        <option value="both">禁止新增 + 标记清理</option>
+        <option value="crawl">仅禁止新增</option>
+        <option value="delete">仅标记清理</option>
+      </select>
+      <input id="blReason" placeholder="原因（可选）" style="width:180px;" />
+      <button id="addBlacklist">添加</button>
+    </div>
+    <div class="muted">“标记清理”不会静默删除；列表会显示本地作品数量，由用户确认后移动至 data/_trash 并删除索引。</div>
+    <table>
+      <thead><tr><th>作者ID</th><th>作者名</th><th>作用域</th><th>原因</th><th>时间</th><th>操作</th></tr></thead>
+      <tbody id="blacklistBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>禁止新增列表（按作品）</h2>
+    <div class="row">
+      <input id="blkWorkId" placeholder="作品 ID" style="width:120px;" />
+      <input id="blkSourceUrl" placeholder="作品链接（可选）" style="width:260px;" />
+      <button id="addBlocked">添加</button>
+    </div>
+    <table>
+      <thead><tr><th>作品ID</th><th>链接</th><th>时间</th><th></th></tr></thead>
+      <tbody id="blockedBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>来源同步与删除标记</h2>
+    <div class="row">
+      <input id="syncWorkIds" placeholder="作品 ID，逗号分隔" style="width:280px;" />
+      <select id="syncStatus">
+        <option value="removed">源作品确认删除</option>
+        <option value="source_gone">源页面 404 / 不可访问</option>
+      </select>
+      <button id="syncRemoved">标记</button>
+      <button id="syncCheck" class="ghost">查询状态</button>
+    </div>
+    <div class="muted">状态标记不会自动删除本地文件；用于详情提示、来源清单与用户后续判断。</div>
+  </div>
+
+  <div class="card">
+    <h2>导出来源清单</h2>
+    <div class="row">
+      <input id="manifestWorkIds" placeholder="作品 ID，逗号分隔" style="width:280px;" />
+      <button id="genManifest">生成清单</button>
+    </div>
+    <pre id="manifestOutput" style="background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;font-size:12px;white-space:pre-wrap;display:none;"></pre>
+  </div>
+
+  <div class="card">
+    <h2>关于与责任条款</h2>
+    <div id="aboutInfo" class="muted">加载中…</div>
+    <div class="terms" id="termsBox">
+      <strong>软件许可与责任</strong><br />
+      本软件按 MIT License 和“按现状（AS IS）”方式提供。在适用法律允许的最大范围内，且除依法不得排除或限制的责任外，维护者不对使用软件产生的损失承担担保或责任。<br /><br />
+      <strong>非官方关系</strong><br />
+      本项目与 pixiv Inc.、NovelAI 及其他第三方平台不存在隶属、授权、赞助或合作关系。第三方页面、接口与规则可能随时变化。<br /><br />
+      <strong>用户责任</strong><br />
+      使用者应自行确认访问、下载、保存、处理和发布行为符合适用法律、平台规则及第三方权利要求。维护者不提供规避验证码、访问控制、限流或账号限制的支持。<br /><br />
+      <strong>来源与清理</strong><br />
+      软件可记录作者、作品链接、源状态和作者声明，并提供按作者移动到本地回收区的清理操作。维护者无法远程访问或删除用户电脑中的数据。<br /><br />
+      <strong>修改版与二次分发</strong><br />
+      维护者仅对官方仓库和官方 Release 的原始版本作出说明。第三方修改、重新编译、插件或非官方服务不代表原项目维护者行为。<br /><br />
+      <strong>更多信息</strong><br />
+      请阅读仓库中的 DISCLAIMER.md、RESPONSIBLE_USE.md、SECURITY.md 与 RIGHTSHOLDER_REQUEST.md。
+    </div>
+  </div>
+
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/compliance.js?v=f20b111ef9"></script>
+</body>
+</html>

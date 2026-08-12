@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070a11" />
+  <title>Nai学长工作室 · Pixiv 本地图谱</title>
+  <meta data-seo="start" />
+  <meta name="description" content="从 Pixiv 发现、经本地元数据严格验证的 NovelAI 图库、提示词索引与创作工作台。" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <meta property="og:title" content="Nai学长工作室 · Pixiv 本地图谱" />
+  <meta property="og:description" content="Pixiv 直连发现，本地严格验证，只收录 NovelAI 元数据完整的作品。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nai学长工作室" />
+  <meta property="og:locale" content="zh_CN" />
+  <meta property="og:url" content="http://127.0.0.1:8797/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nai学长工作室" />
+  <meta name="twitter:description" content="本地 NovelAI 图库与提示词图谱。" />
+  <meta data-seo="end" />
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/shared/motion.css?v=8cc6bd1e71" />
+  <link rel="stylesheet" href="/assets/core-theme.css?v=0158aeb657" />
+  <link rel="stylesheet" href="/assets/gallery-atlas.css?v=de6622c7dc" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
+</head>
+<body data-ui="nai-atlas-full" data-page="gallery">
+  <div id="siteNav" aria-hidden="true"></div>
+
+  <div class="atlas-shell atlas-full-shell">
+
+    <div id="localBanner" class="atlas-notice">
+      <span><strong>PIXIV → NAI VERIFIED</strong> Pixiv 只负责发现候选；原图通过 NovelAI 元数据验证后才会保存，浏览不依赖外部图库站点。</span>
+      <div>
+        <a href="/progress?v=4" target="_blank" rel="noopener">查看采集</a>
+        <a href="/nai-tags">浏览分类</a>
+      </div>
+    </div>
+    <div id="setupBanner" class="atlas-notice atlas-notice-alert hidden">
+      <span id="setupBannerText">欢迎使用 Nai学长工作室：先建初始图库。</span>
+      <div class="onboarding-actions">
+        <a href="/progress" target="_blank" rel="noopener">开始采集 →</a>
+        <a href="/codex" target="_blank" rel="noopener">导入自选库</a>
+        <button type="button" id="setupBannerDismiss">知道了</button>
+      </div>
+    </div>
+
+    <header id="hero-intro" class="site-header atlas-gallery-head hero-intro local-hero">
+      <button id="heroCollapseBtn" class="hero-collapse-btn" type="button" aria-expanded="true" title="收起或展开图库介绍">
+        <span class="when-expanded"><span class="lang-zh">收起介绍</span><span class="lang-en">Collapse</span></span>
+        <span class="when-collapsed"><span class="lang-zh">展开介绍</span><span class="lang-en">Expand</span></span>
+      </button>
+      <div class="atlas-hero-copy">
+        <span id="galleryHeroEyebrow" class="eyebrow blue">NAI verified · PIXIV intake</span>
+        <h1 class="hero-title">
+          <span class="lang-zh">把灵感整理成</span>
+          <span class="lang-en">A map for every idea</span>
+          <span id="galleryHeroAccent" class="atlas-title-accent">可检索的图谱</span>
+        </h1>
+        <p id="galleryHeroLead" class="atlas-hero-lead">搜索作品、画师、Pixiv 标签和原图里的 NAI Prompt；从浏览直接进入小镜、生成、换角与队列。</p>
+        <div id="galleryHeroSignals" class="atlas-signal-row" aria-label="图库特性">
+          <span><b>01</b> Pixiv 直连发现</span>
+          <span><b>02</b> NAI 元数据准入</span>
+          <span><b>03</b> 原图本地保存</span>
+        </div>
+      </div>
+      <aside class="atlas-hero-note">
+        <div id="galleryNoteIndex" class="atlas-note-index">LOCAL / 01</div>
+        <details id="galleryAbout" class="gallery-disclosure gallery-about">
+          <summary><strong id="galleryAboutTitle">关于图库</strong><span id="galleryAboutSummary">来源、准入与本地存储</span></summary>
+          <div class="hero-desc">
+            <p class="lang-zh">从 Pixiv 搜索、画师与榜单发现候选图片；只有包含可验证 NovelAI 元数据的页面才会进入本地图库。Pixiv 标签用于分类，NAI 提示词标签另行解析并入库。</p>
+            <p class="lang-en">Candidates come from Pixiv search, users, and rankings. Only pages with verified NovelAI metadata enter the local gallery; Pixiv tags and parsed NAI prompt tags remain separate.</p>
+          </div>
+        </details>
+        <div id="heroAnnouncement" class="hero-announcement hidden">
+          <p id="heroAnnouncementZh" class="lang-zh"></p>
+          <p id="heroAnnouncementEn" class="lang-en"></p>
+        </div>
+        <div class="hero-lang-switch">
+          <a href="/?lang=zh" class="lang-link" data-lang="zh">中文</a>
+          <span class="divider">/</span>
+          <a href="/?lang=us" class="lang-link" data-lang="en">English</a>
+        </div>
+      </aside>
+    </header>
+
+    <section class="atlas-search-deck" aria-label="图库检索台">
+      <div class="atlas-search-label">
+        <span>QUERY CHANNEL</span>
+        <strong id="gallerySearchTitle">检索本地图谱</strong>
+      </div>
+      <div class="search-row">
+        <label class="atlas-search-field" for="q">
+          <span>作品 / 画师 / 标签 / ID</span>
+          <input id="q" type="text" autocomplete="off" placeholder="支持 -排除、OR 和引号精确匹配" />
+        </label>
+        <button id="searchBtn" class="atlas-search-submit" type="button">检索图谱</button>
+      </div>
+
+      <div class="gallery-source-bar" aria-label="图库切换">
+        <strong class="gallery-source-label">数据域</strong>
+        <div id="gallerySourceSwitch" class="gallery-source-switch" role="group" aria-label="选择图库">
+          <button type="button" class="gallery-source-button" data-gallery-source="site" aria-pressed="true">Pixiv NAI</button>
+          <button type="button" class="gallery-source-button" data-gallery-source="codex" aria-pressed="false">自选库</button>
+          <button type="button" class="gallery-source-button" data-gallery-source="qqgroup" aria-pressed="false">Q群</button>
+          <button type="button" class="gallery-source-button" data-gallery-source="aitag-online" aria-pressed="false">AITag 在线库</button>
+        </div>
+        <select id="gallerySource" hidden aria-hidden="true" tabindex="-1">
+          <option value="site">Pixiv NAI 图库</option>
+          <option value="codex">自选库</option>
+          <option value="qqgroup">Q群图库</option>
+          <option value="aitag-online">AITag 在线库</option>
+        </select>
+      </div>
+
+      <details id="advancedFilters" class="gallery-disclosure atlas-filter-drawer">
+        <summary>
+          <span class="af-title">高级筛选</span>
+          <span id="advancedFilterSummary">Pixiv NAI · 最新 · 全部时间</span>
+        </summary>
+        <div class="gallery-advanced-body">
+          <div class="af-field af-prompt">
+            <label for="prompt">NAI Prompt</label>
+            <input id="prompt" type="text" placeholder="搜索原图内的 NAI 提示词，回车检索" />
+          </div>
+          <div class="af-field aitag-only-filter hidden">
+            <label for="aitagCreator">在线作者</label>
+            <input id="aitagCreator" type="text" placeholder="作者名称或作者 ID" />
+          </div>
+          <div class="af-field aitag-only-filter hidden">
+            <label for="aitagTags">在线标签</label>
+            <input id="aitagTags" type="text" placeholder="逗号分隔；全部标签同时匹配" />
+          </div>
+          <div class="af-field aitag-only-filter hidden">
+            <label for="aitagMinImages">图片数量</label>
+            <div class="af-number-range">
+              <input id="aitagMinImages" type="number" min="0" max="100000" step="1" placeholder="最少" />
+              <span>—</span>
+              <input id="aitagMaxImages" type="number" min="0" max="100000" step="1" placeholder="最多" />
+            </div>
+          </div>
+          <div class="af-field">
+            <label for="galleryGroup">图库分组</label>
+            <select id="galleryGroup" aria-label="图库分组">
+              <option value="">全部群组和账号</option>
+            </select>
+          </div>
+          <div class="af-field">
+            <label for="sortMode">排序方式</label>
+            <select id="sortMode" aria-label="排序方式">
+              <option value="new">最新发布</option>
+              <option value="count">图片数量</option>
+              <option value="old">最早发布</option>
+            </select>
+          </div>
+          <div class="af-field">
+            <label for="timeRange">时间范围</label>
+            <select id="timeRange" aria-label="时间范围">
+              <option value="all">全部时间</option>
+              <option value="week">近 7 天</option>
+              <option value="month">近 30 天</option>
+            </select>
+          </div>
+          <div class="af-field af-blocklist">
+            <label for="blacklist">屏蔽关键词</label>
+            <div class="af-blocklist-row">
+              <input id="blacklist" type="text" placeholder="逗号或空格分隔；不会改变 NAI 准入规则" />
+              <button id="saveBlacklistBtn" class="af-btn" type="button">保存</button>
+            </div>
+          </div>
+          <div class="af-actions">
+            <button id="clearFiltersPanelBtn" type="button" class="af-btn af-btn-clear">清空筛选</button>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <main class="gallery-layout atlas-gallery-layout">
+      <div class="gallery-main">
+        <div class="atlas-results-head">
+          <div>
+            <span id="galleryResultsLabel" class="micro-label">Archive stream / local index</span>
+            <h2 id="galleryResultsTitle">作品流</h2>
+          </div>
+          <p id="galleryResultsHelp">单击打开详情与全部图片；右侧灵感栏可直接送去生成、换角或队列。排序选「随机刷新」后点「换一批」，每次都能看到不同的图。</p>
+          <button id="shuffleBtn" class="af-btn shuffle-btn hidden" type="button" title="换一批随机作品">
+            <span class="lang-zh">换一批</span>
+            <span class="lang-en">Shuffle</span>
+          </button>
+        </div>
+        <div id="searchStatus" class="search-status" role="status">
+          <div class="spinner" aria-hidden="true"></div>
+          <span>正在读取本地图谱…</span>
+        </div>
+        <section id="gallery" class="gallery-grid" aria-live="polite"></section>
+        <div id="noResult" class="no-result" role="status">
+          <span id="noResultText">没有找到作品</span>
+          <button id="clearFiltersBtn" type="button">
+            <span class="lang-zh">清空搜索条件</span>
+            <span class="lang-en">Clear search</span>
+          </button>
+        </div>
+        <div id="pagination" class="pagination"></div>
+        <div id="loading" class="loading">正在加载…</div>
+        <div class="load-more-row">
+          <button id="loadMoreBtn" class="load-more-btn hidden">加载更多</button>
+        </div>
+
+        <button id="fcChip" class="float-ctrl fc-chip" aria-label="页码与浏览设置">
+          <span class="fc-icon" aria-hidden="true">PAGE</span>
+          <span id="fcNum" class="fc-num">1</span>
+        </button>
+        <div id="fcPanel" class="fc-panel hidden" aria-label="页码与浏览设置">
+          <div class="fc-panel-title">快速定位</div>
+          <div class="fc-search-row">
+            <div class="fc-line"><input id="fcQ" type="text" placeholder="作品、画师、标签或 ID" /></div>
+            <div class="fc-line">
+              <input id="fcPrompt" type="text" placeholder="NAI Prompt" />
+              <button id="fcSearchBtn" class="btn">搜索</button>
+            </div>
+          </div>
+          <div class="fc-blocklist-row">
+            <input id="fcBlacklist" type="text" placeholder="屏蔽关键词" />
+            <button id="fcSaveBlacklistBtn" class="btn outline">保存</button>
+          </div>
+          <div class="fc-divider"></div>
+          <div class="fc-jump-row">
+            <label class="fc-label" for="fcInput">跳至</label>
+            <input id="fcInput" class="fc-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-bwignore="true" data-lpignore="true" data-1p-ignore placeholder="页码" />
+            <button id="fcGo" class="btn">前往</button>
+          </div>
+          <label class="fc-switch" for="openWorkNewWindowToggle">
+            <span class="fc-switch-text">在新窗口打开作品</span>
+            <input id="openWorkNewWindowToggle" class="fc-switch-input" type="checkbox" />
+            <span class="fc-switch-track" aria-hidden="true"><span class="fc-switch-thumb"></span></span>
+          </label>
+          <label class="fc-switch" for="showSuspectInvalidTagToggle">
+            <span class="fc-switch-text" data-i18n="show_suspect_invalid_tags">显示疑似无效 TAG 作品</span>
+            <input id="showSuspectInvalidTagToggle" class="fc-switch-input" type="checkbox" autocomplete="off" />
+            <span class="fc-switch-track" aria-hidden="true"><span class="fc-switch-thumb"></span></span>
+          </label>
+          <label class="fc-switch" for="showNaixInvalidTagToggle">
+            <span class="fc-switch-text" data-i18n="show_naix_invalid_tags">显示 NAI_X 无效 TAG 作品</span>
+            <input id="showNaixInvalidTagToggle" class="fc-switch-input" type="checkbox" autocomplete="off" />
+            <span class="fc-switch-track" aria-hidden="true"><span class="fc-switch-thumb"></span></span>
+          </label>
+          <div class="fc-divider"></div>
+          <div id="fcExtraSettings" class="fc-extra-settings"></div>
+        </div>
+
+        <div id="hoverPreview" class="hover-preview hidden">
+          <div class="hp-header">
+            <div id="hpTitle" class="hp-title"></div>
+            <div id="hpCount" class="hp-count"></div>
+            <div id="hpHint" class="hp-hint">Shift + 滚轮翻图</div>
+          </div>
+          <img id="hpImage" class="hp-image" alt="作品预览" />
+        </div>
+
+        <div id="detailView" class="detail-view hidden">
+          <div class="detail-header">
+            <button id="backBtn" class="back-btn">← 返回作品流</button>
+            <h2 id="detailTitle">作品详情</h2>
+          </div>
+          <div id="detailMeta" class="detail-meta"></div>
+          <div id="detailImages" class="detail-images"></div>
+        </div>
+      </div>
+
+      <aside id="inspirationSidebar" class="inspiration-sidebar" aria-label="灵感侧边栏">
+        <div class="inspiration-head">
+          <div><span>ACTIVE ASSET</span><strong>灵感中转站</strong></div>
+          <button type="button" id="inspirationToggle" class="inspiration-toggle" title="收起或展开">—</button>
+        </div>
+        <div id="inspirationEmpty" class="inspiration-empty">选择一件作品后，这里会显示 Prompt 摘要和完整创作入口。</div>
+        <div id="inspirationBody" class="inspiration-body hidden">
+          <img id="inspirationThumb" class="inspiration-thumb" alt="" />
+          <div id="inspirationTitle" class="inspiration-title"></div>
+          <div id="inspirationMeta" class="inspiration-meta"></div>
+          <pre id="inspirationPrompt" class="inspiration-prompt"></pre>
+          <div class="inspiration-actions">
+            <button type="button" id="inspirationOpenDetail" class="inspiration-btn primary">查看详情与全部图片</button>
+            <button type="button" id="inspirationToStudio" class="inspiration-btn">用此图生成 →</button>
+            <button type="button" id="inspirationToRemix" class="inspiration-btn">角色换角 →</button>
+            <button type="button" id="inspirationToQueue" class="inspiration-btn ghost">加入待生成</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer id="galleryFooter" class="atlas-gallery-footer">
+      <span class="lang-zh">本地 NAI 图库 · 单击查看详情与全部图片 · 侧边栏可送去生成/换角 · </span>
+      <span class="lang-en">Local NAI gallery · full details and every image · </span>
+      <a href="/progress">采集进度</a>
+      <span id="storagePathFooter" class="storage-path-footer"></span>
+    </footer>
+  </div>
+
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/escape.js?v=cf491c2912"></script>
+  <script src="/assets/shared/work-bridge.js?v=e03f149e05"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/prompt-preview.js?v=5e010cf412"></script>
+  <script src="/assets/shared/gallery-virtual.js?v=7ebe9e20b5"></script>
+  <script src="/assets/shared/deferred-scripts.js?v=75850c92b7"></script>
+  <script src="/assets/shared/gallery-bootstrap.js?v=7ec19b8597"></script>
+  <script src="/assets/shared/gallery-detail-hooks.js?v=9b054092fe"></script>
+  <script src="/assets/app-core.js?v=6f0fefcda6"></script>
+  <script src="/assets/gallery-list-runtime.js?v=03774f9d4c"></script>
+  <script src="/assets/app-online-remix.js?v=b5310e07ea"></script>
+  <script src="/assets/app-detail.js?v=0c27aee90e"></script>
+  <script src="/assets/app.js?v=f165edb714"></script>
+</body>
+</html>

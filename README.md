@@ -2,117 +2,191 @@
 
 # 🐾 Nai学长工作室
 
-### Pixiv NAI Gallery 的官方产品页与 Windows 下载入口
+### Local-first AI illustration workflow platform for NovelAI creators
 
-**本地图库 · NAI 元数据验证 · Prompt 资产 · 角色换角 · 批量生成 · 后处理 · Pixiv 发布**
+**素材发现 · NAI 元数据验证 · Prompt 资产管理 · 角色换角 · 批量生成 · 后处理 · Pixiv 发布**
 
-[![Open Source](https://img.shields.io/badge/Source-Open-2ea44f?logo=github)](https://github.com/h1neolzr7f/pixiv-nai-gallery-public)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/blob/main/LICENSE)
+[![Tests](https://github.com/h1neolzr7f/pixiv-nai-gallery/actions/workflows/tests.yml/badge.svg)](https://github.com/h1neolzr7f/pixiv-nai-gallery/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Local First](https://img.shields.io/badge/Privacy-Local--first-7A5AF8)
 
-[下载 Windows 版本](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) ·
-[查看公开源码](https://github.com/h1neolzr7f/pixiv-nai-gallery-public) ·
-[提交 Issue](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/issues) ·
-[参与贡献](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/blob/main/CONTRIBUTING.md)
+[下载 Releases](https://github.com/h1neolzr7f/pixiv-nai-gallery/releases) ·
+[查看路线图](ROADMAP.md) ·
+[参与贡献](CONTRIBUTING.md) ·
+[责任与来源](RESPONSIBLE_USE.md)
 
 </div>
 
-> [!TIP]
-> **源码现已公开。** 完整源代码、测试、开发文档和贡献入口位于 [`h1neolzr7f/pixiv-nai-gallery-public`](https://github.com/h1neolzr7f/pixiv-nai-gallery-public)，采用 MIT License。本仓库继续作为产品展示、截图与 Windows Release 下载入口。
-
 > [!IMPORTANT]
-> 本项目与 pixiv Inc.、NovelAI（Anlatan Inc.）及其他第三方平台不存在隶属、授权或合作关系。使用者应自行确认访问、下载、处理和发布行为符合适用法律、平台规则及第三方权利要求。完整责任边界见公开源码仓库中的 [DISCLAIMER.md](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/blob/main/DISCLAIMER.md) 与 [RESPONSIBLE_USE.md](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/blob/main/RESPONSIBLE_USE.md)。
+> **非官方项目。** 本项目与 pixiv Inc.、NovelAI（Anlatan Inc.）及其他第三方平台不存在隶属、授权或合作关系。使用者应自行确认访问、下载、处理与发布行为符合适用法律、平台规则及第三方权利要求。维护者不为绕过访问控制、干扰平台运行、未经授权的数据采集或侵权传播提供支持。详见 [免责声明](DISCLAIMER.md) 与 [负责任使用说明](RESPONSIBLE_USE.md)。
 
-## 它是什么？
+## 它解决什么问题？
 
-Nai学长工作室是一套本地优先的 **NovelAI 插画素材管理与创作生产系统**。它把素材发现、NAI 元数据验证、Prompt 研究、角色换角、批量生成、后处理和发布准备整理到同一个可恢复工作流中。
+AI 绘图的难点往往不是“生成一张图”，而是长期管理数千张素材、Prompt、角色、来源、任务和发布记录。
 
-它不只是一个下载器，也不只是一个生图界面，而是为长期、高频创作准备的本地工作台。
+Nai学长工作室把原本分散在浏览器、文件夹、脚本和多个工具中的流程，整理成一套可恢复、可检索、可追踪的本地工作台：
 
-## ✨ 核心能力
-
-- **Pixiv 素材发现**：支持搜索、作者与榜单等候选来源，并对图片逐页验证 NovelAI 元数据；公开页面通道可直接使用，账号通道可按需配置。
-- **本地图库与标签索引**：按角色、作品、画师、动作、服装、场景和构图组织大规模素材。
-- **AI 智能管家**：通过自然语言查询图库、诊断运行状态、组织任务，并在明确权限边界内辅助执行本地工作流。
-- **NAI 批量导演**：批量执行去背景、线稿、草图、上色、表情修改与画面清理等 Director Tools 工作流。
-- **换角与换画风**：从已有作品提取可复用结构，替换角色或风格后进入生成队列。
-- **多 Token 生成队列**：任务持久化、并发调度、失败恢复、结果归档与生产状态管理。
-- **后处理闭环**：超分、打码、元数据处理、文案准备和发布前检查集中管理。
-- **来源与责任记录**：保存作者、作品链接、源状态和作者声明，并支持导出来源清单。
-
-## 🖼️ 界面截图
-
-| 图库首页 | 素材发现 | 批量导演 |
-|---|---|---|
-| ![home](screenshots/home.png) | ![intake](screenshots/intake.png) | ![director](screenshots/director.png) |
-
-> 截图使用干净演示环境，不包含私人图库、账号、Token 或本地运行数据。
-
-## 🚀 下载使用
-
-从 [Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) 下载最新 Windows 便携包：
-
-1. 下载并完整解压 ZIP；
-2. 双击发行包内的启动脚本；
-3. 浏览器会自动打开本地界面；
-4. 数据默认保存在程序目录的 `data/` 中。
-
-建议同时核对 Release 页面公布的 Commit SHA 与 SHA-256。不要运行来源不明、哈希不一致的第三方修改包。
-
-## 💻 从源码运行
-
-源码仓库：
-
-```text
-https://github.com/h1neolzr7f/pixiv-nai-gallery-public
+```mermaid
+flowchart LR
+    A[Pixiv / AITag 在线发现 / 本地素材] --> B[来源与 NAI 元数据验证]
+    B --> C[本地图库与标签图谱]
+    C --> D[Studio / 角色换角 / Prompt 处理]
+    D --> E[多 Token 生成队列]
+    E --> F[超分 / 打码 / 元数据处理]
+    F --> G[审核与 Pixiv 发布]
+    C --> H[AI Butler]
+    H --> D
+    H --> E
 ```
 
+## ✨ 核心亮点
+
+| 能力 | 说明 |
+|---|---|
+| **严格 NAI 准入** | 逐页解析图片元数据，仅将可验证的 NovelAI 作品纳入目标图库 |
+| **本地优先图库** | 图片、数据库、配置和任务状态默认保存在本机，不上传用户图库 |
+| **在线冷启动资产** | 无需先运行爬虫，可从 AITag 在线发现源选择作品、图片和角色候选并建立零生成调用草稿 |
+| **Prompt 与角色资产** | 搜索原始 Prompt、角色、作品、画师、动作、服装、场景与构图标签 |
+| **批量创作流水线** | 角色换角、生成队列、多 Token 调度、失败恢复和生成结果管理 |
+| **后处理闭环** | 超分、打码、元数据清理与发布前检查集中在同一工作流中 |
+| **AI Butler** | 通过类型化工具和权限边界辅助整理、诊断和执行本地工作流 |
+| **来源追踪** | 保存作者、作品链接、源状态和作者声明，可导出来源清单 |
+| **可恢复清理** | 按作者清理时先移动到本地回收区，再删除数据库索引 |
+
+## 🧩 不只是一个爬虫
+
+项目当前包含多个相互独立但可以组合的工作面：
+
+- **图库与分类图谱**：本地检索、收藏、分面标签和大图库浏览；
+- **素材发现**：搜索、作者、榜单与用户指定来源的候选发现；
+- **Studio**：基于已有作品进入 Prompt 研究、换角和再创作；
+- **生成队列**：多 Token、任务持久化、失败恢复和生成结果归档；
+- **参考库与标签资产**：角色、画风、Vibe 与 Prompt 资产管理；
+- **在线资产工作台**：按需浏览 AITag 元数据和多图详情，显式保存角色，或直接建立待确认的换角草稿；
+- **Pipeline**：发布前图片处理、质量检查和本地自动化；
+- **Pixiv 发布**：多账号配置、草稿准备、后处理约束和发布记录；
+- **合规与来源**：作者黑名单、单作品排除、源状态、来源清单与本地清理。
+
+## 🚀 快速开始
+
+### 方式一：下载 Windows 版本
+
+从 [Releases](https://github.com/h1neolzr7f/pixiv-nai-gallery/releases) 下载便携包或单文件 EXE。程序启动后会打开：
+
+```text
+http://127.0.0.1:8797/
+```
+
+运行数据默认保存在程序同目录的 `data/`，发行包不包含任何用户 Token、Cookie、图库、生成历史或本地数据库。
+
+### 方式二：从源码运行
+
+需要 Windows 10/11 与 Python 3.13：
+
 ```powershell
-git clone https://github.com/h1neolzr7f/pixiv-nai-gallery-public.git
-cd pixiv-nai-gallery-public
+git clone https://github.com/h1neolzr7f/pixiv-nai-gallery.git
+cd pixiv-nai-gallery
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.core.lock.txt
 python server.py
 ```
 
-完整的依赖、测试、安全说明和贡献规则以公开源码仓库为准。
+部分浏览器自动化、打包或扩展功能可能需要完整依赖，参见仓库中的 requirements 与 scripts。
+
+## 🏗️ 技术结构
+
+```text
+FastAPI localhost service
+├─ routes/              API 与页面路由
+├─ web/                 本地 Web UI
+├─ db.py                SQLite、FTS 与迁移
+├─ pixiv_*              素材发现、账号与发布能力
+├─ nai_*                NAI Token、生成、Prompt 与角色处理
+├─ butler_*             AI Butler、工具权限与审计
+├─ generated_gallery.py 生成结果与缩略图
+├─ scripts/             验证、打包、敏感信息扫描与发布工具
+└─ tests/               后端、前端契约、安全与持久化回归测试
+```
+
+关键工程特性：
+
+- SQLite FTS 与大型图库索引；
+- 任务持久化、断点恢复和原子文件写入；
+- Windows DPAPI 本地凭据加密；
+- localhost 写操作会话令牌；
+- 更新包 HTTPS + SHA-256 校验；
+- 路径越界保护与文件体积限制；
+- 来源追踪、作者排除和可恢复清理；
+- Windows GitHub Actions 回归测试。
 
 ## 🔐 隐私与安全
 
-- 本地服务默认仅监听 `127.0.0.1`；
-- 用户图库、Prompt、生成历史和本地数据库不上传到项目服务器；
+- 服务默认仅监听 `127.0.0.1`；
 - NovelAI Token 与 Pixiv refresh token 在 Windows 上通过 DPAPI 加密落盘；
-- Release 不应包含用户图片、数据库、Cookie、Token、缓存或私人日志；
-- 写操作使用本次启动生成的本地会话令牌；
-- 官方更新包使用 HTTPS 与 SHA-256 完整性校验。
+- 本地图库、Prompt、生成记录和确认记录不上传到项目服务器；
+- AITag 在线发现是可选第三方网络功能，只按需读取搜索、详情元数据和远程预览图；在线不可用时回退本地角色库，且浏览与建草稿不会调用 NovelAI Provider；
+- 发布包会排除图片、数据库、缓存、凭据和本地运行日志；
+- 官方 Release 可附带 Commit 与 SHA-256，便于识别非官方修改版。
 
-安全问题请通过公开源码仓库的 [Security 页面](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/security) 私下报告，不要在公开 Issue 中粘贴凭据或完整利用细节。
+安全问题请不要在公开 Issue 中粘贴 Token、Cookie、完整路径或私人素材，参见 [SECURITY.md](SECURITY.md)。
 
-## 🧭 两个仓库的分工
+## 🧪 测试
 
-| 仓库 | 用途 |
-|---|---|
-| [`NaiXueZhang-Studio`](https://github.com/h1neolzr7f/NaiXueZhang-Studio) | 产品介绍、演示截图与 Windows Releases |
-| [`pixiv-nai-gallery-public`](https://github.com/h1neolzr7f/pixiv-nai-gallery-public) | 完整源码、MIT License、测试、Issue、PR 与开发文档 |
+```powershell
+python -m pip install -r requirements.core.lock.txt pytest
+python -m pytest -q
+python scripts/scan_sensitive.py
+```
 
-这样可以让普通用户更快找到下载，也让开发者在独立源码仓库中查看代码和参与贡献。
+公开版质量门槛重点覆盖：
+
+- Token/refresh token 不得明文写盘；
+- 来源状态、作者黑名单与来源清单；
+- 按作者清理的磁盘与数据库一致性；
+- 路径越界保护；
+- 更新清单和安装包的 HTTPS/SHA-256 信任链；
+- 前端 API 会话令牌与关键 UI 契约。
+
+## 🤝 贡献
+
+欢迎提交：
+
+- Bug 修复与可复现测试；
+- 大图库性能优化；
+- Prompt、角色和标签资产改进；
+- 本地优先的工作流与可用性优化；
+- 文档、翻译和安装体验改进。
+
+开始前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。不要在 PR、Issue、测试数据或截图中提交第三方受版权保护的图片、真实凭据或私人运行数据。
+
+## 🗺️ Roadmap
+
+近期方向包括：
+
+- Recipe 配方版本与生成血缘；
+- NovelAI 参数实验室；
+- 相似图、重复图和派生关系；
+- 智能文件夹与系列项目；
+- 个性化本地审美排序；
+- 更完整的发布复盘和生产统计。
+
+完整计划见 [ROADMAP.md](ROADMAP.md)。
 
 ## 📜 License
 
-项目源代码采用 [MIT License](https://github.com/h1neolzr7f/pixiv-nai-gallery-public/blob/main/LICENSE)，允许使用、修改和再分发，但必须保留许可证与版权声明。
+代码采用 [MIT License](LICENSE)。代码许可不授予任何第三方图片、Prompt、角色、商标或平台数据的权利。
 
-MIT License 只授权本项目代码，不授予任何第三方图片、Prompt、角色、商标、账号数据或平台内容的权利。软件按现状提供；完整免责与责任边界以公开源码仓库文档为准。
+本项目按现状提供；在适用法律允许的最大范围内，维护者不对使用本软件产生的损失承担担保或责任。完整边界见 [DISCLAIMER.md](DISCLAIMER.md)。
 
 ---
 
 <div align="center">
 
-### 喜欢这个项目，可以给公开源码仓库点一个 ⭐
+### 觉得这个项目有意思？点一个 ⭐ 会让更多 AI 创作者看到它。
 
-[⭐ Star the source repository](https://github.com/h1neolzr7f/pixiv-nai-gallery-public)
-
-**Public Preview · 功能持续迭代，欢迎 Issue 与 PR。**
+**Public Preview · 功能仍在快速迭代，欢迎 Issue 与 PR。**
 
 </div>

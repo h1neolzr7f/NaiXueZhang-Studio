@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>生成图库 | NAI Generated Gallery</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/shared/motion.css?v=8cc6bd1e71" />
+  <link rel="stylesheet" href="/assets/workflow-pages.css?v=d45735e67c" />
+  <style>
+    .gen-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 24px 8px;
+    }
+    .gen-top h1 { margin: 0; font-size: 1.35rem; color: #e8ecf3; }
+    .gen-top p { margin: 4px 0 0; color: #9aa7bd; font-size: 0.9rem; }
+    .gen-links a {
+      color: #6eb6ff;
+      text-decoration: none;
+      margin-left: 14px;
+      font-size: 0.9rem;
+    }
+    .gen-links a:hover { text-decoration: underline; }
+    .gen-empty {
+      text-align: center;
+      color: #9aa7bd;
+      padding: 48px 24px;
+      font-size: 0.95rem;
+    }
+    .gen-card .badge { background: rgba(61, 220, 151, 0.85); }
+    .gen-card .source-pill {
+      position: absolute;
+      left: 8px;
+      bottom: 52px;
+      z-index: 2;
+      max-width: calc(100% - 16px);
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(12, 16, 24, 0.72);
+      color: #b8d4ff;
+      font-size: 0.72rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gen-detail-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 24px 12px;
+    }
+    .gen-detail-head .btn {
+      appearance: none;
+      border: 1px solid #3a4a66;
+      background: #101828;
+      color: #dbe7f5;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.88rem;
+    }
+    .gen-detail-head .btn:hover { border-color: #6ea8fe; }
+    .gen-source-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #2a3140;
+      background: #171a21;
+      color: #dbe7f5;
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .gen-source-card img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .gen-cover-hero {
+      padding: 8px 24px 0;
+      max-width: none;
+    }
+    .gen-cover-hero img {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      background: #0c1018;
+      cursor: zoom-in;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+    .gen-cover-label {
+      margin: 8px 0 0;
+      font-size: 0.82rem;
+      color: #9aa7bd;
+    }
+    .gen-group-summary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #2a3140;
+      border-radius: 10px;
+      background: #121820;
+      color: #b8d4ff;
+      font-size: 0.84rem;
+    }
+    .gen-group-summary strong { color: #e8ecf3; }
+    .gen-group-summary span { color: #9aa7bd; }
+    .gen-detail-subtitle {
+      padding: 16px 24px 8px;
+      font-size: 0.9rem;
+      color: #b8d4ff;
+    }
+    .gen-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      padding: 8px 24px 32px;
+    }
+    .gen-item {
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+      cursor: zoom-in;
+      position: relative;
+    }
+    .gen-item img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      background: #0c1018;
+    }
+    .gen-item-meta {
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #9aa7bd;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .gen-item-del {
+      appearance: none;
+      border: 1px solid #5a3040;
+      background: rgba(80, 24, 40, 0.5);
+      color: #ffb8c8;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .gen-item-del:hover { border-color: #ff7a9a; }
+    .gen-item-cover-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(61, 139, 253, 0.9);
+      color: #fff;
+      font-size: 0.68rem;
+      pointer-events: none;
+    }
+    .gen-img-error {
+      aspect-ratio: 2/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      background: #0c1018;
+      color: #ff9ab0;
+      text-align: center;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+    .gen-del-group {
+      margin-left: auto;
+      border-color: #5a3040 !important;
+      color: #ffb8c8 !important;
+    }
+    .gen-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 20000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .gen-lightbox.open { display: flex; }
+    .gen-lightbox img {
+      max-width: min(96vw, 900px);
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .gen-lightbox .close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      color: #fff;
+      font-size: 1.8rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .gen-pipeline-bar {
+      margin: 0 24px 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2a3140;
+      background: #121820;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      font-size: 0.84rem;
+      color: #b8d4ff;
+    }
+    .gen-pipeline-bar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .gen-pipeline-bar .btn { font-size: 0.82rem; padding: 6px 10px; }
+    .gen-pipeline-status { color: #9aa7bd; font-size: 0.78rem; flex: 1 1 100%; }
+    .gen-pipeline-meta {
+      flex: 1 1 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px 12px;
+      padding-top: 4px;
+      border-top: 1px solid #243044;
+    }
+    .gen-pipeline-meta label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.76rem;
+      color: #9aa7bd;
+      cursor: default;
+    }
+    .gen-pipeline-meta input,
+    .gen-pipeline-meta textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #2a3140;
+      border-radius: 8px;
+      background: #0c1018;
+      color: #dbe7f5;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+    .gen-pipeline-meta textarea { min-height: 64px; resize: vertical; }
+    .gen-pipeline-mosaic {
+      flex: 1 1 100%;
+      display: none;
+      gap: 8px 12px;
+      padding-top: 6px;
+      border-top: 1px solid #243044;
+      font-size: 0.78rem;
+      color: #9aa7bd;
+    }
+    .gen-pipeline-mosaic.open { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    .gen-pipeline-mosaic label { display: flex; flex-direction: column; gap: 4px; cursor: default; }
+    .gen-pipeline-mosaic input,
+    .gen-pipeline-mosaic select {
+      border: 1px solid #2a3140;
+      border-radius: 8px;
+      background: #0c1018;
+      color: #dbe7f5;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+    }
+    .gen-pipeline-mosaic .parts { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+    .gen-pipeline-mosaic .parts label { flex-direction: row; align-items: center; cursor: pointer; }
+    .gen-pipeline-warn { color: #ffb86b; }
+    .gen-list-pipeline {
+      margin: 0 24px 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #3a4a66;
+      background: #121820;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      font-size: 0.84rem;
+      color: #b8d4ff;
+    }
+    .gen-list-pipeline strong { color: #e8ecf3; }
+    .gen-list-pipeline .btn { font-size: 0.82rem; padding: 6px 10px; }
+    .gen-list-pipeline .hint { color: #9aa7bd; font-size: 0.78rem; flex: 1 1 220px; }
+    .gen-list-pipeline .backlog-warn { color: #ffb86b; font-weight: 600; }
+    .gen-item-warn {
+      display: block;
+      margin-top: 4px;
+      color: #ffb86b;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+    .gen-item-processed {
+      display: block;
+      margin-top: 4px;
+      color: #6eb6ff;
+      font-size: 0.74rem;
+      text-decoration: none;
+    }
+    .gen-item-processed:hover { text-decoration: underline; }
+    .gen-meta-panel {
+      margin: 0 24px 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #2a3140;
+      background: #121820;
+      color: #c8d6ea;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+    .gen-meta-panel h3 {
+      margin: 0 0 8px;
+      font-size: 0.88rem;
+      color: #e8ecf3;
+      font-weight: 600;
+    }
+    .gen-meta-block { margin-bottom: 10px; }
+    .gen-meta-block:last-child { margin-bottom: 0; }
+    .gen-meta-label {
+      color: #9aa7bd;
+      font-size: 0.74rem;
+      margin-bottom: 4px;
+    }
+    .gen-meta-pre {
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #0c1018;
+      border: 1px solid #243044;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.74rem;
+      color: #b8d4ff;
+      max-height: 180px;
+      overflow: auto;
+    }
+    .gen-item-prompt {
+      padding: 0 10px 8px;
+      font-size: 0.72rem;
+      color: #8fa3bd;
+    }
+    .gen-item-prompt summary {
+      cursor: pointer;
+      color: #6eb6ff;
+      user-select: none;
+    }
+    .gen-item-prompt .gen-meta-pre { margin-top: 6px; max-height: 140px; }
+    .gen-queue-panel {
+      margin: 0 24px 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(110, 168, 254, 0.35);
+      background: rgba(16, 24, 40, 0.92);
+    }
+    .gen-queue-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .gen-queue-head strong { color: #b8d4ff; font-size: 0.9rem; }
+    .gen-queue-summary { font-size: 0.78rem; color: #9aa7bd; }
+    .gen-queue-log {
+      font-size: 0.74rem;
+      line-height: 1.5;
+      color: #9aa7bd;
+      max-height: 100px;
+      overflow: auto;
+      margin-bottom: 10px;
+      scrollbar-width: thin;
+    }
+    .gen-queue-log .active { color: #b8d4ff; }
+    .gen-queue-log .ok { color: #6fd6a8; }
+    .gen-queue-log .fail { color: #ff9ab0; }
+    .gen-queue-strip {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+    .gen-queue-thumb {
+      flex: 0 0 88px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #2a3140;
+      background: #0c1018;
+      position: relative;
+    }
+    .gen-queue-thumb.pending {
+      flex-basis: 120px;
+      min-height: 110px;
+      border: 2px dashed #6ea8fe;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px;
+    }
+    .gen-queue-thumb img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+    .gen-queue-thumb small {
+      display: block;
+      font-size: 0.62rem;
+      color: #7a8499;
+      padding: 3px 4px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gen-queue-spin {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #3a4a66;
+      border-top-color: #6ea8fe;
+      border-radius: 50%;
+      animation: gen-spin 0.85s linear infinite;
+    }
+    @keyframes gen-spin { to { transform: rotate(360deg); } }
+    .gen-card.is-generating::after {
+      content: "生成中";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 3;
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(61, 139, 253, 0.88);
+      color: #fff;
+    }
+    .gen-card { position: relative; }
+    .gen-pending-hero {
+      padding: 8px 24px 0;
+      max-width: 520px;
+    }
+    .gen-pending-box {
+      border: 2px dashed #6ea8fe;
+      border-radius: 12px;
+      padding: 28px 16px;
+      text-align: center;
+      background: rgba(61, 139, 253, 0.08);
+      color: #b8d4ff;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+  </style>
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+</head>
+<body>
+  <div id="siteNav"></div>
+  <div class="gen-top">
+    <div>
+      <h1>生成图库</h1>
+      <p>串行生图队列 · 按源作品分组 · 生成中与已出图都会显示（仅本地）</p>
+    </div>
+    <div class="gen-links">
+      <a class="workflow-primary-link" href="/studio">继续生图</a>
+      <a href="/pixiv">Pixiv 起号</a>
+      <a href="/progress?v=4">爬取进度</a>
+    </div>
+  </div>
+
+  <div id="listView">
+    <details class="gen-operations" id="genOperations">
+      <summary>后处理与任务状态</summary>
+      <div class="gen-operations-body">
+        <div class="gen-list-pipeline" id="listPipelineBar">
+          <strong>后处理</strong>
+          <label title="新图出图后自动排队超分/打码/清元数据">
+            <input type="checkbox" id="pipeAutoAfter" checked /> 生图后自动后处理
+          </label>
+          <button type="button" class="btn" id="pipeRunAllMissing">全库补后处理</button>
+          <span class="hint" id="listPipelineHint">检测待补数量…</span>
+        </div>
+        <div id="genQueuePanel" class="gen-queue-panel hidden">
+          <div class="gen-queue-head">
+            <strong>串行任务队列</strong>
+            <span class="gen-queue-summary" id="genQueueSummary">空闲</span>
+          </div>
+          <div class="gen-queue-log" id="genQueueLog"></div>
+          <div class="gen-queue-strip" id="genQueueStrip"></div>
+        </div>
+      </div>
+    </details>
+    <div class="gen-results-head">
+      <div>
+        <span class="workflow-eyebrow">本地结果</span>
+        <h2 class="gen-results-title">最近生成</h2>
+      </div>
+      <span>按生成时间排序 · 点击封面查看整组</span>
+    </div>
+    <section id="gallery" class="gallery-grid"></section>
+    <section id="genEmpty" class="workflow-empty-card gen-empty hidden" role="status" aria-live="polite">
+      <span class="workflow-empty-icon" aria-hidden="true">✦</span>
+      <div>
+        <span class="workflow-eyebrow">从第一张开始</span>
+        <h2>还没有生成结果</h2>
+        <p>打开工作台填写咒语，完成后图片会自动按源作品分组显示在这里。</p>
+        <div class="workflow-empty-actions">
+          <a class="workflow-primary-link" href="/studio">打开生图工作台</a>
+          <a class="workflow-link-secondary" href="/">先去图库选择作品</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="detailView" class="hidden">
+    <div class="gen-detail-head">
+      <button type="button" class="btn" id="backBtn">← 返回封面列表</button>
+      <a id="sourceLink" class="gen-source-card hidden" href="/" target="_blank" rel="noopener">
+        <img id="sourceThumb" alt="" />
+        <span id="sourceTitle"></span>
+      </a>
+      <span id="detailCount" class="meta"></span>
+      <a class="btn" id="pixivGroupBtn" href="/pixiv" title="Pixiv 起号上传本系列">P站本系列</a>
+      <button type="button" class="btn gen-del-group" id="deleteGroupBtn">删除本组全部</button>
+    </div>
+    <div class="gen-pipeline-bar" id="pipelineBar">
+      <strong>后处理</strong>
+      <label><input type="checkbox" id="pipeUpscale" checked /> 超分</label>
+      <label><input type="number" id="pipeScale" min="1" max="4" value="2" style="width:3em" /> x</label>
+      <label title="Pixiv 上传前强制打码"><input type="checkbox" id="pipeMosaic" checked disabled /> 打码（上传强制 · ANR）</label>
+      <label><input type="checkbox" id="pipeMeta" checked /> 清元数据</label>
+      <button type="button" class="btn" id="pipeRunGroup">本组一键处理</button>
+      <button type="button" class="btn" id="pipeSaveCfg">保存后处理配置</button>
+      <a class="btn" href="/pixiv#pipeline" style="text-decoration:none">Pixiv ⑤ 完整后处理</a>
+      <span class="gen-pipeline-status" id="pipeStatus">超分 → 打码(需 ANR) → 清元数据 → 可替换自定义字段</span>
+      <div class="gen-pipeline-mosaic open" id="pipeMosaicDetail">
+        <label>ANR 本体路径
+          <input type="text" id="pipeAnrRoot" placeholder="D:\tools\Auto-NovelAI-Refactor" />
+        </label>
+        <label>打码方式
+          <select id="pipeMosaicMethod">
+            <option value="像素">像素马赛克</option>
+            <option value="模糊">模糊</option>
+            <option value="线条">线条</option>
+            <option value="纯色">纯色遮挡</option>
+          </select>
+        </label>
+        <label>强度 / 像素块
+          <input type="number" id="pipeMosaicIntensity" min="4" max="64" value="24" />
+        </label>
+        <div class="parts">
+          <span>检测部位</span>
+          <label><input type="checkbox" id="pipeMosaicPenis" checked /> 欧金金</label>
+          <label><input type="checkbox" id="pipeMosaicPussy" checked /> 欧芒果</label>
+          <label><input type="checkbox" id="pipeMosaicNipple" checked /> 欧派派</label>
+        </div>
+      </div>
+      <div class="gen-pipeline-meta">
+        <label>替换元数据 · 主备注
+          <input type="text" id="pipeMetaNote" placeholder="例：AI generated illustration / 原创二次元插画" />
+        </label>
+        <label>替换元数据 · 字段名
+          <input type="text" id="pipeMetaNoteKey" placeholder="pixiv-nai-gallery" />
+        </label>
+        <label>替换元数据 · 额外字段（每行 key=value）
+          <textarea id="pipeMetaText" placeholder="Software=pixiv-nai-gallery&#10;Comment=原创插画"></textarea>
+        </label>
+      </div>
+    </div>
+    <div id="sourceMetaPanel" class="gen-meta-panel hidden"></div>
+    <div id="coverHero" class="gen-cover-hero hidden"></div>
+    <div id="detailSubtitle" class="gen-detail-subtitle hidden"></div>
+    <div id="detailGrid" class="gen-detail-grid"></div>
+  </div>
+
+  <div id="lightbox" class="gen-lightbox" aria-hidden="true">
+    <span class="close" id="lbClose">×</span>
+    <img id="lbImg" alt="生成图大图" />
+  </div>
+
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/escape.js?v=cf491c2912"></script>
+  <script>
+    const galleryEl = document.getElementById("gallery");
+    const genEmpty = document.getElementById("genEmpty");
+    const listView = document.getElementById("listView");
+    const detailView = document.getElementById("detailView");
+    const detailGrid = document.getElementById("detailGrid");
+    const sourceLink = document.getElementById("sourceLink");
+    const sourceThumb = document.getElementById("sourceThumb");
+    const sourceTitle = document.getElementById("sourceTitle");
+    const genOperations = document.getElementById("genOperations");
+
+    function showGeneratedEmpty(kind, message) {
+      const states = {
+        empty: {
+          eyebrow: "从第一张开始",
+          title: "还没有生成结果",
+          body: "打开工作台填写咒语，完成后图片会自动按源作品分组显示在这里。",
+          icon: "✦",
+        },
+        busy: {
+          eyebrow: "任务进行中",
+          title: "正在等待第一张结果",
+          body: message || "生成完成后会自动显示在这里，无需手动刷新。",
+          icon: "…",
+        },
+        error: {
+          eyebrow: "暂时无法读取",
+          title: "生成结果加载失败",
+          body: message || "请稍后重试，已有图片不会受影响。",
+          icon: "!",
+        },
+      };
+      const state = states[kind] || states.empty;
+      genEmpty.classList.remove("hidden");
+      genEmpty.innerHTML = `
+        <span class="workflow-empty-icon" aria-hidden="true">${escapeHtml(state.icon)}</span>
+        <div>
+          <span class="workflow-eyebrow">${escapeHtml(state.eyebrow)}</span>
+          <h2>${escapeHtml(state.title)}</h2>
+          <p>${escapeHtml(state.body)}</p>
+          <div class="workflow-empty-actions">
+            <a class="workflow-primary-link" href="/studio">打开生图工作台</a>
+            <a class="workflow-link-secondary" href="/">先去图库选择作品</a>
+          </div>
+        </div>`;
+    }
+    const detailCount = document.getElementById("detailCount");
+    const coverHero = document.getElementById("coverHero");
+    const sourceMetaPanel = document.getElementById("sourceMetaPanel");
+    const detailSubtitle = document.getElementById("detailSubtitle");
+    const deleteGroupBtn = document.getElementById("deleteGroupBtn");
+    let currentGroupId = "";
+    let pipelineCfg = null;
+    let listPollTimer = null;
+    let detailPollTimer = null;
+    let lastListSig = "";
+    let genPollBusy = false;
+    const lightbox = document.getElementById("lightbox");
+    const lbImg = document.getElementById("lbImg");
+
+    function qs(name) {
+      return new URLSearchParams(location.search).get(name) || "";
+    }
+
+    function setView(mode) {
+      const isDetail = mode === "detail";
+      listView.classList.toggle("hidden", isDetail);
+      detailView.classList.toggle("hidden", !isDetail);
+    }
+
+    function openLightbox(url) {
+      lbImg.src = url;
+      lightbox.classList.add("open");
+      lightbox.setAttribute("aria-hidden", "false");
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+      lbImg.removeAttribute("src");
+    }
+
+    document.getElementById("lbClose").addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (e) => { if (e.target === lightbox) closeLightbox(); });
+    function clearDetailPoll() {
+      if (detailPollTimer) {
+        clearTimeout(detailPollTimer);
+        detailPollTimer = null;
+      }
+    }
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      clearDetailPoll();
+      currentGroupId = "";
+      history.pushState({}, "", "/generated");
+      setView("list");
+      loadList();
+    });
+
+    function parsePngTextLines(raw) {
+      const out = {};
+      String(raw || "").split("\n").forEach((line) => {
+        const t = line.trim();
+        if (!t || t.startsWith("#")) return;
+        const i = t.indexOf("=");
+        if (i <= 0) return;
+        out[t.slice(0, i).trim()] = t.slice(i + 1).trim();
+      });
+      return out;
+    }
+
+    function batchItemId(bi) {
+      const fn = String(bi.filename || "").replace(/\.png$/i, "");
+      if (fn) return fn;
+      const url = String(bi.image_url || "");
+      return (url.split("/").pop() || "").replace(/\.png$/i, "").split("?")[0];
+    }
+
+    function mergeGroupsWithLive(groups, batch, queue) {
+      const map = new Map((groups || []).map((g) => [String(g.group_id), { ...g }]));
+      for (const bi of batch.items || []) {
+        if (!bi.ok || !bi.image_url) continue;
+        const gid = String(bi.work_id != null ? bi.work_id : "standalone");
+        const existing = map.get(gid);
+        if (!existing) {
+          map.set(gid, {
+            group_id: gid,
+            work_id: bi.work_id,
+            count: 1,
+            cover_url: bi.processed_url || bi.image_url,
+            cover_id: batchItemId(bi),
+            latest_at: batch.finished_at || batch.started_at || "",
+            source_title: bi.work_id ? `作品 ${bi.work_id}` : "独立生成",
+            _live: true,
+          });
+        } else {
+          existing.count = (existing.count || 0) + 1;
+          const at = batch.finished_at || batch.started_at || "";
+          if (!existing.latest_at || at >= existing.latest_at) {
+            existing.latest_at = at;
+            existing.cover_url = bi.processed_url || bi.image_url;
+            existing.cover_id = batchItemId(bi);
+          }
+          existing._live = true;
+          map.set(gid, existing);
+        }
+      }
+      if (batch.status === "running" && batch.current_work_id != null) {
+        const gid = String(batch.current_work_id);
+        const g = map.get(gid) || {
+          group_id: gid,
+          work_id: batch.current_work_id,
+          count: 0,
+          cover_url: "",
+          source_title: `作品 ${batch.current_work_id}`,
+        };
+        g._generating = true;
+        g._genMessage = batch.message || "";
+        map.set(gid, g);
+      } else if (queue.status === "running" && queue.work_id != null) {
+        const gid = String(queue.work_id);
+        const g = map.get(gid) || {
+          group_id: gid,
+          work_id: queue.work_id,
+          count: 0,
+          cover_url: "",
+          source_title: `作品 ${queue.work_id}`,
+        };
+        g._generating = true;
+        g._genMessage = queue.message || "NAI 生图中…";
+        map.set(gid, g);
+      }
+      return Array.from(map.values()).sort(
+        (a, b) => String(b.latest_at || b.group_id).localeCompare(String(a.latest_at || a.group_id))
+      );
+    }
+
+    function mergeGroupItems(items, groupId, batch) {
+      const map = new Map((items || []).map((it) => [it.id, { ...it }]));
+      const gid = String(groupId);
+      for (const bi of batch.items || []) {
+        if (!bi.ok || !bi.image_url) continue;
+        if (String(bi.work_id != null ? bi.work_id : "standalone") !== gid) continue;
+        const id = batchItemId(bi);
+        if (!id || map.has(id)) continue;
+        map.set(id, {
+          id,
+          image_url: bi.image_url,
+          processed_url: bi.processed_url || "",
+          work_id: bi.work_id,
+          created_at: batch.finished_at || batch.started_at || "",
+          _live: true,
+        });
+      }
+      return Array.from(map.values()).sort(
+        (a, b) => String(b.created_at || b.id).localeCompare(String(a.created_at || a.id))
+      );
+    }
+
+    function isGroupGenerating(groupId, batch, queue) {
+      const gid = String(groupId);
+      return (
+        (batch.status === "running" && String(batch.current_work_id) === gid)
+        || (queue.status === "running" && String(queue.work_id) === gid)
+      );
+    }
+
+    function renderQueuePanel(batch, queue) {
+      const panel = document.getElementById("genQueuePanel");
+      const summary = document.getElementById("genQueueSummary");
+      const log = document.getElementById("genQueueLog");
+      const strip = document.getElementById("genQueueStrip");
+      const queueError = queue.status === "error";
+      const busy = batch.status === "running" || queue.status === "running" || queueError;
+      const hasLog = (batch.items || []).length > 0;
+      if (!busy && !hasLog) {
+        panel.classList.add("hidden");
+        return;
+      }
+      if (genOperations && busy) genOperations.open = true;
+      panel.classList.remove("hidden");
+      const done = Number(batch.done) || 0;
+      const total = Number(batch.total) || 0;
+      const deferredUnattempted = Number(batch.deferred_unattempted_count) || 0;
+      const effectiveFailed = Number.isFinite(Number(batch.effective_fail_count))
+        ? Number(batch.effective_fail_count)
+        : Math.max(0, (Number(batch.fail_count) || 0) - deferredUnattempted);
+      const needsReview = !!batch.needs_review;
+      const blockedRetryCount = Number(batch.blocked_retry_count) || 0;
+      if (batch.status === "running") {
+        summary.textContent = `批量 ${done}/${total} · ${batch.message || "进行中"}`;
+      } else if (queue.status === "running") {
+        summary.textContent = `单张串行 · ${queue.message || "NAI 生图中"}`;
+      } else if (queueError) {
+        summary.textContent = `单张生图失败 · ${queue.message || "未知错误"}`;
+      } else if (needsReview) {
+        summary.textContent = `需人工核对：${blockedRetryCount} 张请求结果或扣费状态未知，不会自动重试；请先检查 NAI 远端图库`;
+      } else if (deferredUnattempted > 0) {
+        summary.textContent = `完成：成功 ${Number(batch.ok_count) || 0} · 失败 ${effectiveFailed} · 冷却期未请求 ${deferredUnattempted}（可重试）`;
+      } else {
+        summary.textContent = batch.message || "最近任务";
+      }
+
+      const rows = [];
+      if (queueError) {
+        rows.push(`<div class="fail">✗ #${queue.work_id || "?"} ${queue.message || "生图失败"}</div>`);
+      }
+      if (batch.status === "running" && batch.current_work_id) {
+        const q = queue.status === "running" ? ` · ${queue.message}` : "";
+        rows.push(`<div class="active">… #${batch.current_work_id} p${batch.current_page_index ?? 0} ${batch.message || ""}${q}</div>`);
+      } else if (queue.status === "running") {
+        rows.push(`<div class="active">… #${queue.work_id || "?"} ${queue.message || "NAI 生图中"}</div>`);
+      }
+      (batch.items || []).slice().reverse().slice(0, 10).forEach((item) => {
+        const ok = !!item.ok;
+        const unattempted = ["busy", "cooldown"].includes(String(item.error || "").toLowerCase());
+        const uncertain = !!item.billing_uncertain;
+        const icon = ok ? "✓" : (item.skipped ? "⊘" : (unattempted ? "↻" : (uncertain ? "⚠" : "✗")));
+        const cls = ok ? "ok" : (unattempted ? "active" : "fail");
+        const label = uncertain
+          ? "结果/扣费未知，已阻止自动重试，请先查远端图库 · "
+          : (unattempted ? "冷却期未请求，可重试 · " : "");
+        rows.push(`<div class="${cls}">${icon} #${item.work_id ?? "?"} ${label}${item.message || (ok ? "完成" : "失败")}</div>`);
+      });
+      log.innerHTML = rows.join("") || '<div>等待队列输出…</div>';
+
+      strip.innerHTML = "";
+      if (busy && batch.current_work_id) {
+        const pending = document.createElement("div");
+        pending.className = "gen-queue-thumb pending";
+        pending.innerHTML = `<div class="gen-queue-spin"></div><small>#${batch.current_work_id}<br>${batch.message || "生成中"}</small>`;
+        strip.appendChild(pending);
+      } else if (queue.status === "running") {
+        const pending = document.createElement("div");
+        pending.className = "gen-queue-thumb pending";
+        pending.innerHTML = `<div class="gen-queue-spin"></div><small>#${queue.work_id || "?"}<br>${queue.message || "生图中"}</small>`;
+        strip.appendChild(pending);
+      }
+      (batch.items || []).filter((bi) => bi.ok && bi.image_url).slice().reverse().forEach((bi) => {
+        const box = document.createElement("div");
+        box.className = "gen-queue-thumb";
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.src = (bi.processed_url || bi.image_url) + "?t=" + encodeURIComponent(batchItemId(bi));
+        img.alt = batchItemId(bi);
+        box.appendChild(img);
+        const sm = document.createElement("small");
+        sm.textContent = `#${bi.work_id ?? "?"}`;
+        box.appendChild(sm);
+        box.addEventListener("click", () => {
+          if (bi.work_id != null) {
+            history.pushState({}, "", `/generated?g=${bi.work_id}`);
+            loadDetail(String(bi.work_id));
+          }
+        });
+        strip.appendChild(box);
+      });
+    }
+
+    function renderCard(g) {
+      const card = document.createElement("div");
+      card.className = "card gen-card" + (g._generating ? " is-generating" : "");
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.alt = g.source_title || "生成封面";
+      // 优先使用缩略图（.thumb.webp），加载完成后在后台切换为原图
+      const coverUrl = g.cover_url || "";
+      const thumbUrl = g.cover_thumb || coverUrl;
+      if (thumbUrl) {
+        img.src = thumbUrl;
+        // 后台预加载原图
+        if (thumbUrl !== coverUrl && coverUrl) {
+          const preload = new Image();
+          preload.src = coverUrl;
+          preload.onload = () => { if (img.src === thumbUrl) img.src = coverUrl; };
+        }
+      } else if (g._generating) {
+        img.src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="#0c1018" width="100%" height="100%"/><text x="50%" y="50%" fill="#6ea8fe" font-size="14" text-anchor="middle" dy=".3em">生成中</text></svg>');
+      }
+      card.appendChild(img);
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = g._generating && !g.count ? "…" : (g.count || 0);
+      badge.title = "本组生成张数";
+      card.appendChild(badge);
+
+      const pill = document.createElement("div");
+      pill.className = "source-pill";
+      pill.textContent = g.source_title || (g.work_id ? `作品 ${g.work_id}` : "独立生成");
+      card.appendChild(pill);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      const when = g.latest_at ? g.latest_at.replace("T", " ").slice(0, 16) : "";
+      meta.innerHTML = `<div class="meta-caption">${pill.textContent}</div>${when ? `<div class="meta-date">${when}</div>` : ""}`;
+      card.appendChild(meta);
+
+      card.addEventListener("click", () => {
+        history.pushState({}, "", `/generated?g=${encodeURIComponent(g.group_id)}`);
+        loadDetail(g.group_id);
+      });
+      return card;
+    }
+
+    function scheduleListPoll() {
+      if (listPollTimer) clearTimeout(listPollTimer);
+      // 初始加载后，非繁忙时降低轮询频率到 10 秒，减少不必要的重建
+      const delay = genPollBusy ? 900 : 10000;
+      listPollTimer = setTimeout(async () => {
+        if (detailView.classList.contains("hidden")) {
+          await loadList(true);
+        }
+        scheduleListPoll();
+      }, delay);
+    }
+
+    function updateListPipelineBar(data) {
+      const hint = document.getElementById("listPipelineHint");
+      const autoCb = document.getElementById("pipeAutoAfter");
+      const backlog = data.pipeline_backlog || {};
+      const count = Number(backlog.count) || 0;
+      const pipeCfg = data.pipeline_config || {};
+      if (autoCb && pipeCfg.auto_after_generate != null) {
+        autoCb.checked = !!pipeCfg.auto_after_generate;
+      }
+      if (hint) {
+        hint.innerHTML = count
+          ? `<span class="backlog-warn">${count} 张仍待补后处理</span>（缺 *_final 或打码/超分未完成 · 上传 P 站前需补齐）`
+          : "全库后处理已齐全 · 新图默认自动排队";
+      }
+    }
+
+    async function loadPipelineBacklog() {
+      try {
+        const backlog = await window.ApiClient.get("/api/pipeline/backlog");
+        updateListPipelineBar({ pipeline_backlog: backlog, pipeline_config: pipelineCfg || {} });
+      } catch { }
+    }
+
+    async function saveAutoAfterGenerate(enabled) {
+      return window.ApiClient.request("/api/pipeline/config", {
+        method: "POST",
+        body: { auto_after_generate: !!enabled },
+      });
+    }
+
+    async function loadList(silent) {
+      if (!silent) {
+        galleryEl.innerHTML = "";
+        setView("list");
+      }
+      try {
+        const data = await window.ApiClient.get("/api/generated");
+        updateListPipelineBar(data);
+        loadPipelineBacklog();
+        const batch = data.batch || {};
+        const queue = data.queue || {};
+        genPollBusy = batch.status === "running" || queue.status === "running" || queue.status === "error";
+        renderQueuePanel(batch, queue);
+        const groups = mergeGroupsWithLive(data.groups || [], batch, queue);
+        const sig = groups.map((g) => `${g.group_id}:${g.count}:${g._generating}:${g.cover_url}`).join("|")
+          + "@" + (batch.done || 0) + batch.message + queue.status + queue.message;
+        if (silent && sig === lastListSig) return;
+        lastListSig = sig;
+        galleryEl.innerHTML = "";
+        if (!groups.length && !genPollBusy) {
+          showGeneratedEmpty("empty");
+          return;
+        }
+        if (!groups.length && genPollBusy) {
+          showGeneratedEmpty("busy", "任务进行中，出图后会自动显示在这里。");
+        } else {
+          genEmpty.classList.add("hidden");
+        }
+        groups.forEach((g) => galleryEl.appendChild(renderCard(g)));
+      } catch (e) {
+        showGeneratedEmpty("error", `加载失败：${e.message}`);
+      }
+    }
+
+    async function deleteGeneratedItem(imageId, groupId) {
+      if (!confirm(`删除这张生成图？\n${imageId}`)) return false;
+      await window.ApiClient.request(`/api/generated/item/${encodeURIComponent(imageId)}`, { method: "DELETE" });
+      if (groupId) await loadDetail(groupId);
+      else await loadList();
+      return true;
+    }
+
+    function mosaicPartsFromForm() {
+      const parts = [];
+      if (document.getElementById("pipeMosaicPenis").checked) parts.push("欧金金");
+      if (document.getElementById("pipeMosaicPussy").checked) parts.push("欧芒果");
+      if (document.getElementById("pipeMosaicNipple").checked) parts.push("欧派派");
+      return parts.length ? parts : ["欧金金", "欧芒果", "欧派派"];
+    }
+
+    function applyMosaicParts(parts) {
+      const set = new Set(parts || []);
+      document.getElementById("pipeMosaicPenis").checked = set.has("欧金金");
+      document.getElementById("pipeMosaicPussy").checked = set.has("欧芒果");
+      document.getElementById("pipeMosaicNipple").checked = set.has("欧派派");
+    }
+
+    function toggleMosaicDetail() {
+      document.getElementById("pipeMosaicDetail").classList.add("open");
+    }
+
+    async function loadPipelineConfig() {
+      try {
+        const data = await window.ApiClient.get("/api/pipeline/config");
+        pipelineCfg = data.config || {};
+        const up = pipelineCfg.upscale || {};
+        const mo = pipelineCfg.mosaic || {};
+        const md = pipelineCfg.metadata || {};
+        document.getElementById("pipeUpscale").checked = up.enabled !== false;
+        document.getElementById("pipeScale").value = up.scale || 2;
+        document.getElementById("pipeAnrRoot").value = pipelineCfg.anr_root || "";
+        document.getElementById("pipeMosaic").checked = true;
+        document.getElementById("pipeMosaicMethod").value = mo.method || "像素";
+        document.getElementById("pipeMosaicIntensity").value = mo.intensity || 24;
+        applyMosaicParts(mo.parts || ["欧金金", "欧芒果", "欧派派"]);
+        toggleMosaicDetail();
+        document.getElementById("pipeMeta").checked = md.enabled !== false;
+        document.getElementById("pipeMetaNote").value = md.custom_note || "";
+        document.getElementById("pipeMetaNoteKey").value = md.custom_note_key || "pixiv-nai-gallery";
+        const pngText = md.png_text || {};
+        document.getElementById("pipeMetaText").value = Object.entries(pngText)
+          .map(([k, v]) => `${k}=${v}`)
+          .join("\n");
+        const st = document.getElementById("pipeStatus");
+        if (st) {
+          const rt = data.mosaic_runtime || {};
+          const root = (rt && rt.anr_root) || pipelineCfg.anr_root || "";
+          st.textContent = [rt.message || (data.anr_available
+            ? "ANR 打码可用 · 输出 *_final.png"
+            : "打码需本机 ANR · 超分/清元数据可用"), root].filter(Boolean).join(" · ");
+          st.classList.toggle("gen-pipeline-warn", mo.enabled !== false && !data.anr_available);
+        }
+      } catch { }
+    }
+
+    function pipelineOptionsFromForm() {
+      return {
+        anr_root: document.getElementById("pipeAnrRoot").value.trim(),
+        upscale: {
+          enabled: document.getElementById("pipeUpscale").checked,
+          scale: Number(document.getElementById("pipeScale").value) || 2,
+        },
+        mosaic: {
+          enabled: true,
+          method: document.getElementById("pipeMosaicMethod").value || "像素",
+          intensity: Number(document.getElementById("pipeMosaicIntensity").value) || 24,
+          parts: mosaicPartsFromForm(),
+        },
+        metadata: {
+          enabled: document.getElementById("pipeMeta").checked,
+          custom_note: document.getElementById("pipeMetaNote").value.trim(),
+          custom_note_key: document.getElementById("pipeMetaNoteKey").value.trim() || "pixiv-nai-gallery",
+          png_text: parsePngTextLines(document.getElementById("pipeMetaText").value),
+        },
+      };
+    }
+
+    async function savePipelineConfigFromForm() {
+      return window.ApiClient.request("/api/pipeline/config", {
+        method: "POST",
+        body: pipelineOptionsFromForm(),
+      });
+    }
+
+    async function runPipeline(payload) {
+      const st = document.getElementById("pipeStatus");
+      if (st) st.textContent = "处理中…";
+      const data = await window.ApiClient.request("/api/pipeline/run", {
+        method: "POST",
+        body: { ...payload, options: pipelineOptionsFromForm() },
+      });
+      if (data.total && !data.final_url) {
+        for (let i = 0; i < 3600; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const sdata = await window.ApiClient.get("/api/pipeline/status");
+          const job = sdata.job || {};
+          if (st) {
+            const prog = job.total ? ` (${job.done || 0}/${job.total})` : "";
+            st.textContent = (job.message || "处理中…") + prog;
+          }
+          if (job.status !== "running") {
+            if (job.fail) st.textContent = `完成：成功 ${job.ok || 0}，失败 ${job.fail}`;
+            break;
+          }
+        }
+        if (currentGroupId) await loadDetail(currentGroupId);
+        else await loadList(true);
+        return data;
+      }
+      if (st) st.textContent = (data.steps || []).join(" → ") || data.message || "完成";
+      if (currentGroupId) await loadDetail(currentGroupId);
+      return data;
+    }
+
+    function renderPromptSnapshot(snapshot, label) {
+      if (!snapshot) return "";
+      const parts = [];
+      if (snapshot.base_caption) {
+        parts.push(`<div class="gen-meta-block"><div class="gen-meta-label">${label} · 基底</div><pre class="gen-meta-pre">${escapeHtml(snapshot.base_caption)}</pre></div>`);
+      }
+      (snapshot.char_captions || []).forEach((ch) => {
+        const idx = Number(ch.index);
+        const cap = ch.caption || "";
+        if (!cap) return;
+        parts.push(`<div class="gen-meta-block"><div class="gen-meta-label">${label} · 角色 #${idx + 1}</div><pre class="gen-meta-pre">${escapeHtml(cap)}</pre></div>`);
+      });
+      if (snapshot.uc) {
+        parts.push(`<div class="gen-meta-block"><div class="gen-meta-label">${label} · UC</div><pre class="gen-meta-pre">${escapeHtml(snapshot.uc)}</pre></div>`);
+      }
+      return parts.join("");
+    }
+
+    function sourcePromptToSnapshot(sourcePrompt) {
+      if (!sourcePrompt || (!sourcePrompt.base_caption && !(sourcePrompt.chars || []).length)) return null;
+      return {
+        base_caption: sourcePrompt.base_caption || "",
+        char_captions: (sourcePrompt.chars || []).map((ch) => ({
+          index: ch.index,
+          caption: ch.caption || "",
+        })),
+        uc: sourcePrompt.uc || "",
+      };
+    }
+
+    function renderSourceMetaPanel(sourcePrompt) {
+      if (!sourceMetaPanel) return;
+      if (!sourcePrompt || (!sourcePrompt.base_caption && !(sourcePrompt.chars || []).length)) {
+        sourceMetaPanel.classList.add("hidden");
+        sourceMetaPanel.innerHTML = "";
+        return;
+      }
+      const charBlocks = (sourcePrompt.chars || []).map((ch) => {
+        const creature = (ch.creature_tags || []).length
+          ? ` · 贵物: ${escapeHtml(ch.creature_tags.join(", "))}`
+          : "";
+        const summary = ch.summary ? `${escapeHtml(ch.summary)}${creature}` : "";
+        const head = summary ? `<div class="gen-meta-label">源图 · ${summary}</div>` : `<div class="gen-meta-label">源图 · 角色 #${Number(ch.index) + 1}</div>`;
+        return `<div class="gen-meta-block">${head}<pre class="gen-meta-pre">${escapeHtml(ch.caption || "")}</pre></div>`;
+      }).join("");
+      const base = sourcePrompt.base_caption
+        ? `<div class="gen-meta-block"><div class="gen-meta-label">源图 · 基底画风</div><pre class="gen-meta-pre">${escapeHtml(sourcePrompt.base_caption)}</pre></div>`
+        : "";
+      sourceMetaPanel.classList.remove("hidden");
+      sourceMetaPanel.innerHTML = `<h3>源作品元数据（图库原文，未改）</h3>${base}${charBlocks}`;
+    }
+
+    async function loadSourcePromptLazy(groupId) {
+      if (!sourceMetaPanel || !groupId) return;
+      try {
+        const data = await window.ApiClient.get(`/api/generated/${encodeURIComponent(groupId)}/source-prompt`);
+        if (String(currentGroupId) !== String(groupId)) return;
+        renderSourceMetaPanel(data.source_prompt || null);
+      } catch { }
+    }
+
+    function appendItemPrompt(box, item, sourcePrompt) {
+      const ownSnap = item.prompt_snapshot;
+      const snap = ownSnap || sourcePromptToSnapshot(sourcePrompt);
+      if (!snap || (!snap.base_caption && !(snap.char_captions || []).length)) return;
+      const details = document.createElement("details");
+      details.className = "gen-item-prompt";
+      const summary = document.createElement("summary");
+      /*
+      summary.textContent = "生成时咒语";
+      const inner = document.createElement("div");
+      inner.innerHTML = renderPromptSnapshot(snap, "试生成");
+      */
+      summary.textContent = ownSnap ? "Generated prompt" : "Generated prompt (source original)";
+      const inner = document.createElement("div");
+      inner.innerHTML = renderPromptSnapshot(snap, ownSnap ? "Generated" : "Source");
+      details.appendChild(summary);
+      details.appendChild(inner);
+      box.appendChild(details);
+    }
+
+    function attachImageErrorFallback(img, text) {
+      img.addEventListener("error", () => {
+        const fallback = document.createElement("div");
+        fallback.className = "gen-img-error";
+        fallback.textContent = text || "图片加载失败";
+        img.replaceWith(fallback);
+      }, { once: true });
+    }
+
+    function renderDetailItem(item, groupId, sourcePrompt) {
+      const box = document.createElement("div");
+      box.className = "gen-item";
+      if (item._cover) {
+        const coverBadge = document.createElement("div");
+        coverBadge.className = "gen-item-cover-badge";
+        coverBadge.textContent = "最新";
+        box.appendChild(coverBadge);
+      }
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      // 优先使用缩略图，渐进加载原图
+      const thumbUrl = item.thumb_url || item.image_url;
+      img.src = thumbUrl;
+      if (thumbUrl !== item.image_url) {
+        const preload = new Image();
+        preload.src = item.image_url;
+        preload.onload = () => { if (img.src === thumbUrl) img.src = item.image_url; };
+      }
+      img.alt = item.id;
+      attachImageErrorFallback(img, `图片加载失败：${item.id || ""}`);
+      box.appendChild(img);
+      const meta = document.createElement("div");
+      meta.className = "gen-item-meta";
+      const info = document.createElement("span");
+      const when = (item.created_at || "").replace("T", " ").slice(0, 16);
+      const size = item.width && item.height ? `${item.width}×${item.height}` : "";
+      const model = item.model || "";
+      info.textContent = [when, size, model, item.free_eligible ? "免费路径" : ""].filter(Boolean).join(" · ");
+      meta.appendChild(info);
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "gen-item-del";
+      delBtn.textContent = "删除";
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        try {
+          await deleteGeneratedItem(item.id, groupId);
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+      const pipeBtn = document.createElement("button");
+      pipeBtn.type = "button";
+      pipeBtn.className = "gen-item-del";
+      pipeBtn.textContent = "处理";
+      pipeBtn.title = "超分/打码/清元数据";
+      pipeBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        try {
+          await runPipeline({ image_id: item.id });
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+      const pxBtn = document.createElement("a");
+      pxBtn.className = "gen-item-del";
+      pxBtn.href = `/pixiv?image=${encodeURIComponent(item.id)}`;
+      pxBtn.textContent = "P站";
+      pxBtn.title = "Pixiv 起号上传";
+      pxBtn.addEventListener("click", (e) => e.stopPropagation());
+      meta.appendChild(pxBtn);
+      meta.appendChild(pipeBtn);
+      meta.appendChild(delBtn);
+      box.appendChild(meta);
+      appendItemPrompt(box, item, sourcePrompt);
+      const steps = item.pipeline_steps || [];
+      const mosaicSkip = steps.find((s) => String(s).startsWith("mosaic:skip"));
+      const mosaicOk = steps.some((s) => String(s).startsWith("mosaic:") && !String(s).includes("skip"));
+      if (mosaicSkip && !mosaicOk) {
+        const warn = document.createElement("span");
+        warn.className = "gen-item-warn";
+        const reason = String(mosaicSkip).replace(/^mosaic:skip\(/, "").replace(/\)$/, "");
+        warn.textContent = `打码未成功（${reason}）· 点「处理」补跑`;
+        box.appendChild(warn);
+      }
+      if (item.processed_url) {
+        const plink = document.createElement("a");
+        plink.className = "gen-item-processed";
+        plink.href = item.processed_url;
+        plink.target = "_blank";
+        plink.rel = "noopener";
+        plink.textContent = mosaicSkip && !mosaicOk ? "已处理版（未打码）↗" : "已处理版 ↗";
+        plink.addEventListener("click", (e) => e.stopPropagation());
+        box.appendChild(plink);
+      }
+      box.addEventListener("click", (e) => {
+        if (e.target === delBtn) return;
+        openLightbox(item.processed_url || item.image_url);
+      });
+      return box;
+    }
+
+    document.getElementById("pipeMosaic").addEventListener("change", toggleMosaicDetail);
+
+    document.getElementById("pipeSaveCfg").addEventListener("click", async () => {
+      try {
+        await savePipelineConfigFromForm();
+        const st = document.getElementById("pipeStatus");
+        if (st) st.textContent = "后处理配置已保存（含替换元数据）";
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    document.getElementById("pipeRunGroup").addEventListener("click", async () => {
+      if (!currentGroupId) return;
+      if (!confirm("对本组全部试生成图跑后处理流水线？")) return;
+      try {
+        await runPipeline({ group_id: currentGroupId });
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    document.getElementById("pipeAutoAfter").addEventListener("change", async (e) => {
+      const enabled = !!e.target.checked;
+      try {
+        await saveAutoAfterGenerate(enabled);
+        const hint = document.getElementById("listPipelineHint");
+        if (hint) {
+          hint.textContent = enabled
+            ? "已开启：新出图将自动排队后处理"
+            : "已关闭：需手动点「全库补后处理」或本组一键处理";
+        }
+      } catch (err) {
+        e.target.checked = !enabled;
+        alert(err.message);
+      }
+    });
+
+    document.getElementById("pipeRunAllMissing").addEventListener("click", async () => {
+      const hint = document.getElementById("listPipelineHint");
+      const missMatch = hint && hint.textContent.match(/(\d+)\s*张/);
+      const n = missMatch ? missMatch[1] : "";
+      const msg = n
+        ? `对全库 ${n} 张待补图跑后处理？（仅补缺步骤，已在后台串行执行）`
+        : "对全库待补图跑后处理？（仅补缺步骤）";
+      if (!confirm(msg)) return;
+      try {
+        const st = document.getElementById("pipeStatus");
+        if (st) st.textContent = "全库补后处理启动中…";
+        await runPipeline({ all_missing: true });
+        await loadList(true);
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    function scheduleDetailPoll(groupId) {
+      clearDetailPoll();
+      if (!groupId || detailView.classList.contains("hidden")) return;
+      const delay = genPollBusy ? 900 : 3000;
+      detailPollTimer = setTimeout(async () => {
+        if (!detailView.classList.contains("hidden") && currentGroupId === groupId) {
+          await loadDetail(groupId, true);
+        }
+      }, delay);
+    }
+
+    function renderPendingHero(batch, queue, groupId) {
+      let box = document.getElementById("genPendingHero");
+      if (!isGroupGenerating(groupId, batch, queue)) {
+        if (box) box.remove();
+        return;
+      }
+      if (!box) {
+        box = document.createElement("div");
+        box.id = "genPendingHero";
+        box.className = "gen-pending-hero";
+        coverHero.parentNode.insertBefore(box, coverHero);
+      }
+      const msg = batch.status === "running" && String(batch.current_work_id) === String(groupId)
+        ? (batch.message || "批量生图中…")
+        : (queue.message || "NAI 生图中…");
+      box.innerHTML = `<div class="gen-pending-box"><div class="gen-queue-spin" style="margin:0 auto 10px"></div><div><strong>本组正在生成</strong></div><div style="margin-top:6px;font-size:0.82rem;color:#9aa7bd">${msg}</div></div>`;
+      scheduleDetailPoll(groupId);
+    }
+
+    async function loadDetail(groupId, silent) {
+      currentGroupId = groupId;
+      const pixivGroupBtn = document.getElementById("pixivGroupBtn");
+      if (pixivGroupBtn) {
+        pixivGroupBtn.href = `/pixiv?group=${encodeURIComponent(groupId)}`;
+      }
+      if (!silent) loadPipelineConfig();
+      setView("detail");
+      if (!silent) {
+        detailGrid.innerHTML = "";
+        coverHero.innerHTML = "";
+        coverHero.classList.add("hidden");
+      }
+      if (sourceMetaPanel) {
+        sourceMetaPanel.classList.add("hidden");
+        sourceMetaPanel.innerHTML = "";
+      }
+      if (!silent) {
+        detailSubtitle.classList.add("hidden");
+        detailGrid.innerHTML = "<div class='gen-empty'>加载中…</div>";
+      }
+      let batch = {};
+      let queue = {};
+      try {
+        const data = await window.ApiClient.get(`/api/generated/${encodeURIComponent(groupId)}`);
+        batch = data.batch || {};
+        queue = data.queue || {};
+        genPollBusy = batch.status === "running" || queue.status === "running" || queue.status === "error";
+        const group = data.group || {};
+        const source = data.source;
+        renderSourceMetaPanel(data.source_prompt || null);
+        if (!data.source_prompt && !silent) {
+          loadSourcePromptLazy(groupId);
+        }
+        let items = mergeGroupItems(Array.isArray(group.items) ? group.items : [], groupId, batch);
+        renderPendingHero(batch, queue, groupId);
+        detailGrid.innerHTML = "";
+        coverHero.innerHTML = "";
+        coverHero.classList.add("hidden");
+        const pendingNote = isGroupGenerating(groupId, batch, queue) ? " · 生成中" : "";
+        detailCount.textContent = `共 ${items.length || group.count || 0} 张${pendingNote}`;
+
+        if (source && source.work_id) {
+          sourceLink.href = source.url || `/i/${source.work_id}`;
+          sourceLink.classList.remove("hidden");
+          sourceTitle.textContent = `源作品：${source.title || source.work_id}`;
+          if (source.thumb) {
+            sourceThumb.src = source.thumb;
+            sourceThumb.style.display = "";
+          } else {
+            sourceThumb.style.display = "none";
+          }
+        } else {
+          sourceLink.classList.add("hidden");
+        }
+
+        if (!items.length) {
+          if (isGroupGenerating(groupId, batch, queue)) {
+            detailGrid.innerHTML = "<div class='gen-empty'>本组正在生成，出图后会自动显示在这里…</div>";
+          } else {
+            detailGrid.innerHTML = "<div class='gen-empty'>本组暂无图片</div>";
+          }
+        } else {
+
+          coverHero.classList.remove("hidden");
+          coverHero.innerHTML = `<div class="gen-group-summary"><strong>本组图片</strong><span>按时间倒序显示，最新图已标记</span><span>组 ID：${escapeHtml(groupId)}</span></div>`;
+          detailSubtitle.classList.remove("hidden");
+          detailSubtitle.textContent = `全部 ${items.length} 张`;
+          items.forEach((item, idx) => {
+            detailGrid.appendChild(renderDetailItem({ ...item, _cover: idx === 0 }, groupId, data.source_prompt || null));
+          });
+        }
+      } catch (e) {
+        detailGrid.innerHTML = `<div class="gen-empty">加载失败: ${e.message}</div>`;
+      }
+      if (genPollBusy || isGroupGenerating(groupId, batch, queue)) {
+        scheduleDetailPoll(groupId);
+      } else {
+        clearDetailPoll();
+      }
+    }
+
+    deleteGroupBtn.addEventListener("click", async () => {
+      if (!currentGroupId) return;
+      if (!confirm(`删除本组全部生成图？`)) return;
+      try {
+        await window.ApiClient.request(`/api/generated/group/${encodeURIComponent(currentGroupId)}`, { method: "DELETE" });
+        history.pushState({}, "", "/generated");
+        await loadList();
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    window.addEventListener("popstate", () => {
+      const g = qs("g");
+      if (g) loadDetail(g);
+      else {
+        clearDetailPoll();
+        currentGroupId = "";
+        loadList();
+      }
+    });
+
+    loadPipelineConfig();
+    const bootGroup = qs("g");
+    if (bootGroup) loadDetail(bootGroup);
+    else loadList();
+    scheduleListPoll();
+  </script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+</body>
+</html>

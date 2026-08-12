@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>配置中心 | Nai学长工作室</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/shared/motion.css?v=8cc6bd1e71" />
+  <link rel="stylesheet" href="/assets/settings.css?v=76318dc9e9" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
+</head>
+<body class="settings-body">
+  <div id="siteNav"></div>
+  <main class="settings-shell">
+    <header class="settings-hero">
+      <div>
+        <p class="settings-kicker">GLOBAL CONFIGURATION</p>
+        <h1>配置中心（只需设置一次）</h1>
+        <p>这里统一管理管家、智能优化、NAI 生图和 Pixiv 发布所需配置。保存后全站复用，不必在每个页面重复填写。</p>
+      </div>
+      <a class="settings-butler-link" href="/butler">打开智能管家 →</a>
+    </header>
+
+    <div id="settingsStatus" class="settings-status" role="status"></div>
+
+    <section class="readiness-grid" aria-label="功能就绪状态">
+      <article class="readiness-card" data-ready="gallery"><span>01</span><strong>图库可用</strong><small>本地浏览</small></article>
+      <article class="readiness-card" data-ready="chat"><span>02</span><strong>可以聊天</strong><small>配置 AI 服务</small></article>
+      <article class="readiness-card" data-ready="generate"><span>03</span><strong>可以生图</strong><small>配置 NAI / 闲云</small></article>
+      <article class="readiness-card" data-ready="publish"><span>04</span><strong>可以发布</strong><small>Pixiv 页面登录</small></article>
+    </section>
+
+    <nav class="settings-group-nav" aria-label="配置分组">
+      <a href="#assistant-service" data-settings-group="personal"><strong>日常体验</strong><span>管家名称与界面偏好</span></a>
+      <a href="#ai-service" data-settings-group="services"><strong>智能服务</strong><span>AI 模型与生图账号池</span></a>
+      <a href="#usage" data-settings-group="insights"><strong>维护与用量</strong><span>账本、知识库和高级设置</span></a>
+    </nav>
+
+    <section class="settings-section" id="pixiv-intake-overview">
+      <div class="section-heading">
+        <div><span class="step">0</span><h2>Pixiv 采集配置</h2></div>
+        <p>采集通道、限速与代理总览；详细设置在采集页调整。</p>
+      </div>
+      <div class="field-card">
+        <div id="pixivIntakeSummary">正在读取…</div>
+        <a class="settings-button secondary" href="/progress" target="_blank" rel="noopener">前往采集页 →</a>
+      </div>
+    </section>
+
+    <section class="settings-section" id="assistant-service">
+      <div class="section-heading">
+        <div><span class="step">1</span><h2>管家与伙伴</h2></div>
+        <p>名称、动态形象与轮询节奏</p>
+      </div>
+      <div class="settings-grid two">
+        <label class="field-card">
+          <span>助手名称</span>
+          <input id="assistantName" maxlength="12" value="小镜" />
+        </label>
+        <label class="field-card">
+          <span>后台轮询</span>
+          <select id="assistantPollMode">
+            <option value="eco">省资源</option>
+            <option value="balanced">平衡</option>
+            <option value="realtime">实时</option>
+          </select>
+        </label>
+        <label class="field-card toggle-card">
+          <span class="switch-line"><input id="assistantLive2d" type="checkbox" /> 启用 Live2D 动态伙伴</span>
+        </label>
+        <label class="field-card">
+          <span>Live2D 模型路径</span>
+          <input id="assistantLive2dModel" value="/assets/vendor/live2d-models/hiyori/Hiyori.model3.json" />
+        </label>
+      </div>
+    </section>
+
+    <section class="settings-section" id="ai-service">
+      <div class="section-heading">
+        <div><span class="step">2</span><h2>全局 AI 服务</h2></div>
+        <p>管家聊天、提示词优化、视觉识别和 Pixiv 文案共用</p>
+      </div>
+      <div class="settings-grid two">
+        <label class="field-card">
+          <span>服务商</span>
+          <select id="aiProvider">
+            <option value="DeepSeek">DeepSeek</option>
+            <option value="OpenAI Compatible">OpenAI Compatible</option>
+            <option value="xAI">xAI</option>
+          </select>
+        </label>
+        <label class="field-card">
+          <span>API Base</span>
+          <input id="aiBase" placeholder="https://api.deepseek.com/v1" />
+        </label>
+        <label class="field-card">
+          <span>模型</span>
+          <input id="aiModel" list="aiModelOptions" placeholder="deepseek-v4-flash" />
+          <datalist id="aiModelOptions"></datalist>
+        </label>
+        <label class="field-card">
+          <span>API Key</span>
+          <input id="settingsAiKey" type="password" autocomplete="off" placeholder="留空即保留已保存 Key" />
+        </label>
+        <details class="field-card wide advanced-card">
+          <summary>高级参数</summary>
+          <div class="inline-fields">
+            <label><span>超时（秒）</span><input id="aiTimeout" type="number" min="5" max="600" value="60" /></label>
+            <label><span>温度</span><input id="aiTemperature" type="number" min="0" max="2" step="0.1" value="0.3" /></label>
+            <label><span>最大 Token</span><input id="aiMaxTokens" type="number" min="128" max="32768" value="4096" /></label>
+          </div>
+        </details>
+      </div>
+      <div class="ai-setup-actions">
+        <button class="settings-button secondary" type="button" id="loadAiModelsBtn">读取模型列表</button>
+        <button class="settings-button secondary" type="button" id="testAiBtn">测试文本能力</button>
+        <button class="settings-button secondary" type="button" id="testVisionBtn">测试视觉能力</button>
+      </div>
+      <div class="settings-hint"><strong>一次配置，全局使用</strong><span>Key 只保存在本机加密配置中，接口不会回显明文。</span></div>
+    </section>
+
+    <section class="settings-section" id="generation-service">
+      <div class="section-heading">
+        <div><span class="step">3</span><h2>NAI / 闲云生图账号池</h2></div>
+        <p>每行一个槽位，可混用 NovelAI 与闲云</p>
+      </div>
+      <div class="settings-grid two">
+        <label class="field-card wide">
+          <span>Token 列表</span>
+          <textarea id="settingsToken" rows="5" placeholder="pst-...&#10;xianyun:..."></textarea>
+          <small>支持 <code>nai:pst-...</code>、<code>pst-...</code>、<code>xianyun:KEY</code>。</small>
+        </label>
+        <label class="field-card">
+          <span>无前缀时默认提供商</span>
+          <select id="tokenDefaultProvider">
+            <option value="">自动识别</option>
+            <option value="novelai">NovelAI</option>
+            <option value="xianyun">闲云</option>
+          </select>
+        </label>
+        <div class="field-card">
+          <span>账号池状态</span>
+          <strong id="tokenStatusText">正在读取…</strong>
+          <p class="settings-empty-state" id="tokenEmptyState" hidden>还没有生图账号。粘贴 Token 并保存后，工作台和管家才能提交生图任务。</p>
+        </div>
+      </div>
+      <div class="ai-setup-actions">
+        <button class="settings-button secondary" type="button" id="saveTokenBtn">保存 Token</button>
+        <button class="settings-button secondary" type="button" id="checkTokenBtn">检查并移除失效槽位</button>
+      </div>
+    </section>
+
+    <section class="settings-section" id="usage">
+      <div class="section-heading">
+        <div><span class="step">4</span><h2>用量账本</h2></div>
+        <p>本地汇总，不把密钥或图片发给统计服务</p>
+      </div>
+      <div class="usage-grid">
+        <article><small>调用次数</small><strong id="usageCalls">—</strong></article>
+        <article><small>总 Token</small><strong id="usageTotalTokens">—</strong></article>
+        <article><small>生成图片</small><strong id="usageImages">—</strong></article>
+        <article><small>Anlas</small><strong id="usageAnlas">—</strong></article>
+      </div>
+      <p class="usage-note" id="usageNote"></p>
+    </section>
+
+    <section class="settings-section" id="knowledgeCatalog">
+      <div class="section-heading">
+        <div><span class="step">5</span><h2>本地知识库</h2></div>
+        <span class="knowledge-state" id="knowledgeState">读取中</span>
+      </div>
+      <p class="knowledge-lead">供智能管家检索项目说明、使用方法和本地文档；重建任务在管家任务中心运行。</p>
+      <p class="settings-empty-state" id="knowledgeEmptyState" hidden>知识库目前没有可检索内容。可点击“重建知识库”，任务会在管家任务中心运行。</p>
+      <div class="knowledge-metrics">
+        <article><small>文档</small><strong id="knowledgeDocuments">—</strong></article>
+        <article><small>分块</small><strong id="knowledgeChunks">—</strong></article>
+        <article><small>索引版本</small><strong id="knowledgeIndexVersion">—</strong></article>
+        <article><small>最后成功</small><strong id="knowledgeLastSuccess">—</strong></article>
+      </div>
+      <div class="knowledge-actions">
+        <button class="settings-button secondary" type="button" id="knowledgeRebuildBtn">重建知识库</button>
+        <span id="knowledgeMessage"></span>
+      </div>
+    </section>
+
+    <details class="settings-section advanced-section" id="gallery-preferences">
+      <summary><span>图库行为与高级偏好</span><small>默认设置已经适合大多数人</small></summary>
+      <div class="details-content settings-grid two">
+        <label class="field-card toggle-card"><span class="switch-line"><input type="checkbox" id="prefNaiOnly" checked /> 默认只显示 NAI / NAI_X</span></label>
+        <label class="field-card toggle-card"><span class="switch-line"><input type="checkbox" id="prefQuickStudio" /> 单击作品直接进工作台</span></label>
+        <label class="field-card toggle-card"><span class="switch-line"><input type="checkbox" id="prefShowOther" /> 显示其他 AI 类型</span></label>
+        <label class="field-card"><span>默认优化模式</span>
+          <select id="prefOptimizeMode">
+            <option value="smart">智能优化</option>
+            <option value="sanitize">仅净化</option>
+            <option value="nai_expressive">NAI 表现力增强</option>
+            <option value="native">保持原样</option>
+          </select>
+        </label>
+      </div>
+    </details>
+  </main>
+
+  <section class="settings-section" id="software-update">
+    <div class="section-heading">
+      <div><span class="step">8</span><h2>软件更新</h2></div>
+      <p>检查并下载新版本；下载完成后重启应用自动安装。</p>
+    </div>
+    <div class="field-card">
+      <div id="updateStatus">当前版本：<span id="updateCurrent">-</span></div>
+      <div class="update-actions">
+        <button class="settings-button secondary" type="button" id="updateCheckBtn">检查更新</button>
+        <button class="settings-button primary" type="button" id="updateDownloadBtn" disabled>下载并更新</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="save-dock">
+    <div><strong>统一保存</strong><span>助手、AI 服务和图库偏好一起保存</span></div>
+    <button class="settings-button primary" type="button" id="saveAllBtn">保存全部配置</button>
+  </div>
+
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/settings.js?v=2159898420"></script>
+</body>
+</html>

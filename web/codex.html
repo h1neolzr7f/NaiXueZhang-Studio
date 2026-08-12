@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>自选库 | Nai学长工作室</title>
+  <link rel="stylesheet" href="/assets/styles.css?v=1f1b43909b" />
+  <link rel="stylesheet" href="/assets/local.css?v=2e0bfcbad7" />
+  <link rel="stylesheet" href="/assets/shared/site-nav.css?v=756cdf2a38" />
+  <link rel="stylesheet" href="/assets/core-theme.css?v=0158aeb657" />
+  <link rel="stylesheet" href="/assets/gallery-atlas.css?v=de6622c7dc" />
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+  <style>
+    .codex-wrap { max-width: 1080px; margin: 0 auto; padding: 24px 18px 64px; }
+    h1 { font-size: 22px; margin: 8px 0 2px; }
+    .sub { color: #64748b; font-size: 13px; margin-bottom: 18px; }
+    #dropzone {
+      border: 2px dashed #94a3b8; border-radius: 16px; background: #f8fafc;
+      padding: 36px 20px; text-align: center; color: #475569; cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    #dropzone.drag { border-color: #2563eb; background: #eff6ff; }
+    #dropzone .big { font-size: 16px; font-weight: 600; color: #1e293b; }
+    .drop-row { display: flex; gap: 12px; align-items: center; margin: 14px 0; flex-wrap: wrap; }
+    .drop-row select, .drop-row input {
+      padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff;
+    }
+    .drop-row .btn { background: #2563eb; color: #fff; border: 0; border-radius: 10px; padding: 9px 16px; cursor: pointer; }
+    .result-box { margin-top: 14px; border-radius: 12px; padding: 12px 14px; background: #f1f5f9; font-size: 13px; white-space: pre-wrap; }
+    .result-box.ok { background: #ecfdf5; border: 1px solid #a7f3d0; }
+    .result-box.fail { background: #fef2f2; border: 1px solid #fecaca; }
+    .facet-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 12px; }
+    .chip {
+      padding: 5px 12px; border-radius: 999px; border: 1px solid #cbd5e1;
+      background: #fff; color: #334155; cursor: pointer; font-size: 13px;
+    }
+    .chip.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .card { border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid #e2e8f0; }
+    .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #e2e8f0; }
+    .card .meta { padding: 6px 8px; font-size: 12px; color: #475569; }
+    .muted { color: #94a3b8; }
+  </style>
+<link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
+</head>
+<body>
+  <nav id="siteNav"></nav>
+  <main class="codex-wrap">
+    <h1>自选库</h1>
+    <p class="sub">本地图片拖入导入：只收含 NovelAI 元数据的图片，每次拖入指定一个「小类」归档。点击缩略图打开详情与创作入口。</p>
+
+    <div class="drop-row">
+      <label>小类：</label>
+      <select id="codexCategory"><option value="">（选择已有小类）</option></select>
+      <input id="codexNewCategory" type="text" placeholder="输入新名称将新建小类（优先于下拉选择）" maxlength="40" />
+      <button class="btn" id="codexPick" type="button">选择文件</button>
+      <span class="muted" id="codexPickHint"></span>
+    </div>
+    <div id="dropzone">
+      <div class="big">把图片拖到这里</div>
+      <div class="muted">支持多选；PNG/JPG/WebP，每张 ≤ 64MB；非 NAI 图片会被拒绝</div>
+    </div>
+    <div id="codexResult" class="result-box" hidden></div>
+
+    <div class="facet-row" id="codexFacets"></div>
+    <div class="grid" id="codexGrid"></div>
+    <p class="muted" id="codexEmpty" hidden>自选库还没有作品——拖入第一批图片吧。</p>
+  </main>
+
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script>
+  (() => {
+    "use strict";
+    const byId = (id) => document.getElementById(id);
+    const request = (path, options = {}) => window.ApiClient.request(path, options);
+
+    const GID = "codex";
+    const ASSET_BASE = "/data/gallery/codex/";
+    let selectedCategory = "";
+
+    const dropzone = byId("dropzone");
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.multiple = true;
+    fileInput.accept = "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp";
+    byId("codexPick").addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files.length) uploadFiles(Array.from(fileInput.files));
+      fileInput.value = "";
+    });
+
+    ["dragenter", "dragover"].forEach((ev) =>
+      dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add("drag"); }));
+    ["dragleave", "drop"].forEach((ev) =>
+      dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove("drag"); }));
+    dropzone.addEventListener("drop", (e) => {
+      const files = Array.from(e.dataTransfer?.files || []);
+      if (files.length) uploadFiles(files);
+    });
+
+    function currentCategory() {
+      return (byId("codexNewCategory").value.trim() ||
+        byId("codexCategory").value || "").trim() || "未分类";
+    }
+
+    async function uploadFiles(files) {
+      const category = currentCategory();
+      const box = byId("codexResult");
+      box.hidden = false;
+      box.className = "result-box";
+      box.textContent = `正在解析 ${files.length} 张图片 → 小类「${category}」…`;
+      const form = new FormData();
+      form.append("category", category);
+      for (const file of files) form.append("files", file);
+      try {
+        const payload = await request(`/api/gallery/${GID}/import-drop`, { method: "POST", body: form });
+        const accepted = payload.accepted || [];
+        const rejected = payload.rejected || [];
+        const lines = [];
+        for (const item of accepted) lines.push(`✓ ${item.file} → 入库（${item.category}）`);
+        for (const item of rejected) lines.push(`✗ ${item.file} → ${item.reason}`);
+        box.className = "result-box " + (accepted.length ? "ok" : "fail");
+        box.textContent = lines.length ? lines.join("\n") : "（没有可处理的文件）";
+        await Promise.all([loadFacets(), loadWorks()]);
+      } catch (error) {
+        box.className = "result-box fail";
+        box.textContent = `导入失败：${error.message || String(error)}`;
+      }
+    }
+
+    async function loadFacets() {
+      const payload = await request(`/api/galleries/${GID}/groups`);
+      const items = payload.items || [];
+      const row = byId("codexFacets");
+      row.replaceChildren();
+      const all = document.createElement("button");
+      all.className = "chip" + (selectedCategory === "" ? " active" : "");
+      all.textContent = "全部";
+      all.addEventListener("click", () => { selectedCategory = ""; refresh(); });
+      row.append(all);
+      for (const item of items) {
+        const key = String(item.key ?? item.label ?? item.name ?? item.category ?? "").trim();
+        if (!key) continue;
+        const label = String(item.label ?? item.name ?? key);
+        const chip = document.createElement("button");
+        chip.className = "chip" + (selectedCategory === key ? " active" : "");
+        chip.textContent = label;
+        chip.addEventListener("click", () => { selectedCategory = key; refresh(); });
+        row.append(chip);
+      }
+      const select = byId("codexCategory");
+      select.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "（选择已有小类）";
+      select.append(placeholder);
+      for (const item of items) {
+        const key = String(item.key ?? item.label ?? item.name ?? item.category ?? "").trim();
+        if (!key) continue;
+        const label = String(item.label ?? item.name ?? key);
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = label;
+        select.append(option);
+      }
+    }
+
+    function thumbOf(item) {
+      if (!item) return "";
+      if (item.thumb_path) return ASSET_BASE + String(item.thumb_path).replace(/^\/+/, "");
+      const images = item.list_json?.images;
+      if (Array.isArray(images) && images.length) {
+        const local = String(images[0].local_path || images[0].image_path || "");
+        if (local) return ASSET_BASE + local.replace(/^\/+/, "");
+      }
+      return "";
+    }
+
+    async function loadWorks() {
+      const params = new URLSearchParams({ gallery_id: GID, sort: "new", page_size: "120" });
+      if (selectedCategory) params.set("group", "group:" + selectedCategory);
+      const payload = await request(`/api/ai_works_search?${params.toString()}`);
+      const items = payload.items || [];
+      const grid = byId("codexGrid");
+      grid.replaceChildren();
+      byId("codexEmpty").hidden = items.length > 0;
+      for (const item of items) {
+        const card = document.createElement("a");
+        card.className = "card";
+        card.href = `/i/${encodeURIComponent(String(item.id))}?gallery=${GID}`;
+        card.target = "_blank";
+        card.rel = "noopener";
+        card.title = "打开详情与创作入口（Studio / 换角 / 队列）";
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.alt = item.title || String(item.id || "");
+        const src = thumbOf(item);
+        if (src) img.src = src;
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = item.title || String(item.id || "");
+        card.append(img, meta);
+        grid.append(card);
+      }
+    }
+
+    function refresh() { loadFacets().then(loadWorks).catch(() => {}); }
+    refresh();
+  })();
+  </script>
+</body>
+</html>

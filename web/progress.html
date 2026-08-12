@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Pixiv NAI 采集与进度</title>
+  <!-- progress-ui-v7 -->
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eaf4fb;
+      --card: #f8fcff;
+      --line: #b9cfe3;
+      --text: #0a2945;
+      --muted: #53728c;
+      --accent: #1477d4;
+      --ok: #16875b;
+      --warn: #9a6900;
+      --err: #c24868;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      background:
+        linear-gradient(rgba(20, 119, 212, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20, 119, 212, 0.055) 1px, transparent 1px),
+        radial-gradient(1200px 600px at 10% -10%, #c9e9fb 0%, var(--bg) 55%);
+      background-size: 32px 32px, 32px 32px, auto;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    .top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    h1 { margin: 0; font-size: 1.4rem; }
+    .links a {
+      color: var(--accent); text-decoration: none; margin-left: 14px;
+    }
+    .crawler-panel {
+      background: linear-gradient(135deg, #dceaff 0%, #cfe2ff 100%);
+      border: 2px solid #4f7cff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+    }
+    .crawler-panel-text {
+      flex: 1 1 220px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .crawler-panel-text strong { color: var(--text); font-size: 1.05rem; }
+    .btn-restart {
+      appearance: none; border: none;
+      background: linear-gradient(180deg, #4f8cff, #2f5fd1);
+      color: #fff; border-radius: 12px;
+      padding: 14px 28px; min-width: 180px;
+      font-size: 1.15rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(47, 95, 209, 0.45);
+    }
+    .btn-restart:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-restart:disabled { opacity: .6; cursor: wait; }
+    .crawler-actions {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .btn-watchdog {
+      appearance: none; border: 2px solid #6ea8fe;
+      background: #eef5ff; color: var(--text);
+      border-radius: 12px; padding: 12px 20px; min-width: 170px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-watchdog.on {
+      background: linear-gradient(180deg, #ddf7eb, #c9eedf);
+      border-color: var(--ok); color: #105f42;
+    }
+    .btn-watchdog.off { border-color: #9db4cc; color: var(--muted); }
+    .btn-watchdog:disabled { opacity: .6; cursor: wait; }
+    .action-msg { font-size: 0.92rem; color: var(--muted); width: 100%; }
+    .action-msg.ok { color: var(--ok); }
+    .action-msg.fail { color: var(--err); }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 999px; background: #eef5ff;
+      border: 1px solid var(--line); font-size: 0.92rem;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; background: var(--muted);
+      box-shadow: 0 0 0 0 rgba(110,168,254,.5);
+    }
+    .dot.running { background: var(--accent); animation: pulse 1.6s infinite; }
+    .dot.completed { background: var(--ok); }
+    .dot.paused { background: var(--warn); }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(110,168,254,.45); }
+      70% { box-shadow: 0 0 0 10px rgba(110,168,254,0); }
+      100% { box-shadow: 0 0 0 0 rgba(110,168,254,0); }
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 14px; padding: 18px; margin-bottom: 14px;
+    }
+    .meta { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+    .overall {
+      height: 14px; background: #d6e8f5; border-radius: 999px; overflow: hidden;
+      border: 1px solid var(--line); margin: 12px 0 6px;
+    }
+    .overall > span {
+      display: block; height: 100%; width: 0%;
+      background: linear-gradient(90deg, #4f7cff, #4bc89a);
+      transition: width .6s ease;
+    }
+    .phase { margin-top: 14px; }
+    .phase-head {
+      display: flex; justify-content: space-between; gap: 8px;
+      font-size: 0.95rem; margin-bottom: 6px;
+    }
+    .bar {
+      height: 10px; background: #d6e8f5; border-radius: 999px; overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .bar > span {
+      display: block; height: 100%; width: 0%; background: var(--accent);
+      transition: width .6s ease;
+    }
+    .bar.done > span { background: var(--ok); }
+    .log {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.82rem; color: #294b6a; white-space: pre-wrap;
+      max-height: 220px; overflow: auto; background: #edf6fc;
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+    }
+    .err { color: var(--err); margin-top: 8px; min-height: 1.2em; }
+    .retry { color: var(--warn); }
+    .page-ver { color: var(--muted); font-size: 0.78rem; }
+    .task-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px; margin-top: 12px;
+    }
+    .task-field label {
+      display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 6px;
+    }
+    .task-field input, .task-field select {
+      width: 100%; background: #f7fbff; color: var(--text);
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+      font-size: 0.95rem;
+    }
+    .task-field.wide { grid-column: 1 / -1; }
+    .task-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .btn-preset {
+      appearance: none; border: 1px solid var(--line); background: #eef5ff;
+      color: var(--text); border-radius: 999px; padding: 8px 14px;
+      font-size: 0.85rem; cursor: pointer;
+    }
+    .btn-preset:hover { border-color: var(--accent); color: var(--accent); }
+    .task-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .btn-secondary {
+      appearance: none; border: 1px solid var(--line); background: #eef5ff;
+      color: var(--text); border-radius: 12px; padding: 12px 18px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--accent); }
+    .btn-secondary:disabled { opacity: .6; cursor: wait; }
+    .task-hint { color: var(--muted); font-size: 0.85rem; margin-top: 10px; line-height: 1.5; }
+    .task-check { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-size: 0.9rem; }
+    .guard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .guard-item {
+      border: 1px solid var(--line);
+      background: #eef5ff;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .guard-label { color: var(--muted); font-size: 0.78rem; margin-bottom: 4px; }
+    .guard-value { font-size: 1.05rem; font-weight: 700; }
+    .guard-note { color: var(--muted); font-size: 0.84rem; line-height: 1.5; margin-top: 10px; }
+    .storage-list { display: grid; gap: 10px; margin-top: 12px; }
+    .storage-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+      border: 1px solid var(--line); background: #eef5ff; border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .storage-label { color: var(--muted); font-size: 0.82rem; min-width: 88px; }
+    .storage-path {
+      flex: 1 1 280px; font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 0.86rem; word-break: break-all;
+    }
+    .btn-mini {
+      appearance: none; border: 1px solid var(--line); background: #f7fbff;
+      color: var(--text); border-radius: 8px; padding: 6px 10px;
+      font-size: 0.82rem; cursor: pointer;
+    }
+    .btn-mini:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .btn-mini:disabled { opacity: .6; cursor: wait; }
+  </style>
+  <link rel="stylesheet" href="/assets/studio-theme.css?v=726f16a66a" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico?v=3" />
+</head>
+<body>
+  <div id=\"siteNav\"></div>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Pixiv NAI 采集与进度</h1>
+        <div class="page-ver">页面 v7 · 地址 http://127.0.0.1:8797/progress</div>
+      </div>
+      <div class="links">
+        <a href="/">返回图库</a>
+        <a href="/api/progress" target="_blank">JSON 数据</a>
+      </div>
+    </div>
+
+    <div class="crawler-panel" id="crawlerPanel" hidden>
+      <div class="crawler-panel-text">
+        <strong>爬虫控制</strong><br>
+        <b>从现有断点继续，不清空数据库</b>。甩手采集会保存当前任务、启用平衡性能档并开启自动守护；
+        进程意外退出会自动恢复，直到当前任务完成。CDN 404 的封面会记为耗尽，不会无限重试。
+      </div>
+      <div class="crawler-actions">
+        <button class="btn-restart js-autopilot" data-target="pixiv" type="button">Pixiv 甩手采集（推荐）</button>
+        <button class="btn-secondary js-start-crawler" data-target="pixiv" type="button">持续采集 Pixiv</button>
+        <button class="btn-secondary js-stop-crawler" data-target="pixiv" type="button">停止 Pixiv 采集</button>
+        <button class="btn-restart js-update-arknights" type="button">更新明日方舟</button>
+        <button class="btn-secondary js-restart-crawler" type="button">重启站点</button>
+        <button class="btn-watchdog off js-watchdog-toggle" type="button">自动守护：关</button>
+        <button class="btn-secondary js-crawler-report" type="button">采集交付报告</button>
+      </div>
+      <span id="actionMsg" class="action-msg"></span>
+      <pre id="crawlerReport" class="log" hidden></pre>
+    </div>
+
+    <div class="card" id="pixivNaiPanel">
+      <strong>Pixiv NAI 直连入库</strong>
+      <div class="task-hint">
+        直接从 Pixiv 发现作品；每张原图必须通过本地 NovelAI 元数据解析才会入库。
+        非 NAI、ComfyUI、普通图片只记录拒绝原因，不会混入图库。
+        公开通道不需要账号，支持标签和画师 UID；Pixiv 日榜需切换到 App API。
+      </div>
+      <div class="task-grid">
+        <div class="task-field wide">
+          <div class="task-field">
+            <label for="pixivSortMode">发现排序</label>
+            <select id="pixivSortMode">
+              <option value="date_desc">最新发布</option>
+              <option value="popular_desc">收藏热度</option>
+            </select>
+          </div>
+          <label for="pixivSearchQueries">搜索标签（每行一个）</label>
+          <textarea id="pixivSearchQueries" rows="3" placeholder="NovelAI"></textarea>
+        </div>
+        <div class="task-field wide">
+          <label for="pixivUserIds">指定画师 UID（可选，每行一个）</label>
+          <textarea id="pixivUserIds" rows="2" placeholder="12345678"></textarea>
+        </div>
+        <div class="task-field">
+          <label for="pixivAccountId">本地 Pixiv 账号槽 ID（留空使用当前账号）</label>
+          <input id="pixivAccountId" type="text" placeholder="acc_xxxxxxxxxx" />
+        </div>
+        <div class="task-field">
+          <label for="pixivSourceMode">采集通道</label>
+          <select id="pixivSourceMode">
+            <option value="auto">自动：有账号走 API，无账号走公网页面</option>
+            <option value="api">Pixiv App API（需要账号）</option>
+            <option value="public">Pixiv 公网页面（无需账号）</option>
+          </select>
+        </div>
+        <div class="task-field">
+          <label for="pixivMaxPages">每轮最多 API 页数</label>
+          <input id="pixivMaxPages" type="number" min="1" max="100" value="3" />
+        </div>
+        <div class="task-field">
+          <label for="pixivMaxWorks">每轮最多作品数</label>
+          <input id="pixivMaxWorks" type="number" min="1" max="5000" value="60" />
+        </div>
+        <div class="task-field">
+          <label for="pixivDelay">作品间隔（秒，API 模式最低 0.5）</label>
+          <input id="pixivDelay" type="number" min="0" max="60" step="0.1" value="1.2" />
+        </div>
+        <div class="task-field">
+          <label for="pixivProxy">HTTP 代理（可选，公网通道使用）</label>
+          <input id="pixivProxy" type="text" placeholder="http://127.0.0.1:7897" autocomplete="off" />
+        </div>
+        <div class="task-field">
+          <label for="pixivBrowserMode">浏览器渲染（更稳，需本机 Chromium/Chrome/Edge）</label>
+          <input id="pixivBrowserMode" type="checkbox" />
+        </div>
+        <div class="task-field">
+          <label for="pixivThumbOnly">多页作品只存首图原图，其余页存缩略图（省空间）</label>
+          <input id="pixivThumbOnly" type="checkbox" checked />
+        </div>
+        <div class="task-field">
+          <label for="pixivStorageQuotaGiB">图库容量上限（GiB，0 为不限）</label>
+          <input id="pixivStorageQuotaGiB" type="number" min="0" max="100000" step="0.1" value="0" />
+        </div>
+      </div>
+      <label class="task-check"><input id="pixivEnabled" type="checkbox" /> 启用 Pixiv 直连采集</label>
+      <label class="task-check"><input id="pixivRanking" type="checkbox" /> 同时采集 Pixiv 日榜候选</label>
+      <label class="task-check"><input id="pixivAiPrefilter" type="checkbox" checked /> 先要求 Pixiv 标记为 AI 作品（NAI 元数据仍是最终门槛）</label>
+      <div class="task-actions">
+        <button class="btn-secondary" id="pixivPreflight" type="button">只读预检</button>
+        <button class="btn-secondary" id="pixivSave" type="button">保存设置</button>
+        <button class="btn-secondary" id="pixivRunOnce" data-target="pixiv" type="button">执行一轮</button>
+        <button class="btn-restart" id="pixivStartWatch" data-target="pixiv" type="button">持续采集</button>
+        <button class="btn-secondary" id="pixivStop" data-target="pixiv" type="button">停止 Pixiv 采集</button>
+      </div>
+      <span id="pixivActionMsg" class="action-msg"></span>
+      <pre id="pixivPreflightReport" class="log" hidden></pre>
+      <pre id="pixivNaiReport" class="log">尚未运行</pre>
+      <div class="report-actions">
+        <a href="/?gallery=site" target="_blank" rel="noopener">去图库看新入库 →</a>
+        <button type="button" id="pixivRetryQuarantine" disabled>重试隔离项</button>
+        <span class="muted" id="pixivQuarantineInfo"></span>
+      </div>
+    </div>
+
+    <div class="card" id="taskCard" hidden>
+      <strong>爬取任务设置</strong>
+      <div class="task-hint">
+        在这里手动指定要爬什么：搜索词、排序、页数上限、执行阶段。保存后写入 <code>config.json</code>；「保存并重启」会立刻按新任务跑爬虫。
+      </div>
+      <div class="task-grid">
+        <div class="task-field wide">
+          <label for="taskQuery">搜索关键词（aitag 语法，如 <code>-NAI_X NAI 明日方舟</code>）</label>
+          <input id="taskQuery" type="text" placeholder="-NAI_X NAI 明日方舟" />
+        </div>
+        <div class="task-field">
+          <label for="taskSort">排序</label>
+          <select id="taskSort">
+            <option value="new">新作品</option>
+            <option value="count">按图片数量</option>
+            <option value="monthly">月榜</option>
+          </select>
+        </div>
+        <div class="task-field">
+          <label for="taskTimeRange">时间范围</label>
+          <select id="taskTimeRange">
+            <option value="all">全部</option>
+            <option value="day">24 小时</option>
+            <option value="week">7 天</option>
+            <option value="month">30 天</option>
+            <option value="year">365 天</option>
+          </select>
+        </div>
+        <div class="task-field">
+          <label for="taskMaxPages">最大页数（0=不限）</label>
+          <input id="taskMaxPages" type="number" min="0" step="1" value="0" />
+        </div>
+        <div class="task-field">
+          <label for="taskPhase">执行阶段</label>
+          <select id="taskPhase">
+            <option value="all">全流程（列表→详情→封面）</option>
+            <option value="search">仅作品列表</option>
+            <option value="detail">仅详情元数据</option>
+            <option value="preview">仅封面预览</option>
+          </select>
+        </div>
+        <div class="task-field">
+          <label for="taskDataset">数据集名称（进度页显示用）</label>
+          <input id="taskDataset" type="text" placeholder="arknights-nai" />
+        </div>
+      </div>
+      <label class="task-check">
+        <input id="taskResetSearch" type="checkbox" checked />
+        新搜索任务时重置列表进度（换关键词/排序/页数上限时建议勾选）
+      </label>
+      <div class="task-presets" id="taskPresets"></div>
+      <div class="task-actions">
+        <button class="btn-secondary js-save-task" type="button">保存任务</button>
+        <button class="btn-restart js-apply-task" type="button">保存并重启爬虫</button>
+      </div>
+      <span id="taskMsg" class="action-msg"></span>
+    </div>
+
+    <div class="card" id="storageCard">
+      <strong>本地存储目录</strong>
+      <div class="task-hint">图库封面与多图缓存在本机，可直接复制路径或在资源管理器中打开。</div>
+      <div class="storage-list" id="storageList">等待数据...</div>
+    </div>
+
+    <div class="card" hidden data-legacy-status="true">
+      <div class="status"><span id="dot" class="dot"></span><span id="statusText">连接中...</span></div>
+      <div class="meta" id="meta"></div>
+      <div class="overall"><span id="overallBar"></span></div>
+      <div class="meta" id="overallText">总进度 0%</div>
+    </div>
+
+    <div class="card" hidden data-legacy-status="true">
+      <div class="phase-head"><strong>守护态势</strong><span class="meta" id="guardSummary">等待数据...</span></div>
+      <div class="guard-grid">
+        <div class="guard-item">
+          <div class="guard-label">可补详情</div>
+          <div class="guard-value" id="guardDetailPending">-</div>
+        </div>
+        <div class="guard-item">
+          <div class="guard-label">可补封面</div>
+          <div class="guard-value" id="guardPreviewPending">-</div>
+        </div>
+        <div class="guard-item">
+          <div class="guard-label">封面耗尽</div>
+          <div class="guard-value" id="guardPreviewExhausted">-</div>
+        </div>
+        <div class="guard-item">
+          <div class="guard-label">最近心跳</div>
+          <div class="guard-value" id="guardHeartbeat">-</div>
+        </div>
+      </div>
+      <div class="guard-note" id="guardNote">耗尽项通常是 CDN 返回 404 或线上图片缺失，不代表爬虫进程故障。</div>
+    </div>
+
+    <div class="card" id="phases" hidden data-legacy-status="true"></div>
+
+    <div class="card" hidden data-legacy-status="true">
+      <div class="phase-head"><strong>最近状态</strong><span class="meta" id="retryInfo"></span></div>
+      <div class="log" id="log">等待数据...</div>
+      <div class="err" id="error"></div>
+    </div>
+  </div>
+
+  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
+  <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
+  <script>
+    const fmt = (n) => Number(n || 0).toLocaleString("zh-CN");
+    const STORAGE_ROWS = [
+      { key: "images_dir", label: "图库图片", open: "images" },
+      { key: "generated_dir", label: "生成图库", open: "generated" },
+      { key: "data_dir", label: "数据目录", open: "data" },
+      { key: "database_path", label: "数据库", open: "data" },
+      { key: "project_root", label: "项目根目录", open: "root" },
+    ];
+
+    function renderStoragePaths(paths) {
+      const box = document.getElementById("storageList");
+      if (!box) return;
+      if (!paths || !paths.images_dir) {
+        box.textContent = "路径信息不可用";
+        return;
+      }
+      box.innerHTML = STORAGE_ROWS.map((row) => {
+        const path = paths[row.key] || "-";
+        return `
+          <div class="storage-row">
+            <span class="storage-label">${row.label}</span>
+            <code class="storage-path" id="storage-${row.key}">${path}</code>
+            <button class="btn-mini js-copy-path" type="button" data-path="${path}">复制</button>
+            ${row.open ? `<button class="btn-mini js-open-path" type="button" data-target="${row.open}">打开</button>` : ""}
+          </div>`;
+      }).join("");
+      box.querySelectorAll(".js-copy-path").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const text = btn.dataset.path || "";
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.textContent = "已复制";
+            setTimeout(() => { btn.textContent = "复制"; }, 1200);
+          } catch {
+            btn.textContent = "复制失败";
+          }
+        });
+      });
+      box.querySelectorAll(".js-open-path").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          try {
+            const data = await ApiClient.post(`/api/storage/open?target=${encodeURIComponent(btn.dataset.target || "images")}`);
+            const msgEl = document.getElementById("actionMsg");
+            if (msgEl) {
+              msgEl.className = "action-msg ok";
+              msgEl.textContent = data.message || "已打开文件夹";
+            }
+          } catch (e) {
+            const msgEl = document.getElementById("actionMsg");
+            if (msgEl) {
+              msgEl.className = "action-msg fail";
+              msgEl.textContent = `打开失败: ${e.message}`;
+            }
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+    }
+    const setBar = (el, pct, done) => {
+      el.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+      el.parentElement.classList.toggle("done", !!done);
+    };
+
+    function renderPhase(key, p, workRemaining) {
+      const eta = (!workRemaining && !p.done && key !== "search")
+        ? "当前无可执行队列，剩余差额多为耗尽或非当前任务范围"
+        : (p.eta ? `预计完成 ${p.eta}` : (p.done ? "已完成" : "等待中"));
+      const extra = key === "search" && p.total_pages
+        ? ` · 第 ${fmt(p.page)}/${fmt(p.total_pages)} 页`
+        : (key === "covers" && p.local_images != null ? ` · 本地图 ${fmt(p.local_images)}` : "");
+      return `
+        <div class="phase">
+          <div class="phase-head">
+            <span>${p.label}${extra}</span>
+            <span>${fmt(p.current)} / ${fmt(p.total)} (${p.percent}%)</span>
+          </div>
+          <div class="bar ${p.done ? "done" : ""}"><span style="width:${p.percent}%"></span></div>
+          <div class="meta">${eta}</div>
+        </div>`;
+    }
+
+    let restarting = false;
+    let updatingArknights = false;
+    let togglingWatchdog = false;
+    let savingTask = false;
+    let taskLoaded = false;
+
+    function restartButtons() {
+      return Array.from(document.querySelectorAll(".js-restart-crawler"));
+    }
+
+    function setRestartButtons(text, title) {
+      restartButtons().forEach((btn) => {
+        btn.textContent = text;
+        if (title) btn.title = title;
+      });
+    }
+
+    async function restartCrawler() {
+      if (restarting) return;
+      const btns = restartButtons();
+      const label = btns[0] ? btns[0].textContent : "爬虫";
+      if (!confirm(`确定要${label}吗？\n\n会先停止当前爬虫，再自动重新启动。`)) {
+        return;
+      }
+      restarting = true;
+      const msgEl = document.getElementById("actionMsg");
+      btns.forEach((b) => { b.disabled = true; });
+      msgEl.className = "action-msg";
+      msgEl.textContent = "正在重启爬虫...";
+      try {
+        const data = await ApiClient.post("/api/crawler/restart");
+        msgEl.className = "action-msg " + (data.ok ? "ok" : "fail");
+        msgEl.textContent = data.message || (data.ok ? "爬虫已重启" : "重启未完成，请稍后刷新");
+        await tick();
+      } catch (e) {
+        msgEl.className = "action-msg fail";
+        msgEl.textContent = `重启请求失败: ${e.message}`;
+      } finally {
+        restarting = false;
+        btns.forEach((b) => { b.disabled = false; });
+      }
+    }
+
+    restartButtons().forEach((btn) => btn.addEventListener("click", restartCrawler));
+
+    async function runCrawlerControl(action, target, button) {
+      if (button) button.disabled = true;
+      const msgEl = document.getElementById("actionMsg");
+      msgEl.className = "action-msg";
+      msgEl.textContent = action === "start" ? "正在从断点启动采集..." : "正在停止采集进程...";
+      try {
+        const endpoint = action === "start" ? "/api/crawler/start" : "/api/crawler/stop";
+        const data = await ApiClient.post(endpoint, { target });
+        msgEl.className = "action-msg " + (data.ok ? "ok" : "fail");
+        msgEl.textContent = data.message || (data.ok ? "操作完成" : "操作未完成");
+        await tick();
+      } catch (e) {
+        msgEl.className = "action-msg fail";
+        msgEl.textContent = `采集控制失败: ${e.message}`;
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    document.querySelectorAll(".js-start-crawler").forEach((button) => {
+      button.addEventListener("click", () => {
+        runCrawlerControl("start", button.dataset.target || "pixiv", button);
+      });
+    });
+
+    document.querySelectorAll(".js-stop-crawler").forEach((button) => {
+      button.addEventListener("click", () => {
+        const target = button.dataset.target || "pixiv";
+        if (!confirm(`确定停止 ${target === "all" ? "全部" : "所选"}采集进程吗？\n\n数据库和断点都会保留。`)) return;
+        runCrawlerControl("stop", target, button);
+      });
+    });
+
+    document.querySelector(".js-autopilot")?.addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      if (!confirm("启动甩手采集？\n\n会保存当前任务、使用平衡性能档，并开启自动守护。数据库和现有断点都会保留。")) return;
+      button.disabled = true;
+      const msgEl = document.getElementById("actionMsg");
+      msgEl.className = "action-msg";
+      msgEl.textContent = "正在配置甩手采集...";
+      try {
+        const data = await ApiClient.post("/api/crawler/autopilot", {
+          target: button.dataset.target || "pixiv",
+          task: taskFormValues(),
+          reset_search: document.getElementById("taskResetSearch").checked,
+          profile: "balanced",
+        });
+        msgEl.className = "action-msg " + (data.ok ? "ok" : "fail");
+        msgEl.textContent = data.ok
+          ? "甩手采集已启动：平衡性能档、断点续传、自动恢复均已开启"
+          : (data.message || "甩手采集启动未完成");
+        await tick();
+      } catch (e) {
+        msgEl.className = "action-msg fail";
+        msgEl.textContent = `甩手采集启动失败: ${e.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.querySelector(".js-crawler-report")?.addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      const report = document.getElementById("crawlerReport");
+      button.disabled = true;
+      try {
+        const data = await ApiClient.get("/api/crawler/report");
+        const delivery = data.delivery || {};
+        const quality = delivery.quality || {};
+        report.hidden = false;
+        report.textContent = [
+          `结论：${delivery.verdict || "unknown"}`,
+          `作品：${quality.works ?? "-"} · 详情：${quality.details ?? "-"} · 封面：${quality.covers ?? "-"}`,
+          `待详情：${quality.detail_pending ?? "-"} · 待封面：${quality.preview_pending ?? "-"} · 耗尽：${quality.preview_exhausted ?? "-"}`,
+          "",
+          JSON.stringify(data.status || {}, null, 2),
+        ].join("\n");
+      } catch (e) {
+        report.hidden = false;
+        report.textContent = `读取采集交付报告失败: ${e.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    async function updateArknights() {
+      if (updatingArknights) return;
+      const ok = confirm(
+        "确定一键更新明日方舟图库吗？\n\n" +
+        "会切换到「-NAI_X NAI 明日方舟」+ 新作品排序，从第 1 页重新扫描。" +
+        "数据库已有的详情和封面会自动跳过，只补新增作品。"
+      );
+      if (!ok) return;
+      updatingArknights = true;
+      const btn = document.querySelector(".js-update-arknights");
+      const msgEl = document.getElementById("actionMsg");
+      if (btn) btn.disabled = true;
+      msgEl.className = "action-msg";
+      msgEl.textContent = "正在启动明日方舟增量更新...";
+      try {
+        const data = await ApiClient.post("/api/crawler/arknights/update", { restart: true });
+        if (data.ok === false) throw new Error(data.detail || data.message || "更新启动失败");
+        if (data.task) {
+          fillTaskForm(data.task);
+          taskLoaded = true;
+        }
+        msgEl.className = "action-msg ok";
+        msgEl.textContent = data.message || "明日方舟增量更新已启动";
+        await tick();
+        await loadTaskForm();
+      } catch (e) {
+        msgEl.className = "action-msg fail";
+        msgEl.textContent = `明日方舟更新失败: ${e.message}`;
+      } finally {
+        updatingArknights = false;
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    document.querySelector(".js-update-arknights")?.addEventListener("click", updateArknights);
+
+    function watchdogButton() {
+      return document.querySelector(".js-watchdog-toggle");
+    }
+
+    function setWatchdogButton(enabled, intervalSec, completed) {
+      const btn = watchdogButton();
+      if (!btn || togglingWatchdog) return;
+      const on = !!enabled;
+      btn.className = "btn-watchdog js-watchdog-toggle " + (on ? "on" : "off");
+      btn.textContent = on
+        ? `自动守护：开（每${intervalSec || 300}s检测）`
+        : "开启自动守护";
+      btn.title = completed
+        ? "任务已完成，守护无需开启"
+        : (on
+          ? "点击手动关闭自动守护"
+          : "开启后会立刻尝试拉起爬虫，并在意外退出后自动恢复");
+      btn.disabled = !!completed;
+    }
+
+    async function toggleWatchdog() {
+      if (togglingWatchdog) return;
+      const btn = watchdogButton();
+      if (!btn || btn.disabled) return;
+      const turningOn = !btn.classList.contains("on");
+      if (!turningOn) {
+        const ok = confirm(
+          "确定手动关闭自动守护？\n\n关闭后爬虫不会自动拉起，需要你自己点「启动爬虫」。"
+        );
+        if (!ok) return;
+      }
+      togglingWatchdog = true;
+      const msgEl = document.getElementById("actionMsg");
+      btn.disabled = true;
+      msgEl.className = "action-msg";
+      msgEl.textContent = turningOn ? "正在开启自动守护..." : "正在关闭自动守护...";
+      try {
+        const data = await ApiClient.post("/api/crawler/watchdog", { enabled: turningOn });
+        msgEl.className = "action-msg " + (data.enabled === turningOn ? "ok" : "fail");
+        msgEl.textContent = data.message || (turningOn ? "自动守护已开启，正在保护爬虫" : "自动守护已关闭");
+        await tick();
+      } catch (e) {
+        msgEl.className = "action-msg fail";
+        msgEl.textContent = `守护切换失败: ${e.message}`;
+      } finally {
+        togglingWatchdog = false;
+        const btn2 = watchdogButton();
+        if (btn2) btn2.disabled = false;
+      }
+    }
+
+    const wdBtn = watchdogButton();
+    if (wdBtn) wdBtn.addEventListener("click", toggleWatchdog);
+
+    function taskFormValues() {
+      return {
+        search_query: document.getElementById("taskQuery").value.trim(),
+        search_sort: document.getElementById("taskSort").value,
+        search_time_range: document.getElementById("taskTimeRange").value,
+        search_max_pages: Number(document.getElementById("taskMaxPages").value || 0),
+        crawler_phase: document.getElementById("taskPhase").value,
+        dataset_name: document.getElementById("taskDataset").value.trim(),
+      };
+    }
+
+    function fillTaskForm(task) {
+      if (!task) return;
+      document.getElementById("taskQuery").value = task.search_query || "";
+      document.getElementById("taskSort").value = task.search_sort || "new";
+      document.getElementById("taskTimeRange").value = task.search_time_range || "all";
+      document.getElementById("taskMaxPages").value = String(task.search_max_pages ?? 0);
+      document.getElementById("taskPhase").value = task.crawler_phase || "all";
+      document.getElementById("taskDataset").value = task.dataset_name || "";
+    }
+
+    function renderTaskPresets(presets) {
+      const box = document.getElementById("taskPresets");
+      if (!box) return;
+      box.innerHTML = (presets || []).map((preset) =>
+        `<button class="btn-preset" type="button" data-preset-id="${preset.id}">${preset.label}</button>`
+      ).join("");
+      box.querySelectorAll("[data-preset-id]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const preset = (presets || []).find((p) => p.id === btn.dataset.presetId);
+          if (preset && preset.task) fillTaskForm(preset.task);
+        });
+      });
+    }
+
+    async function loadTaskForm() {
+      try {
+        const data = await ApiClient.get("/api/crawler/task");
+        fillTaskForm(data.task);
+        taskLoaded = true;
+        renderTaskPresets(data.presets || []);
+      } catch (e) {
+        const msgEl = document.getElementById("taskMsg");
+        if (msgEl) {
+          msgEl.className = "action-msg fail";
+          msgEl.textContent = `读取任务配置失败: ${e.message}`;
+        }
+      }
+    }
+
+    async function submitTask(restart) {
+      if (savingTask) return;
+      const values = taskFormValues();
+      const phase = values.crawler_phase;
+      if ((phase === "all" || phase === "search") && !values.search_query) {
+        alert("搜索类任务需要填写搜索关键词");
+        return;
+      }
+      if (restart) {
+        const ok = confirm(
+          "确定保存并重启爬虫吗？\n\n会先停止当前爬虫，再按新任务重新启动。"
+        );
+        if (!ok) return;
+      }
+      savingTask = true;
+      const msgEl = document.getElementById("taskMsg");
+      const btns = document.querySelectorAll(".js-save-task, .js-apply-task");
+      btns.forEach((b) => { b.disabled = true; });
+      msgEl.className = "action-msg";
+      msgEl.textContent = restart ? "正在保存并重启..." : "正在保存任务...";
+      try {
+        const url = restart ? "/api/crawler/task/apply" : "/api/crawler/task";
+        const body = {
+          ...values,
+          reset_search: document.getElementById("taskResetSearch").checked,
+          restart,
+        };
+        const data = await ApiClient.post(url, body);
+        if (data.ok === false) throw new Error(data.detail || data.message || "任务保存失败");
+        fillTaskForm(data.task);
+        msgEl.className = "action-msg ok";
+        msgEl.textContent = data.message || "任务已保存";
+        if (restart) await tick();
+      } catch (e) {
+        msgEl.className = "action-msg fail";
+        msgEl.textContent = `任务保存失败: ${e.message}`;
+      } finally {
+        savingTask = false;
+        btns.forEach((b) => { b.disabled = false; });
+      }
+    }
+
+    document.querySelector(".js-save-task")?.addEventListener("click", () => submitTask(false));
+    document.querySelector(".js-apply-task")?.addEventListener("click", () => submitTask(true));
+    loadTaskForm();
+
+    async function tick() {
+      const errEl = document.getElementById("error");
+      try {
+        const data = await ApiClient.get("/api/progress");
+        errEl.textContent = "";
+        renderStoragePaths(data.storage_paths);
+
+        const dot = document.getElementById("dot");
+        dot.className = `dot ${data.status || "paused"}`;
+        document.getElementById("statusText").textContent = data.status_text || "未知";
+        const work = data.crawler_work || {};
+        const hb = data.crawler_heartbeat || {};
+        const remainingText = data.crawler_work_remaining ? "仍有可执行工作" : "当前没有可执行工作";
+        document.getElementById("meta").innerHTML =
+          `数据集 <b>${data.dataset || "-"}</b> · 查询 <b>${data.search_query || "-"}</b><br>` +
+          `任务 <b>${data.crawler_phase_label || data.crawler_phase || "all"}</b> · 模式 <b>${data.preview_mode || "-"}</b> · 更新 <b>${data.updated_at || "-"}</b>` +
+          (data.crawler_running ? "" : ` · <span class="retry">爬虫进程未检测到</span>`) +
+          (data.crawler_auto_restart
+            ? ` · 自动守护 <b>开</b>（每 ${data.crawler_watchdog_interval_sec || 300}s 检测，直至任务完成）`
+            : " · 自动守护 <b>关</b>（需手动启动爬虫）") +
+          (data.crawler_watchdog_last_check
+            ? ` · 上次检测 ${data.crawler_watchdog_last_check}`
+            : "") +
+          ` · ${remainingText}`;
+
+        setWatchdogButton(
+          data.crawler_auto_restart,
+          data.crawler_watchdog_interval_sec,
+          data.completed
+        );
+
+        setBar(document.getElementById("overallBar"), data.overall_percent, data.completed);
+        document.getElementById("overallText").textContent =
+          `总进度 ${data.overall_percent || 0}%` + (data.completed ? " · 当前任务队列完成" : "");
+
+        document.getElementById("guardDetailPending").textContent = fmt(work.detail_pending);
+        document.getElementById("guardPreviewPending").textContent = fmt(work.preview_pending);
+        document.getElementById("guardPreviewExhausted").textContent = fmt(work.preview_exhausted);
+        document.getElementById("guardHeartbeat").textContent = hb.updated_at || "-";
+        document.getElementById("guardSummary").textContent =
+          data.crawler_work_remaining
+            ? "还有可处理队列，建议保持自动守护开启"
+            : "当前任务队列已空，剩余差额多为耗尽或非当前任务范围";
+        document.getElementById("guardNote").textContent =
+          hb.message
+            ? `最近心跳：${hb.status || "-"} · ${hb.phase || "-"} · ${hb.message}`
+            : "耗尽项通常是 CDN 返回 404 或线上图片缺失，不代表爬虫进程故障。";
+
+        const phases = data.phases || {};
+        document.getElementById("phases").innerHTML =
+          renderPhase("search", phases.search || {}, data.crawler_work_remaining) +
+          renderPhase("details", phases.details || {}, data.crawler_work_remaining) +
+          renderPhase("covers", phases.covers || {}, data.crawler_work_remaining);
+
+        if (!restarting) {
+          setRestartButtons(
+            data.crawler_running ? "重启爬虫" : "启动爬虫",
+            data.crawler_running
+              ? "停止并重新启动后台爬虫"
+              : "启动后台爬虫继续补全详情和封面"
+          );
+        }
+
+        document.getElementById("retryInfo").textContent =
+          data.retry_recent ? `近期重试/502: ${data.retry_recent} 次` : "网络正常";
+        document.getElementById("log").textContent =
+          (data.recent_log && data.recent_log.length)
+            ? data.recent_log.join("\n")
+            : "暂无日志（读取本地 watch.log）";
+      } catch (e) {
+        errEl.textContent = `读取本地进度失败: ${e.message}（面板仍会自动重试）`;
+      }
+    }
+
+    tick();
+    setInterval(tick, 5000);
+  </script>
+  <script src="/assets/pixiv-intake-control.js?v=90c8500913"></script>
+</body>
+</html>

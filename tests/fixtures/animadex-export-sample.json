@@ -1,0 +1,32 @@
+{
+  "characters": [
+    {
+      "character": "skadi_(arknights)",
+      "name": "Skadi",
+      "trigger": "skadi_(arknights)",
+      "tags": "1girl, white_hair, red_eyes, long_hair, black_dress, standing, masterpiece",
+      "copyright": "arknights",
+      "copyright_name": "Arknights",
+      "count": 1234
+    },
+    {
+      "character": "silverash_(arknights)",
+      "name": "SilverAsh",
+      "trigger": "silverash_(arknights)",
+      "tags": "1boy, silver_hair, animal_ears, formal_clothes, outdoors, best_quality",
+      "copyright": "arknights",
+      "copyright_name": "Arknights",
+      "count": 876
+    },
+    {
+      "character": "hatsune_miku",
+      "name": "Hatsune Miku",
+      "trigger": "hatsune_miku",
+      "tags": "1girl, aqua_hair, aqua_eyes, very_long_hair, twintails, sleeveless_shirt, necktie",
+      "copyright": "vocaloid",
+      "copyright_name": "Vocaloid",
+      "count": 2500,
+      "artists": ["artist:sample_only"]
+    }
+  ]
+}
