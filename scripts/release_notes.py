@@ -59,7 +59,7 @@ def main() -> int:
 - 版本：{args.version}
 - Commit：`{commit}`
 - 发布包 SHA-256：`{digest}`
-- License：MIT（源码另见私有仓库，仅发布产物公开）
+- License：MIT
 
 ### 校验方式
 
