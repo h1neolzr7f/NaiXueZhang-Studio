@@ -22,7 +22,7 @@
 ## Security and reliability
 
 - [ ] `python -m pytest -q` 通过
-- [ ] Windows GitHub Actions 通过
+- [ ] `python scripts/product_quality_gate.py --fail-on p1` 通过
 - [ ] Token 与 refresh token 明文落盘回归测试通过
 - [ ] localhost 写操作缺少会话令牌时返回 403
 - [ ] 更新清单与更新包均使用 HTTPS，SHA-256 必填且格式有效
@@ -33,10 +33,10 @@
 
 - [ ] 仓库描述清楚说明 local-first NovelAI workflow
 - [ ] Topics 至少包含 `novelai`、`aigc`、`fastapi`、`local-first`、`image-management`
-- [ ] README 的下载、CI、Roadmap 和贡献链接有效
+- [ ] README 的下载、Roadmap 和贡献链接有效
 - [ ] 至少准备 3 张脱敏截图或 1 个短 Demo GIF
 - [ ] Issues、Discussions 或安全报告渠道已配置
-- [ ] 第一个公开版本标记为 Public Preview/Pre-release
+- [ ] 当前公开版本标记正确（现为 v1.4.0 修复版正式 Release，不要误标成 Public Preview）
 
 ## Release provenance
 

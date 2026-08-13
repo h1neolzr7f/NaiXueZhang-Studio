@@ -49,3 +49,23 @@ def test_primary_branding_uses_original_nai_atlas_shell() -> None:
     assert 'data-ui="nai-atlas-full"' in index
     assert "aitag.win" not in index
     assert "aitag.win" not in core
+
+
+def test_official_copy_points_at_public_studio_repo() -> None:
+    official = "https://github.com/h1neolzr7f/NaiXueZhang-Studio"
+    notice = (ROOT / "BUNDLE_NOTICE.txt").read_text(encoding="utf-8")
+    responsible = (ROOT / "RESPONSIBLE_USE.md").read_text(encoding="utf-8")
+    contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+    notes = (ROOT / "scripts" / "release_notes.py").read_text(encoding="utf-8")
+    roadmap = (ROOT / "ROADMAP.md").read_text(encoding="utf-8")
+
+    assert official in notice
+    assert "h1neolzr7f/pixiv-nai-gallery" not in notice
+    assert "h1neolzr7f/NaiXueZhang-Studio" in responsible
+    assert "从 `main` 创建功能分支" in contributing
+    assert "最新的 `main`" in security
+    assert "私有仓库" not in notes
+    assert "仅发布产物公开" not in notes
+    assert "v1.4.0 修复版" in roadmap
+    assert "## v1.3 Creator Operations" not in roadmap
