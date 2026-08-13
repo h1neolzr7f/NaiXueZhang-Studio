@@ -139,6 +139,15 @@ class PaidJobAndButlerSecurityTests(unittest.TestCase):
             self.assertTrue((data / "butler_auto.json").is_file())
             self.assertFalse((project / "data" / "butler_auto.json").exists())
 
+    def test_butler_catalog_falls_back_to_package_seed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            empty = Path(temp) / "empty-data"
+            empty.mkdir()
+            with patch.object(butler_service, "DATA_DIR", empty):
+                catalog = butler_service._load_butler_catalog()
+        self.assertIn("tools", catalog)
+        self.assertTrue(any(item.get("name") == "auto_repair" for item in catalog["tools"]))
+
     def test_posix_save_token_does_not_write_plaintext(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             token_path = Path(temp) / "nai_token.local.json"
