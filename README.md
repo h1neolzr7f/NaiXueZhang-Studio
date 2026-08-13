@@ -2,17 +2,18 @@
 
 # 🐾 Nai学长工作室
 
-### Local-first AI illustration workflow platform for NovelAI creators
+### Local-first NovelAI factory for illustration workflows
 
 **素材发现 · NAI 元数据验证 · Prompt 资产管理 · 角色换角 · 批量生成 · 后处理 · Pixiv 发布**
 
-[![Tests](https://github.com/h1neolzr7f/NaiXueZhang-Studio/actions/workflows/tests.yml/badge.svg)](https://github.com/h1neolzr7f/NaiXueZhang-Studio/actions/workflows/tests.yml)
+![Release](https://img.shields.io/badge/Release-v1.4.0_修复版-1f6feb)
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Local First](https://img.shields.io/badge/Privacy-Local--first-7A5AF8)
 
-[下载 Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) ·
+[下载 v1.4.0](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases/tag/v1.4.0) ·
+[全部 Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) ·
 [查看路线图](ROADMAP.md) ·
 [参与贡献](CONTRIBUTING.md) ·
 [责任与来源](RESPONSIBLE_USE.md)
@@ -21,6 +22,22 @@
 
 > [!IMPORTANT]
 > **非官方项目。** 本项目与 pixiv Inc.、NovelAI（Anlatan Inc.）及其他第三方平台不存在隶属、授权或合作关系。使用者应自行确认访问、下载、处理与发布行为符合适用法律、平台规则及第三方权利要求。维护者不为绕过访问控制、干扰平台运行、未经授权的数据采集或侵权传播提供支持。详见 [免责声明](DISCLAIMER.md) 与 [负责任使用说明](RESPONSIBLE_USE.md)。
+
+## v1.4.0 修复版
+
+当前官方 Windows 包是 **v1.4.0 修复版**（2026-08-13）。这是安全与可靠性修复，**不改已有本地图库用户的首页**，也不另开漫画、剪辑或新客户端。
+
+相对 v1.3.0：
+
+- **付费出图走任务队列**：点一次冻结参数；HTTP 5xx 有响应时不自动重试；崩溃恢复会标明这次可能已扣费。
+- **会话令牌 fail-closed**：拿不到令牌就不写；401/403 只刷新一次。Token 输入框不回填明文。
+- **非 Windows 拒绝明文存密钥**：无法 DPAPI 时不会把 NovelAI / Pixiv token 写进 `data/`。
+- **小镜三条车道**：解答只读；检修只跑具名剧本（不改系统代理、不自动拉爬虫）；生产（生成 / 投稿准备 / 采集）必须确认工单。
+- **空库默认发现而不是采集**：主图库为空时禁止启动或配置爬虫；请先用 AITag 看参考（发现结果不会写入主库）。
+- **DOM 转义**：生成库队列、运营页、换角灯箱不再把 API `message` 或外部 URL 直接写进 `innerHTML`。
+- **数据目录一致**：小镜自动模式写入当前 `data_dir()`；启动时缩略图/元数据维护失败会打 WARNING，不再静默吞掉。
+
+请只从 [官方 Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) 下载，并用发布说明里的 SHA-256 核对压缩包。
 
 ## 它解决什么问题？
 
@@ -65,7 +82,7 @@ flowchart LR
 | **Prompt 与角色资产** | 搜索原始 Prompt、角色、作品、画师、动作、服装、场景与构图标签 |
 | **批量创作流水线** | 角色换角、生成队列、多 Token 调度、失败恢复和生成结果管理 |
 | **后处理闭环** | 超分、打码、元数据清理与发布前检查集中在同一工作流中 |
-| **AI Butler** | 通过类型化工具和权限边界辅助整理、诊断和执行本地工作流 |
+| **AI Butler** | 解答只读、检修走具名剧本、生产必须确认工单；不会静默改代理或拉起采集 |
 | **来源追踪** | 保存作者、作品链接、源状态和作者声明，可导出来源清单 |
 | **可恢复清理** | 按作者清理时先移动到本地回收区，再删除数据库索引 |
 
@@ -87,7 +104,7 @@ flowchart LR
 
 ### 方式一：下载 Windows 版本
 
-从 [Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) 下载便携包或单文件 EXE。程序启动后会打开：
+从 [Releases](https://github.com/h1neolzr7f/NaiXueZhang-Studio/releases) 下载 **v1.4.0** 便携包（`NaiXueZhang-Studio-v1.4.0-windows-one-click.zip`）。解压后双击「一键启动.bat」。程序启动后会打开：
 
 ```text
 http://127.0.0.1:8797/
@@ -129,17 +146,17 @@ FastAPI localhost service
 
 - SQLite FTS 与大型图库索引；
 - 任务持久化、断点恢复和原子文件写入；
-- Windows DPAPI 本地凭据加密；
-- localhost 写操作会话令牌；
+- Windows DPAPI 本地凭据加密（非 Windows 拒绝把密钥明文写入 `data/`）；
+- localhost 写操作会话令牌（失败则拒绝写入）；
+- 付费生图任务持久化：5xx 不自动重试、崩溃标扣费未知；
 - 更新包 HTTPS + SHA-256 校验；
 - 路径越界保护与文件体积限制；
-- 来源追踪、作者排除和可恢复清理；
-- Windows GitHub Actions 回归测试。
+- 来源追踪、作者排除和可恢复清理。
 
 ## 🔐 隐私与安全
 
 - 服务默认仅监听 `127.0.0.1`；
-- NovelAI Token 与 Pixiv refresh token 在 Windows 上通过 DPAPI 加密落盘；
+- NovelAI Token 与 Pixiv refresh token 在 Windows 上通过 DPAPI 加密落盘；非 Windows 无法加密时拒绝持久化密钥，不会把明文写入 `data/`；
 - 本地图库、Prompt、生成记录和确认记录不上传到项目服务器；
 - AITag 在线发现是可选第三方网络功能，只按需读取搜索、详情元数据和远程预览图；在线不可用时回退本地角色库，且浏览与建草稿不会调用 NovelAI Provider；
 - 发布包会排除图片、数据库、缓存、凭据和本地运行日志；
@@ -201,6 +218,6 @@ python scripts/scan_sensitive.py
 
 ### 觉得这个项目有意思？点一个 ⭐ 会让更多 AI 创作者看到它。
 
-**Public Preview · 功能仍在快速迭代，欢迎 Issue 与 PR。**
+**v1.4.0 修复版** · 请从官方 Releases 下载并核对 SHA-256。欢迎 Issue 与 PR。
 
 </div>

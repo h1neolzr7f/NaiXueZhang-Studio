@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from atomic_io import atomic_write_text
-from local_secrets import protect_secret, unprotect_secret
+from local_secrets import SecretProtectionUnavailable, protect_secret, unprotect_secret
 from pixiv_accounts import (
     accounts_auth_status,
     get_active_account_id,
@@ -265,13 +265,15 @@ def _read_ai_secret() -> dict[str, Any]:
         _logger.warning("AI 密钥解密失败（%s），请重新保存 API Key", path)
         return data
     if not stored_key.startswith("dpapi:v1:"):
-        migrated = {**data, "api_key": protect_secret(str(data["api_key"]))}
         try:
+            migrated = {**data, "api_key": protect_secret(str(data["api_key"]))}
             atomic_write_text(
                 path,
                 json.dumps(migrated, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
+        except SecretProtectionUnavailable:
+            pass
         except Exception as exc:
             _logger.warning("AI 密钥迁移写回失败（%s）: %s", path, exc)
     return data

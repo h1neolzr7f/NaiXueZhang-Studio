@@ -545,7 +545,9 @@ class ButlerWorkflowTests(unittest.IsolatedAsyncioTestCase):
             "actions": [{"tool": "rebuild_knowledge_catalog", "arguments": {}}],
         }
 
-        with patch("butler.workflow.get_knowledge_catalog", create=True, return_value=catalog):
+        with patch("butler.workflow.get_knowledge_catalog", create=True, return_value=catalog), patch(
+            "butler_service._auto_repair_enabled", return_value=True
+        ):
             response = await runtime.submit("更新本地知识库", preplanned=plan)
 
         task = response["task"]

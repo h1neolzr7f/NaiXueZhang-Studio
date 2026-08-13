@@ -1,5 +1,5 @@
 import { state, saveCurrentDraftToCache, loadDraftFromCache, clearDraftCacheForPage, clearDraftCacheForWork, buildStyleBundleFallback, extractCache, draftPageCache, draftCacheKey, saveSource, loadSource, clearSource, persistDraftCache } from "./state.js?v=f80b97d795";
-import { api, $, deepClone, setMsg, flashMsg, copyText, instructionFromAiJson, loadPluginConfig } from "./api.js?v=4b585c9a04";
+import { api, $, deepClone, setMsg, flashMsg, copyText, instructionFromAiJson, loadPluginConfig, esc } from "./api.js?v=01f205facd";
 import { 
     showPresetModal, showMultiSlotPresetModal, showStylePresetModal, 
     upsertStylePreset, deleteStylePreset, saveStylePresetsViaConfig, 
@@ -12,7 +12,7 @@ import {
     addToBatch, addAllWorkPagesToBatch, removeWorkFromBatch, 
     isBatchMode, loadBatchQueue, refreshBatchCardChecks, updateQuickAddHint,
     addManyToBatch, buildBatchEntry, refreshGenSidebar
-} from "./batch.js?v=03bcc3c5d9";
+} from "./batch.js?v=9bacccf8a9";
 import {
     applyGenderSwapTarget,
     countGenderSlots,
@@ -372,21 +372,39 @@ export function renderSourceBar(panel) {
     const bar = document.getElementById("charSwapSourceBar");
     if (!bar) return;
     const src = loadSource();
+    bar.replaceChildren();
     if (!src) {
       bar.className = "char-swap-source-bar empty";
-      bar.innerHTML = `① 在任意角色行点 <b>设为源</b> → ② 到目标图点 <b>替换</b> 或工具栏 <b>+ 追加</b>`;
+      bar.append("① 在任意角色行点 ");
+      const b1 = document.createElement("b");
+      b1.textContent = "设为源";
+      bar.appendChild(b1);
+      bar.append(" → ② 到目标图点 ");
+      const b2 = document.createElement("b");
+      b2.textContent = "替换";
+      bar.appendChild(b2);
+      bar.append(" 或工具栏 ");
+      const b3 = document.createElement("b");
+      b3.textContent = "+ 追加";
+      bar.appendChild(b3);
       return;
     }
     bar.className = "char-swap-source-bar active";
-    bar.innerHTML = `当前源：<b>${src.summary || "角色"}</b> <button type="button" class="char-swap-btn char-swap-clear-src">清除</button>`;
-    const clearBtn = bar.querySelector(".char-swap-clear-src");
-    if (clearBtn) {
-      clearBtn.addEventListener("click", () => {
-        clearSource();
-        renderSourceBar(panel);
-        setMsg($(".char-swap-msg", panel), "已清除角色源", true);
-      });
-    }
+    bar.append("当前源：");
+    const name = document.createElement("b");
+    name.textContent = src.summary || "角色";
+    bar.appendChild(name);
+    bar.append(" ");
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "char-swap-btn char-swap-clear-src";
+    clearBtn.textContent = "清除";
+    clearBtn.addEventListener("click", () => {
+      clearSource();
+      renderSourceBar(panel);
+      setMsg($(".char-swap-msg", panel), "已清除角色源", true);
+    });
+    bar.appendChild(clearBtn);
   }
 
 export function renderDiff(el, removed) {
@@ -452,27 +470,27 @@ export function renderSlotRows(panel) {
         ? ch.action_tags.slice(0, 5).join(", ")
         : "";
       const creatureHint = creatureTags.length
-        ? `<span class="char-swap-tag-creature">贵物: ${creatureTags.slice(0, 5).join(", ")}</span>`
+        ? `<span class="char-swap-tag-creature">贵物: ${esc(creatureTags.slice(0, 5).join(", "))}</span>`
         : "";
       const metaHtml = ocPreview
         ? [
-          `<span class="char-swap-tag-meta char-swap-tag-oc">${ocPreview}</span>`,
+          `<span class="char-swap-tag-meta char-swap-tag-oc">${esc(ocPreview)}</span>`,
           actionTags
-            ? `<span class="char-swap-tag-meta char-swap-tag-action">动作: ${actionTags}</span>`
+            ? `<span class="char-swap-tag-meta char-swap-tag-action">动作: ${esc(actionTags)}</span>`
             : "",
         ].filter(Boolean).join("")
         : [
           appearanceTags
-            ? `<span class="char-swap-tag-meta char-swap-tag-appearance">${genderBadgeHtml}${appearanceTags}</span>`
+            ? `<span class="char-swap-tag-meta char-swap-tag-appearance">${genderBadgeHtml}${esc(appearanceTags)}</span>`
             : "",
           actionTags
-            ? `<span class="char-swap-tag-meta char-swap-tag-action">动作: ${actionTags}</span>`
+            ? `<span class="char-swap-tag-meta char-swap-tag-action">动作: ${esc(actionTags)}</span>`
             : "",
         ].filter(Boolean).join("");
       row.innerHTML = `
-        <span class="char-swap-slot-label">${ch.marker ? ch.marker : `#${ch.index + 1}`}</span>
+        <span class="char-swap-slot-label">${esc(ch.marker ? ch.marker : `#${ch.index + 1}`)}</span>
         <span class="char-swap-slot-summary">
-          <span class="char-swap-tag-role">${idTags}</span>
+          <span class="char-swap-tag-role">${esc(idTags)}</span>
           ${creatureHint}
           ${metaHtml}
         </span>
@@ -683,8 +701,8 @@ export function renderStyleRows(panel) {
       const count = Number(group.slot_count || (group.tags || []).length || 0);
       row.innerHTML = `
         <div class="char-swap-style-combined-wrap">
-          <span class="char-swap-style-slot-tag char-swap-style-combined-tag">${combined}</span>
-          <span class="char-swap-style-slot-meta">${styleGroupKindLabel(group)} · ${styleFieldLabel(group)} · ${count} 项</span>
+          <span class="char-swap-style-slot-tag char-swap-style-combined-tag">${esc(combined)}</span>
+          <span class="char-swap-style-slot-meta">${esc(styleGroupKindLabel(group))} · ${esc(styleFieldLabel(group))} · ${count} 项</span>
         </div>
         <div class="char-swap-actions"></div>`;
       const actions = $(".char-swap-actions", row);
@@ -1085,23 +1103,48 @@ export function bindToolbar(panel) {
         if (cfg.auto_sanitize_on_generate !== false) {
           try { await runSanitize(); renderDiff(diffEl, state.lastRemoved); } catch { }
         }
+        const snapshot = deepClone(state.draft);
         const res = await api("/api/nai/generate", {
           method: "POST",
           body: JSON.stringify({
-            patched_comment: state.draft,
+            patched_comment: snapshot,
             work_id: state.workId,
+            page_index: state.pageIndex || 0,
+            copies: 1,
+            source_gallery_id: resolveActiveGalleryId() || "site",
             force_free: cfg.force_free !== false,
             prompt_profile: cfg.prompt_profile || "native",
           }),
         });
-        if (!res.ok) throw new Error(res.message || "生图失败");
-        if (previewImg && res.image_url) {
-          previewImg.src = res.image_url + "?t=" + Date.now();
+        if (!res.ok) throw new Error(res.message || res.error || "生图失败");
+        const taskId = res.task_id || (res.batch && res.batch.task_id) || "";
+        if (!taskId) throw new Error("未返回生成任务 ID");
+        const job = await window.ApiClient.pollJob(taskId, (status) => {
+          setMsg(msgEl, String(status.message || "生图中…"), true);
+        });
+        if (String(job.status || "") === "unknown") {
+          throw new Error(job.message || "这次可能已扣费，不要自动重试；要重出请再确认。");
+        }
+        const items = Array.isArray(job.items) ? job.items : [];
+        const lastOk = [...items].reverse().find((item) => item && item.ok && (item.image_url || item.gallery_url));
+        if (!lastOk) throw new Error(job.message || "生图失败");
+        if (previewImg && lastOk.image_url) {
+          previewImg.src = lastOk.image_url + "?t=" + Date.now();
           previewImg.closest(".char-swap-preview").style.display = "";
         }
-        const base = (res.message || "完成") + (res.free_eligible ? " · 免费路径" : "");
-        if (res.gallery_url) {
-          setMsg(msgEl, "", true, `${base} · <a href="${res.gallery_url}" target="_blank" rel="noopener" style="color:#6eb6ff">打开本组封面</a>`);
+        const base = (lastOk.message || job.message || "完成") + (lastOk.free_eligible ? " · 免费路径" : "");
+        const galleryUrl = lastOk.gallery_url || job.gallery_url;
+        if (galleryUrl) {
+          const wrap = document.createElement("span");
+          wrap.textContent = base + " · ";
+          const a = document.createElement("a");
+          a.href = galleryUrl;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.style.color = "#6eb6ff";
+          a.textContent = "打开本组封面";
+          wrap.appendChild(a);
+          setMsg(msgEl, wrap, true, true);
         } else {
           setMsg(msgEl, base, true);
         }

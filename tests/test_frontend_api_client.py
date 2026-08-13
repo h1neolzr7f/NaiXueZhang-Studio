@@ -60,6 +60,86 @@ context.window.ApiClient.raw('/api/example', { method: 'POST', body: '{"x":1}' }
             '{"sameResponse":true,"path":"/api/example","method":"POST","body":"{\\"x\\":1}"}',
         )
 
+    def test_session_token_failure_is_not_cached_and_retry_succeeds(self) -> None:
+        client_path = ROOT / "web" / "shared" / "api-client.js"
+        script = r"""
+const fs = require('fs');
+const vm = require('vm');
+const source = fs.readFileSync(process.argv[1], 'utf8');
+let sessionHits = 0;
+const posts = [];
+const context = {
+  window: {},
+  AbortController,
+  setTimeout,
+  clearTimeout,
+  fetch: async (path, init) => {
+    if (path === "/api/session-token") {
+      sessionHits += 1;
+      if (sessionHits === 1) return { ok: false, status: 503, json: async () => ({}) };
+      return { ok: true, json: async () => ({ token: "tok-ok" }) };
+    }
+    posts.push({ path, header: (init.headers || {})["X-Session-Token"] });
+    return { ok: true, status: 200, json: async () => ({ ok: true }) };
+  },
+};
+vm.runInNewContext(source, context);
+(async () => {
+  try {
+    await context.window.ApiClient.raw('/api/example', { method: 'POST', body: '{}' });
+    process.stdout.write('unexpected-success');
+    process.exit(2);
+  } catch (_) {}
+  await context.window.ApiClient.raw('/api/example', { method: 'POST', body: '{}' });
+  process.stdout.write(JSON.stringify({ sessionHits, header: posts[0] && posts[0].header, posts: posts.length }));
+})().catch((error) => { console.error(error); process.exit(1); });
+"""
+        result = subprocess.run(
+            ["node", "-e", script, str(client_path)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+        self.assertEqual(result.stdout, '{"sessionHits":2,"header":"tok-ok","posts":1}')
+
+    def test_write_401_clears_session_and_retries_once(self) -> None:
+        client_path = ROOT / "web" / "shared" / "api-client.js"
+        script = r"""
+const fs = require('fs');
+const vm = require('vm');
+const source = fs.readFileSync(process.argv[1], 'utf8');
+let sessionHits = 0;
+const posts = [];
+const context = {
+  window: {},
+  AbortController,
+  setTimeout,
+  clearTimeout,
+  fetch: async (path, init) => {
+    if (path === "/api/session-token") {
+      sessionHits += 1;
+      return { ok: true, json: async () => ({ token: sessionHits === 1 ? "old" : "new" }) };
+    }
+    posts.push((init.headers || {})["X-Session-Token"]);
+    if (posts.length === 1) return { ok: false, status: 401, json: async () => ({}) };
+    return { ok: true, status: 200, json: async () => ({ ok: true }) };
+  },
+};
+vm.runInNewContext(source, context);
+context.window.ApiClient.raw('/api/example', { method: 'POST', body: '{}' })
+  .then(() => process.stdout.write(JSON.stringify({ sessionHits, posts })))
+  .catch((error) => { console.error(error); process.exit(1); });
+"""
+        result = subprocess.run(
+            ["node", "-e", script, str(client_path)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+        self.assertEqual(result.stdout, '{"sessionHits":2,"posts":["old","new"]}')
+
     def test_ops_uses_shared_api_client(self) -> None:
         html = (ROOT / "web" / "ops.html").read_text(encoding="utf-8")
         self.assertIn('/assets/shared/api-client.js', html)

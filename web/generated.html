@@ -604,7 +604,7 @@
     <img id="lbImg" alt="生成图大图" />
   </div>
 
-  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/api-client.js?v=96524289cc"></script>
   <script src="/assets/shared/escape.js?v=cf491c2912"></script>
   <script>
     const galleryEl = document.getElementById("gallery");
@@ -668,6 +668,11 @@
 
     function qs(name) {
       return new URLSearchParams(location.search).get(name) || "";
+    }
+
+    function escText(value, fallback) {
+      const raw = (value == null || String(value) === "") ? (fallback || "") : String(value);
+      return escapeHtml(raw);
     }
 
     function setView(mode) {
@@ -851,13 +856,13 @@
 
       const rows = [];
       if (queueError) {
-        rows.push(`<div class="fail">✗ #${queue.work_id || "?"} ${queue.message || "生图失败"}</div>`);
+        rows.push(`<div class="fail">✗ #${escText(queue.work_id, "?")} ${escText(queue.message, "生图失败")}</div>`);
       }
       if (batch.status === "running" && batch.current_work_id) {
-        const q = queue.status === "running" ? ` · ${queue.message}` : "";
-        rows.push(`<div class="active">… #${batch.current_work_id} p${batch.current_page_index ?? 0} ${batch.message || ""}${q}</div>`);
+        const q = queue.status === "running" ? ` · ${escText(queue.message, "")}` : "";
+        rows.push(`<div class="active">… #${escText(batch.current_work_id, "?")} p${escText(batch.current_page_index ?? 0, "0")} ${escText(batch.message, "")}${q}</div>`);
       } else if (queue.status === "running") {
-        rows.push(`<div class="active">… #${queue.work_id || "?"} ${queue.message || "NAI 生图中"}</div>`);
+        rows.push(`<div class="active">… #${escText(queue.work_id, "?")} ${escText(queue.message, "NAI 生图中")}</div>`);
       }
       (batch.items || []).slice().reverse().slice(0, 10).forEach((item) => {
         const ok = !!item.ok;
@@ -868,7 +873,7 @@
         const label = uncertain
           ? "结果/扣费未知，已阻止自动重试，请先查远端图库 · "
           : (unattempted ? "冷却期未请求，可重试 · " : "");
-        rows.push(`<div class="${cls}">${icon} #${item.work_id ?? "?"} ${label}${item.message || (ok ? "完成" : "失败")}</div>`);
+        rows.push(`<div class="${cls}">${icon} #${escText(item.work_id, "?")} ${label}${escText(item.message, ok ? "完成" : "失败")}</div>`);
       });
       log.innerHTML = rows.join("") || '<div>等待队列输出…</div>';
 
@@ -876,12 +881,12 @@
       if (busy && batch.current_work_id) {
         const pending = document.createElement("div");
         pending.className = "gen-queue-thumb pending";
-        pending.innerHTML = `<div class="gen-queue-spin"></div><small>#${batch.current_work_id}<br>${batch.message || "生成中"}</small>`;
+        pending.innerHTML = `<div class="gen-queue-spin"></div><small>#${escText(batch.current_work_id, "?")}<br>${escText(batch.message, "生成中")}</small>`;
         strip.appendChild(pending);
       } else if (queue.status === "running") {
         const pending = document.createElement("div");
         pending.className = "gen-queue-thumb pending";
-        pending.innerHTML = `<div class="gen-queue-spin"></div><small>#${queue.work_id || "?"}<br>${queue.message || "生图中"}</small>`;
+        pending.innerHTML = `<div class="gen-queue-spin"></div><small>#${escText(queue.work_id, "?")}<br>${escText(queue.message, "生图中")}</small>`;
         strip.appendChild(pending);
       }
       (batch.items || []).filter((bi) => bi.ok && bi.image_url).slice().reverse().forEach((bi) => {
@@ -1205,7 +1210,16 @@
         const data = await window.ApiClient.get(`/api/generated/${encodeURIComponent(groupId)}/source-prompt`);
         if (String(currentGroupId) !== String(groupId)) return;
         renderSourceMetaPanel(data.source_prompt || null);
-      } catch { }
+      } catch (e) {
+        if (String(currentGroupId) !== String(groupId) || !sourceMetaPanel) return;
+        sourceMetaPanel.classList.remove("hidden");
+        sourceMetaPanel.replaceChildren();
+        const heading = document.createElement("h3");
+        heading.textContent = "源作品元数据（图库原文，未改）";
+        const note = document.createElement("p");
+        note.textContent = "源作品元数据加载失败：" + ((e && e.message) || "请稍后重试");
+        sourceMetaPanel.append(heading, note);
+      }
     }
 
     function appendItemPrompt(box, item, sourcePrompt) {
@@ -1412,7 +1426,7 @@
       const msg = batch.status === "running" && String(batch.current_work_id) === String(groupId)
         ? (batch.message || "批量生图中…")
         : (queue.message || "NAI 生图中…");
-      box.innerHTML = `<div class="gen-pending-box"><div class="gen-queue-spin" style="margin:0 auto 10px"></div><div><strong>本组正在生成</strong></div><div style="margin-top:6px;font-size:0.82rem;color:#9aa7bd">${msg}</div></div>`;
+      box.innerHTML = `<div class="gen-pending-box"><div class="gen-queue-spin" style="margin:0 auto 10px"></div><div><strong>本组正在生成</strong></div><div style="margin-top:6px;font-size:0.82rem;color:#9aa7bd">${escText(msg, "生成中…")}</div></div>`;
       scheduleDetailPoll(groupId);
     }
 
@@ -1489,7 +1503,7 @@
           });
         }
       } catch (e) {
-        detailGrid.innerHTML = `<div class="gen-empty">加载失败: ${e.message}</div>`;
+        detailGrid.innerHTML = `<div class="gen-empty">加载失败: ${escText(e && e.message, "请稍后重试")}</div>`;
       }
       if (genPollBusy || isGroupGenerating(groupId, batch, queue)) {
         scheduleDetailPoll(groupId);

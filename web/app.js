@@ -1129,7 +1129,10 @@ async function loadConfig() {
       data = await window.GalleryBootstrap.loadConfig(API_BASE);
     } else {
       const res = await window.ApiClient.raw(`${API_BASE}/api/config?v=${CONFIG_REQUEST_VERSION}`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        galleryLoadError('图库配置加载失败');
+        return;
+      }
       try { data = await res.json(); } catch { data = {}; }
     }
 	      CONFIG = { ...CONFIG, ...data };
@@ -1209,7 +1212,9 @@ async function loadConfig() {
         }
       } catch { }
       renderStoragePathFooter(data.storage_paths || CONFIG.storage_paths);
-  } catch { }
+  } catch {
+    galleryLoadError('图库配置加载失败');
+  }
 }
 
 function applyListMode() {

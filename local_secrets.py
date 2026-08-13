@@ -10,6 +10,15 @@ from ctypes import wintypes
 
 PREFIX = "dpapi:v1:"
 
+UNAVAILABLE_MESSAGE = (
+    "无法在非 Windows 系统加密保存密钥。NovelAI Token 与 Pixiv refresh token "
+    "仅在 Windows DPAPI 可用时写入 data/；拒绝明文落盘。"
+)
+
+
+class SecretProtectionUnavailable(ValueError):
+    """Raised when a secret cannot be persisted without writing plaintext."""
+
 
 class _DataBlob(ctypes.Structure):
     _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
@@ -20,10 +29,18 @@ def _blob(payload: bytes) -> tuple[_DataBlob, object]:
     return _DataBlob(len(payload), ctypes.cast(buffer, ctypes.POINTER(ctypes.c_ubyte))), buffer
 
 
+def protection_unavailable_reason() -> str:
+    if os.name == "nt":
+        return ""
+    return UNAVAILABLE_MESSAGE
+
+
 def protect_secret(value: str) -> str:
     text = str(value or "")
-    if not text or text.startswith(PREFIX) or os.name != "nt":
+    if not text or text.startswith(PREFIX):
         return text
+    if os.name != "nt":
+        raise SecretProtectionUnavailable(UNAVAILABLE_MESSAGE)
     source, source_buffer = _blob(text.encode("utf-8"))
     output = _DataBlob()
     crypt32 = ctypes.windll.crypt32

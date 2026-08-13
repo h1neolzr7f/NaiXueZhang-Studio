@@ -198,17 +198,34 @@ function renderStoragePathFooter(paths) {
   const images = String(paths.images_dir || '');
   const generated = String(paths.generated_dir || '');
   const isZh = CURRENT_LANG === 'zh';
-  el.innerHTML = isZh
-    ? `本地图片目录：<code title="${images}">${images}</code>`
-      + `<button type="button" class="js-open-storage" data-target="images">打开</button>`
-      + ` · 生成图：<code title="${generated}">${generated}</code>`
-      + `<button type="button" class="js-open-storage" data-target="generated">打开</button>`
-      + ` · <a href="/progress">查看全部路径</a>`
-    : `Images: <code title="${images}">${images}</code>`
-      + `<button type="button" class="js-open-storage" data-target="images">Open</button>`
-      + ` · Generated: <code title="${generated}">${generated}</code>`
-      + `<button type="button" class="js-open-storage" data-target="generated">Open</button>`
-      + ` · <a href="/progress">All paths</a>`;
+  el.replaceChildren();
+  el.append(isZh ? '本地图片目录：' : 'Images: ');
+  const imgCode = document.createElement('code');
+  imgCode.title = images;
+  imgCode.textContent = images;
+  el.appendChild(imgCode);
+  const imgBtn = document.createElement('button');
+  imgBtn.type = 'button';
+  imgBtn.className = 'js-open-storage';
+  imgBtn.dataset.target = 'images';
+  imgBtn.textContent = isZh ? '打开' : 'Open';
+  el.appendChild(imgBtn);
+  el.append(isZh ? ' · 生成图：' : ' · Generated: ');
+  const genCode = document.createElement('code');
+  genCode.title = generated;
+  genCode.textContent = generated;
+  el.appendChild(genCode);
+  const genBtn = document.createElement('button');
+  genBtn.type = 'button';
+  genBtn.className = 'js-open-storage';
+  genBtn.dataset.target = 'generated';
+  genBtn.textContent = isZh ? '打开' : 'Open';
+  el.appendChild(genBtn);
+  el.append(' · ');
+  const allLink = document.createElement('a');
+  allLink.href = '/progress';
+  allLink.textContent = isZh ? '查看全部路径' : 'All paths';
+  el.appendChild(allLink);
   el.querySelectorAll('.js-open-storage').forEach((btn) => {
     btn.addEventListener('click', async () => {
       try {
@@ -1272,18 +1289,33 @@ function refreshFavoriteButtons() {
   } catch { }
 }
 
+function galleryLoadError(message) {
+  try {
+    if (window.UiToast && typeof window.UiToast.err === 'function') {
+      window.UiToast.err(message);
+      return;
+    }
+  } catch { /* ignore */ }
+  try { console.warn(message); } catch { /* ignore */ }
+}
+
 async function loadFavorites() {
   try {
     const endpoint = typeof isAitagGallery === 'function' && isAitagGallery()
       ? '/api/nai/aitag/favorites'
       : '/api/favorites';
     const res = await window.ApiClient.raw(`${API_BASE}${endpoint}`);
-    if (!res.ok) return;
+    if (!res.ok) {
+      galleryLoadError('收藏列表加载失败');
+      loadCachedFavorites();
+      return;
+    }
     const data = await res.json();
     setFavoriteIds(Array.isArray(data.ids) ? data.ids : []);
     refreshFavoriteButtons();
   } catch {
     loadCachedFavorites();
+    galleryLoadError('收藏列表加载失败');
   }
 }
 
@@ -1411,11 +1443,16 @@ function isQueued(workId) {
 async function loadQueue() {
   try {
     const res = await window.ApiClient.raw(`${API_BASE}/api/queue`);
-    if (!res.ok) return;
+    if (!res.ok) {
+      galleryLoadError('待生成队列加载失败');
+      return;
+    }
     const data = await res.json();
     state.queueIds = new Set((Array.isArray(data.ids) ? data.ids : []).map(normalizeWorkId).filter(Boolean));
     refreshQueueButtons();
-  } catch { /* ignore */ }
+  } catch {
+    galleryLoadError('待生成队列加载失败');
+  }
 }
 
 function refreshQueueButtons() {

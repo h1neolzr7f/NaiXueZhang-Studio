@@ -1,7 +1,7 @@
 // Production owner for character/reference picker modals and selection scope.
 
 import { state } from "./state.js?v=f80b97d795";
-import { api, $, setMsg, loadPluginConfig } from "./api.js?v=4b585c9a04";
+import { api, $, setMsg, loadPluginConfig } from "./api.js?v=01f205facd";
 import {
   applyGenderSwapTarget,
   countGenderSlots,
@@ -307,7 +307,9 @@ export function showMultiSlotPresetModal(gender, panel, msgEl, opts = {}) {
         if (opts.focusIndex === ch.index) row.classList.add("focused");
         const label = document.createElement("div");
         label.className = "char-swap-multi-slot-label";
-        label.innerHTML = `<span class="char-swap-slot-num">#${ch.index + 1}</span><span class="char-swap-slot-name">${slotDisplayName(ch)}</span>`;
+        label.innerHTML = `<span class="char-swap-slot-num">#${ch.index + 1}</span><span class="char-swap-slot-name"></span>`;
+        const nameEl = label.querySelector(".char-swap-slot-name");
+        if (nameEl) nameEl.textContent = slotDisplayName(ch) || "";
         const sel = document.createElement("select");
         sel.className = "char-swap-multi-slot-select";
         sel.dataset.index = String(ch.index);

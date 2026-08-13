@@ -326,7 +326,9 @@ class ButlerServiceTests(unittest.TestCase):
             result = butler_service._execute_auto(action)
 
         self.assertEqual(action["arguments"], {})
-        self.assertEqual(action["risk"], "read")
+        self.assertEqual(action["risk"], "confirm")
+        self.assertIn("rebuild_knowledge_catalog", butler_service._REPAIR_TOOLS)
+        self.assertNotIn("rebuild_knowledge_catalog", butler_service._AUTO_TOOLS)
         self.assertEqual(result["documents"], 13)
         self.assertEqual(result["model_calls"], 0)
         catalog.refresh_builtin_sources.assert_called_once_with()

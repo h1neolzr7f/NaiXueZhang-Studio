@@ -25,6 +25,13 @@ class LocalSecretTests(unittest.TestCase):
     def test_plaintext_legacy_values_remain_readable_for_migration(self) -> None:
         self.assertEqual(unprotect_secret("legacy-value"), "legacy-value")
 
+    def test_non_windows_refuses_to_persist_plaintext_secrets(self) -> None:
+        from local_secrets import SecretProtectionUnavailable
+
+        with patch("local_secrets.os.name", "posix"):
+            with self.assertRaises(SecretProtectionUnavailable):
+                protect_secret("pst-must-not-be-written")
+
     @unittest.skipUnless(os.name == "nt", "DPAPI is Windows-only")
     def test_plaintext_pixiv_backup_is_migrated_even_when_primary_is_already_encrypted(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

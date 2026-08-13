@@ -25,7 +25,12 @@ import httpx
 from PIL import Image, UnidentifiedImageError
 
 from generated_gallery import register_generated, _group_key
-from local_secrets import PREFIX as SECRET_PREFIX, protect_secret, unprotect_secret
+from local_secrets import (
+    PREFIX as SECRET_PREFIX,
+    SecretProtectionUnavailable,
+    protect_secret,
+    unprotect_secret,
+)
 from atomic_io import atomic_write_text
 from nai_char import build_generate_payload, prompt_snapshot_from_comment
 from nai_prompt_profiles import apply_prompt_profile_to_comment
@@ -56,10 +61,19 @@ class GenerationProviderError(ValueError):
         *,
         retry_safe: bool,
         billing_uncertain: bool,
+        wait: float = 0.0,
+        request_attempted: bool | None = None,
+        error_code: str = "",
     ) -> None:
         super().__init__(message)
         self.retry_safe = bool(retry_safe)
         self.billing_uncertain = bool(billing_uncertain)
+        self.wait = max(0.0, float(wait or 0.0))
+        if request_attempted is None:
+            self.request_attempted = bool(billing_uncertain)
+        else:
+            self.request_attempted = bool(request_attempted)
+        self.error_code = str(error_code or "")
 
 _TOKEN_LOCKS: dict[str, asyncio.Lock] = {}
 _LAST_GEN_AT_BY_TOKEN: dict[str, float] = {}
@@ -193,16 +207,22 @@ def _read_token_file() -> dict[str, Any]:
             raw = str(decoded["token"])
             decoded["token"] = unprotect_secret(raw)
             if raw and not raw.startswith(SECRET_PREFIX):
-                data["token"] = protect_secret(raw)
-                migrated = True
+                try:
+                    data["token"] = protect_secret(raw)
+                    migrated = True
+                except SecretProtectionUnavailable:
+                    pass
         for index, entry in enumerate(decoded.get("tokens") or []):
             if not isinstance(entry, dict) or not entry.get("token"):
                 continue
             raw = str(entry["token"])
             entry["token"] = unprotect_secret(raw)
             if raw and not raw.startswith(SECRET_PREFIX):
-                data["tokens"][index]["token"] = protect_secret(raw)
-                migrated = True
+                try:
+                    data["tokens"][index]["token"] = protect_secret(raw)
+                    migrated = True
+                except SecretProtectionUnavailable:
+                    pass
         if migrated:
             encrypted = _encrypt_token_payload(data)
             atomic_write_text(TOKEN_PATH, json.dumps(encrypted, ensure_ascii=False, indent=2) + "\n")
@@ -1778,35 +1798,81 @@ async def _download_image_url(client: httpx.AsyncClient, image_url: str) -> byte
     return resp.content
 
 
+def _retry_after_seconds(response: httpx.Response) -> float:
+    raw = str((response.headers or {}).get("Retry-After") or "").strip()
+    if not raw:
+        return 0.0
+    try:
+        return max(0.0, float(raw))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _raise_pre_request_transport_error(exc: BaseException) -> None:
+    raise GenerationProviderError(
+        f"TLS/connect failed before request was sent: {exc}",
+        retry_safe=True,
+        billing_uncertain=False,
+        request_attempted=False,
+        error_code="connect_failed",
+    ) from exc
+
+
 async def _generate_novelai_png(
     client: httpx.AsyncClient,
     token_entry: dict[str, Any],
     body: dict[str, Any],
 ) -> bytes:
-    resp = await client.post(
-        f"{IMAGE_API_BASE}/ai/generate-image",
-        headers=_auth_headers(str(token_entry.get("token") or "")),
-        json=body,
-    )
+    try:
+        resp = await client.post(
+            f"{IMAGE_API_BASE}/ai/generate-image",
+            headers=_auth_headers(str(token_entry.get("token") or "")),
+            json=body,
+        )
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
+        _raise_pre_request_transport_error(exc)
+    except httpx.TimeoutException as exc:
+        raise GenerationProviderError(
+            f"NAI request timed out after send: {exc}",
+            retry_safe=False,
+            billing_uncertain=True,
+            request_attempted=True,
+            error_code="billing_uncertain",
+        ) from exc
     if resp.status_code == 401:
         raise GenerationProviderError(
             "Token invalid or expired",
             retry_safe=True,
             billing_uncertain=False,
+            request_attempted=True,
+            error_code="provider_unavailable",
         )
     if resp.status_code == 429:
+        wait = _retry_after_seconds(resp)
         raise GenerationProviderError(
             "Request too frequent; please retry later",
             retry_safe=True,
             billing_uncertain=False,
+            request_attempted=False,
+            wait=wait,
+            error_code="rate_limited",
+        )
+    if resp.status_code >= 500:
+        raise GenerationProviderError(
+            f"NAI API error {resp.status_code}: {resp.text[:500]}",
+            retry_safe=False,
+            billing_uncertain=True,
+            request_attempted=True,
+            error_code="http_5xx",
         )
     if resp.status_code >= 400:
         text = resp.text[:500]
-        definite_rejection = resp.status_code < 500
         raise GenerationProviderError(
             f"NAI API error {resp.status_code}: {text}",
-            retry_safe=definite_rejection,
-            billing_uncertain=not definite_rejection,
+            retry_safe=True,
+            billing_uncertain=False,
+            request_attempted=True,
+            error_code="generate_failed",
         )
     return _extract_png_from_zip(resp.content)
 
@@ -2011,35 +2077,63 @@ async def _generate_xianyun_png(
 ) -> bytes:
     api_base = str(token_entry.get("api_base") or XIANYUN_API_BASE).rstrip("/")
     req_body = _clean_none_values(_xianyun_body_from_payload(payload_info, body, patched_comment))
-    submit = await client.post(
-        f"{api_base}/generate_image",
-        headers=_xianyun_headers(str(token_entry.get("token") or "")),
-        json=req_body,
-    )
+    try:
+        submit = await client.post(
+            f"{api_base}/generate_image",
+            headers=_xianyun_headers(str(token_entry.get("token") or "")),
+            json=req_body,
+        )
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
+        _raise_pre_request_transport_error(exc)
+    except httpx.TimeoutException as exc:
+        raise GenerationProviderError(
+            f"Xianyun request timed out after send: {exc}",
+            retry_safe=False,
+            billing_uncertain=True,
+            request_attempted=True,
+            error_code="billing_uncertain",
+        ) from exc
     if submit.status_code == 401:
         raise GenerationProviderError(
             "Xianyun API key invalid or expired",
             retry_safe=True,
             billing_uncertain=False,
+            request_attempted=True,
+            error_code="provider_unavailable",
         )
     if submit.status_code == 403:
         raise GenerationProviderError(
             f"Xianyun account forbidden or banned: {submit.text[:300]}",
             retry_safe=True,
             billing_uncertain=False,
+            request_attempted=True,
+            error_code="generate_failed",
         )
     if submit.status_code == 429:
+        wait = _retry_after_seconds(submit)
         raise GenerationProviderError(
             f"Xianyun request too frequent: {submit.text[:300]}",
             retry_safe=True,
             billing_uncertain=False,
+            request_attempted=False,
+            wait=wait,
+            error_code="rate_limited",
         )
-    if submit.status_code >= 400:
-        definite_rejection = submit.status_code < 500
+    if submit.status_code >= 500:
         raise GenerationProviderError(
             f"Xianyun API error {submit.status_code}: {submit.text[:500]}",
-            retry_safe=definite_rejection,
-            billing_uncertain=not definite_rejection,
+            retry_safe=False,
+            billing_uncertain=True,
+            request_attempted=True,
+            error_code="http_5xx",
+        )
+    if submit.status_code >= 400:
+        raise GenerationProviderError(
+            f"Xianyun API error {submit.status_code}: {submit.text[:500]}",
+            retry_safe=True,
+            billing_uncertain=False,
+            request_attempted=True,
+            error_code="generate_failed",
         )
     data = submit.json()
     job_id = str(data.get("job_id") or "")
@@ -2226,7 +2320,13 @@ async def generate_image(
         last_failure = result
         if not result.get("provider"):
             result["provider"] = provider
-        if result.get("error") == "provider_unavailable":
+        # Paid POST: only fail over when the request was not billable
+        # (invalid token / pre-request TLS). HTTP 5xx must not hop slots.
+        if (
+            result.get("retry_safe")
+            and not result.get("billing_uncertain")
+            and result.get("error") == "provider_unavailable"
+        ):
             continue
         return result
 
@@ -2301,7 +2401,6 @@ async def _generate_image_with_entry(
             if token_entry.get("proxy"):
                 client_kwargs["proxy"] = str(token_entry.get("proxy") or "")
             async with httpx.AsyncClient(**client_kwargs) as client:
-                request_started = True
                 if provider == PROVIDER_XIANYUN:
                     png_bytes = await _generate_xianyun_png(
                         client,
@@ -2423,35 +2522,49 @@ async def _generate_image_with_entry(
             message = _exception_message(exc)
             failed_provider = _record_token_failure(token_entry, message)
             _clear_active_job(slot_id, error=message)
+            wait = 0.0
+            error_code = ""
             if isinstance(exc, GenerationProviderError):
                 retry_safe = exc.retry_safe
                 billing_uncertain = exc.billing_uncertain
+                request_started = bool(exc.request_attempted)
+                wait = float(exc.wait or 0.0)
+                error_code = str(exc.error_code or "")
             elif isinstance(
                 exc,
                 (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout),
             ):
                 retry_safe = True
                 billing_uncertain = False
+                request_started = False
+                error_code = "connect_failed"
             else:
-                retry_safe = not request_started
-                billing_uncertain = bool(request_started)
-            return {
-                "ok": False,
-                "error": (
+                retry_safe = False
+                billing_uncertain = True
+                request_started = True
+                error_code = "billing_uncertain"
+            if not error_code:
+                error_code = (
                     "billing_uncertain"
                     if billing_uncertain
                     else "provider_unavailable" if failed_provider else "generate_failed"
-                ),
+                )
+            result = {
+                "ok": False,
+                "error": error_code,
                 "message": message,
                 "token_id": slot_id,
                 "token_label": slot_label,
                 "provider": provider,
-                "fallback_available": bool(failed_provider and retry_safe),
+                "fallback_available": bool(failed_provider and retry_safe and not billing_uncertain),
                 "request_attempted": bool(request_started),
                 "retry_safe": bool(retry_safe),
                 "billing_uncertain": bool(billing_uncertain),
                 "queue": queue_status(),
             }
+            if wait > 0:
+                result["wait"] = wait
+            return result
         finally:
             # 安全清理：如果 slot 仍然在 _ACTIVE_JOBS 中（return 前未清除），
             # 说明是异常退出或中途返回遗漏了清理。正常路径已在 _clear_active_job 中移除。

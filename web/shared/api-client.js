@@ -12,33 +12,77 @@
   }
 
   let sessionTokenPromise = null;
+  function clearSessionToken() {
+    sessionTokenPromise = null;
+  }
   function getSessionToken() {
     if (!sessionTokenPromise) {
       sessionTokenPromise = fetch("/api/session-token", { cache: "no-store" })
-        .then((res) => (res.ok ? res.json() : {}))
-        .then((data) => (data && data.token) || "")
-        .catch(() => "");
+        .then((res) => {
+          if (!res.ok) throw new Error("session-token " + res.status);
+          return res.json();
+        })
+        .then((data) => {
+          const token = (data && data.token) || "";
+          if (!token) throw new Error("empty session token");
+          return token;
+        })
+        .catch((err) => {
+          sessionTokenPromise = null;
+          throw err;
+        });
     }
     return sessionTokenPromise;
   }
 
-  async function raw(path, options) {
-    const opts = Object.assign({}, options || {});
-    const method = (opts.method || "GET").toUpperCase();
-    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
-      const token = await getSessionToken();
-      if (token) {
-        opts.headers = Object.assign({}, opts.headers || {}, { "X-Session-Token": token });
-      }
-    }
-    const timeout = withTimeout(opts.signal, opts.timeoutMs);
-    delete opts.timeoutMs;
-    opts.signal = timeout.signal;
+  function toastSessionLost() {
+    const msg = "会话失效，请刷新页面后重试";
     try {
-      // Keep the native Response contract for callers that need status/headers/body parsing.
-      return await fetch(path, opts);
-    } finally {
-      timeout.clear();
+      if (window.UiToast && typeof window.UiToast.err === "function") {
+        window.UiToast.err(msg);
+        return;
+      }
+    } catch (_) { /* ignore */ }
+    try { console.warn(msg); } catch (_) { /* ignore */ }
+  }
+
+  async function raw(path, options) {
+    const baseOpts = Object.assign({}, options || {});
+    const method = (baseOpts.method || "GET").toUpperCase();
+    const mutating = method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
+    let retriedAuth = false;
+    while (true) {
+      const opts = Object.assign({}, baseOpts);
+      opts.headers = Object.assign({}, baseOpts.headers || {});
+      if (mutating) {
+        try {
+          const token = await getSessionToken();
+          opts.headers = Object.assign({}, opts.headers, { "X-Session-Token": token });
+        } catch (_) {
+          toastSessionLost();
+          const err = new Error("会话失效，写操作未发送");
+          err.status = 403;
+          throw err;
+        }
+      }
+      const timeout = withTimeout(opts.signal, opts.timeoutMs);
+      delete opts.timeoutMs;
+      opts.signal = timeout.signal;
+      try {
+        const res = await fetch(path, opts);
+        if (
+          mutating
+          && !retriedAuth
+          && (res.status === 401 || res.status === 403)
+        ) {
+          retriedAuth = true;
+          clearSessionToken();
+          continue;
+        }
+        return res;
+      } finally {
+        timeout.clear();
+      }
     }
   }
 
@@ -92,11 +136,30 @@
     return request(path, Object.assign({}, options || {}, { method: "POST", body }));
   }
 
-  // Legacy plugin compatibility: older upgraded modules call `fetchJson(path, init)`
-  // with the native fetch-style method/body shape. Keep that contract while the
-  // rest of the application uses request/get/post.
   function fetchJson(path, options) {
     return request(path, options || {});
+  }
+
+  async function pollJob(taskId, onProgress, options) {
+    const opts = options || {};
+    const intervalMs = Number(opts.intervalMs) > 0 ? Number(opts.intervalMs) : 800;
+    const timeoutMs = Number(opts.timeoutMs) > 0 ? Number(opts.timeoutMs) : 30 * 60 * 1000;
+    const started = Date.now();
+    const id = String(taskId || "").trim();
+    if (!id) throw new Error("missing generation task_id");
+    while (true) {
+      const data = await get("/api/nai/jobs?task_id=" + encodeURIComponent(id));
+      const job = (data && (data.job || data.batch)) || data || {};
+      if (typeof onProgress === "function") onProgress(job);
+      const status = String(job.status || "");
+      if (job.terminal || ["done", "error", "cancelled", "unknown"].indexOf(status) >= 0) {
+        return job;
+      }
+      if (Date.now() - started > timeoutMs) {
+        throw new Error("生成任务等待超时");
+      }
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
   }
 
   window.ApiClient = {
@@ -105,5 +168,7 @@
     get,
     post,
     fetchJson,
+    pollJob,
+    clearSessionToken,
   };
 })();

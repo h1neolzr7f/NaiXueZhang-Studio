@@ -73,14 +73,14 @@ def _start_generated_maintenance_once() -> None:
     def _run() -> None:
         try:
             migrate_legacy_meta()
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"WARNING: 生成库元数据迁移失败：{exc}", flush=True)
         try:
             from generated_gallery import ensure_all_thumbnails
 
             ensure_all_thumbnails()
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"WARNING: 生成库缩略图维护失败：{exc}", flush=True)
 
     threading.Thread(target=_run, daemon=True).start()
 
@@ -208,6 +208,12 @@ if __name__ == "__main__":
     import webbrowser
 
     import uvicorn
+
+    from local_secrets import protection_unavailable_reason
+
+    secret_warning = protection_unavailable_reason()
+    if secret_warning:
+        print(f"WARNING: {secret_warning}", flush=True)
 
     port = int(os.environ.get("GALLERY_PORT", "8797"))
 

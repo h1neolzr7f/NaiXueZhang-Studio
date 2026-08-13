@@ -626,7 +626,7 @@ class GenerationJobManager:
                 restored_state.update(
                     {
                         "status": "unknown",
-                        "message": "应用重启，原生成状态未知；为避免重复扣费，未自动重试，请核对图库后再重试失败项。",
+                        "message": "这次可能已扣费，不要自动重试；要重出请再确认。",
                         "recovered_after_restart": True,
                         "current_work_id": None,
                         "current_page_index": None,

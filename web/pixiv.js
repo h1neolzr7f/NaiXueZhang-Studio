@@ -757,12 +757,12 @@ async function applyGroupFocus(group, opts) {
   const previewLines = groups.length > 1
     ? [
         `<div><strong>已选 ${merged.count} 个系列</strong> · 合并共 ${merged.total} 张为一篇投稿</div>`,
-        `<div>当前预览：${title}（${selectedImageIds.length} 张）</div>`,
+        `<div>当前预览：${escapeHtml(title)}（${selectedImageIds.length} 张）</div>`,
         `<div>上传顺序：按所选系列依次拼接各页</div>`,
       ]
     : [
-        `<div><strong>系列 ${selectedGroupId}</strong> · ${selectedImageIds.length} 张</div>`,
-        `<div>${title}</div>`,
+        `<div><strong>系列 ${escapeHtml(selectedGroupId)}</strong> · ${selectedImageIds.length} 张</div>`,
+        `<div>${escapeHtml(title)}</div>`,
         group.work_id ? `<div>源作品 #${group.work_id}</div>` : `<div>独立试生成</div>`,
         `<div>将按 Pixiv 多页漫画投稿</div>`,
         group.pipeline_pending
@@ -846,13 +846,13 @@ async function selectImage(item) {
   renderPipelineStatus(item);
   const miss = (item.pipeline && item.pipeline.missing || []).join("、");
   document.getElementById("previewMeta").innerHTML = [
-    `<div><strong>${item.id}</strong></div>`,
-    item.work_id ? `<div>源作品 #${item.work_id}</div>` : `<div>独立试生成</div>`,
-    item.model ? `<div>模型：${item.model}</div>` : "",
+    `<div><strong>${escapeHtml(item.id)}</strong></div>`,
+    item.work_id ? `<div>源作品 #${escapeHtml(item.work_id)}</div>` : `<div>独立试生成</div>`,
+    item.model ? `<div>模型：${escapeHtml(item.model)}</div>` : "",
     item.processed_url
-      ? `<div>上传文件：${item.id}_final.png</div>`
-      : `<div>上传前将自动补后处理，产出 ${item.id}_final.png</div>`,
-    miss ? `<div>待补后处理：${miss}</div>` : `<div>后处理已齐全（或已关闭）</div>`,
+      ? `<div>上传文件：${escapeHtml(item.id)}_final.png</div>`
+      : `<div>上传前将自动补后处理，产出 ${escapeHtml(item.id)}_final.png</div>`,
+    miss ? `<div>待补后处理：${escapeHtml(miss)}</div>` : `<div>后处理已齐全（或已关闭）</div>`,
   ].filter(Boolean).join("");
   setStatus(document.getElementById("pickStatus"), `已选单张：${item.id}`, "ok");
   refreshReadyStrip();
@@ -928,7 +928,7 @@ function selectPreparedDraft(item, index) {
   if (previewUrl) document.getElementById("previewImg").src = previewUrl;
   document.getElementById("previewMeta").innerHTML = [
     `<div><strong>已准备草稿 ${Number(index) + 1}</strong> · ${imageIds.length} 张</div>`,
-    `<div>首图：${selectedId}</div>`,
+    `<div>首图：${escapeHtml(selectedId)}</div>`,
     "<div>后处理与投稿文案已由管家准备；页面不会自动上传</div>",
   ].join("");
   setStatus(

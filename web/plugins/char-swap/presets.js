@@ -7,4 +7,4 @@
 
 export { setWorkbenchHandlers } from "./workbench_bridge.js?v=e72141834f";
 export * from "./style_workflows.js?v=c55efe211e";
-export * from "./reference_modals.js?v=a918a6e789";
+export * from "./reference_modals.js?v=55369bd227";
