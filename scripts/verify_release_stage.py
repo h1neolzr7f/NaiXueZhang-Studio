@@ -8,6 +8,7 @@ import json
 import os
 import posixpath
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -430,6 +431,21 @@ def _verify_full_web_dependency_closure(stage: Path) -> None:
         raise FileNotFoundError(f"Full release web dependency is missing: {sorted(missing)}")
 
 
+def _seed_isolated_data_dir(stage: Path, isolated: Path) -> None:
+    """Copy packaged seed JSON into the isolated data_dir used for import probes."""
+    isolated.mkdir(parents=True, exist_ok=True)
+    source = stage / "data"
+    if not source.is_dir():
+        return
+    for path in source.iterdir():
+        if not path.is_file() or path.suffix.casefold() != ".json":
+            continue
+        name = path.name.casefold()
+        if name in FORBIDDEN_PRIVATE_NAMES or name.endswith(".local.json"):
+            continue
+        shutil.copy2(path, isolated / path.name)
+
+
 def _import_server_route_paths(stage: Path, config: dict[str, object]) -> set[str]:
     config_path = stage / "config.json"
     original_config_bytes = config_path.read_bytes()
@@ -440,8 +456,10 @@ def _import_server_route_paths(stage: Path, config: dict[str, object]) -> set[st
     )
     try:
         with tempfile.TemporaryDirectory(prefix="pixiv-nai-release-verify-") as runtime_data:
+            isolated_root = Path(runtime_data)
+            _seed_isolated_data_dir(stage, isolated_root)
             isolated_config = dict(config)
-            isolated_config["data_dir"] = runtime_data
+            isolated_config["data_dir"] = str(isolated_root)
             config_path.write_text(
                 json.dumps(isolated_config, ensure_ascii=False), encoding="utf-8"
             )

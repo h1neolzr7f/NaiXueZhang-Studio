@@ -148,6 +148,19 @@ class PaidJobAndButlerSecurityTests(unittest.TestCase):
         self.assertIn("tools", catalog)
         self.assertTrue(any(item.get("name") == "auto_repair" for item in catalog["tools"]))
 
+    def test_director_catalog_falls_back_to_package_seed(self) -> None:
+        from paths import seed_data_file
+
+        with tempfile.TemporaryDirectory() as temp:
+            empty = Path(temp) / "empty-data"
+            empty.mkdir()
+            import paths as paths_mod
+
+            with patch.object(paths_mod, "_DATA_DIR_CACHE", empty):
+                path = seed_data_file("director_catalog.json")
+        self.assertTrue(path.is_file())
+        self.assertEqual(path.name, "director_catalog.json")
+
     def test_posix_save_token_does_not_write_plaintext(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             token_path = Path(temp) / "nai_token.local.json"

@@ -31,7 +31,7 @@ from generation_jobs import (
     JobPersistenceError,
 )
 from nai_api import call_nai_director, novelai_director_status
-from paths import data_dir
+from paths import data_dir, seed_data_file
 
 
 MAX_SOURCES = 40
@@ -58,7 +58,7 @@ _SOURCE_CACHE_MAX_ITEMS = 8
 
 
 def _load_director_catalog() -> dict[str, Any]:
-    path = data_dir() / "director_catalog.json"
+    path = seed_data_file("director_catalog.json")
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
