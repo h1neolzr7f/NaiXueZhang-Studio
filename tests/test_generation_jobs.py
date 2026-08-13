@@ -146,7 +146,7 @@ class GenerationJobManagerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(recovered["status"], "unknown")
         self.assertTrue(recovered["terminal"])
         self.assertTrue(recovered["recovered_after_restart"])
-        self.assertIn("未自动重试", recovered["message"])
+        self.assertIn("可能已扣费", recovered["message"])
         self.assertEqual(successor.state["status"], "running")
 
     def test_start_is_atomic_across_threads(self) -> None:
@@ -292,8 +292,10 @@ class NaiBatchJobApiTests(unittest.IsolatedAsyncioTestCase):
             generate_called.set()
             return {
                 "ok": False,
-                "error": "provider_unavailable",
-                "message": "provider unavailable",
+                "error": "rate_limited",
+                "message": "Request too frequent; please retry later",
+                "request_attempted": False,
+                "retry_safe": True,
             }
 
         generate_mock = AsyncMock(side_effect=fake_generate)
@@ -304,6 +306,7 @@ class NaiBatchJobApiTests(unittest.IsolatedAsyncioTestCase):
             patch.object(nai_batch, "generation_concurrency_for_batch", return_value=1),
             patch.object(nai_batch, "prepare_work_draft", side_effect=fake_prepare),
             patch.object(nai_batch, "generate_image", generate_mock),
+            patch.object(nai_batch, "_defer_retry_sec", return_value=30.0),
         ):
             result = nai_batch.start_batch(
                 [{"work_id": 901, "page_index": 0}],
@@ -346,8 +349,10 @@ class NaiBatchJobApiTests(unittest.IsolatedAsyncioTestCase):
         generate_target = AsyncMock(
             return_value={
                 "ok": False,
-                "error": "provider_unavailable",
-                "message": "503 service unavailable",
+                "error": "rate_limited",
+                "message": "Request too frequent; please retry later",
+                "request_attempted": False,
+                "retry_safe": True,
             }
         )
         with (
@@ -470,10 +475,11 @@ class NaiBatchJobApiTests(unittest.IsolatedAsyncioTestCase):
 
         transient = {
             "ok": False,
-            "error": "provider_unavailable",
+            "error": "rate_limited",
             "message": "Request too frequent; please retry later",
             "provider": "novelai",
-            "request_attempted": True,
+            "request_attempted": False,
+            "retry_safe": True,
         }
         generate_target = AsyncMock(
             side_effect=[
@@ -508,6 +514,73 @@ class NaiBatchJobApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(status["done"], 1)
         self.assertEqual(status["ok_count"], 1)
         self.assertEqual(status["fail_count"], 0)
+
+    async def test_http_500_is_not_automatically_retried(self) -> None:
+        manager = GenerationJobManager(cancel_poll_interval=0.01)
+        job = manager.start_job(total=1, generate=True, preview_only=False)
+
+        def fake_prepare(work_id, page_index, recipe, patched_comment=None):
+            return {
+                "ok": True,
+                "patched_comment": {"prompt": f"work {work_id}"},
+                "summary": f"work {work_id}",
+                "style_replacements": 0,
+            }
+
+        generate_target = AsyncMock(
+            return_value={
+                "ok": False,
+                "error": "http_5xx",
+                "message": "NAI API error 500: upstream",
+                "provider": "novelai",
+                "request_attempted": True,
+                "retry_safe": False,
+                "billing_uncertain": True,
+            }
+        )
+        with (
+            patch.object(nai_batch, "_JOB_MANAGER", manager),
+            patch.object(nai_batch, "generation_concurrency_for_batch", return_value=1),
+            patch.object(nai_batch, "prepare_work_draft", side_effect=fake_prepare),
+            patch.object(nai_batch, "_generate_for_target", generate_target),
+        ):
+            await nai_batch._run_batch(
+                [{"work_id": 908, "page_index": 0}],
+                {},
+                job=job,
+            )
+
+        status = manager.status(job.task_id)
+        self.assertEqual(generate_target.await_count, 1)
+        self.assertEqual(status["fail_count"], 1)
+        self.assertEqual(status["items"][0]["error"], "http_5xx")
+
+    def test_studio_generate_four_copies_is_one_job(self) -> None:
+        captured: dict[str, object] = {}
+
+        def fake_start_batch(targets, recipe, **kwargs):
+            captured["targets"] = list(targets)
+            captured["recipe"] = dict(recipe)
+            captured["kwargs"] = kwargs
+            return {"ok": True, "task_id": "studio-job-1", "queued": False}
+
+        with patch.object(nai_batch, "start_batch", side_effect=fake_start_batch):
+            result = nai_batch.start_studio_generate(
+                {"prompt": "frozen", "seed": 11},
+                work_id=42,
+                page_index=1,
+                copies=4,
+                source_gallery_id="site",
+                seed_policy="increment",
+            )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["task_id"], "studio-job-1")
+        self.assertEqual(len(captured["targets"]), 4)
+        self.assertEqual(captured["recipe"]["retry_policy"], "no-5xx-retry")
+        self.assertEqual(captured["recipe"]["copies"], 4)
+        self.assertEqual(captured["targets"][0]["patched_comment"]["seed"], 11)
+        self.assertEqual(captured["targets"][3]["patched_comment"]["seed"], 14)
 
     async def test_multiple_batches_run_in_reordered_fifo_sequence(self) -> None:
         manager = GenerationJobManager(cancel_poll_interval=0.01)

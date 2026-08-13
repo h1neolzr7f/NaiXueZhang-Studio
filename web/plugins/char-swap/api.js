@@ -10,13 +10,25 @@ export function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+export function esc(s) {
+  if (typeof window.escapeHtml === "function") return window.escapeHtml(s);
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[c]));
+}
+
 export function setMsg(el, text, ok, html) {
   if (!el) return;
   el.className = "char-swap-msg " + (ok ? "ok" : "err");
-  if (html) {
-    el.innerHTML = text;
+  el.replaceChildren();
+  if (html && text && typeof text !== "string") {
+    el.appendChild(text);
   } else {
-    el.textContent = text;
+    el.textContent = text == null ? "" : String(text);
   }
   el.style.display = text ? "" : "none";
 }

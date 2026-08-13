@@ -646,7 +646,6 @@ async function generateOnlineDraftEntry(entry, { quiet = false } = {}) {
   if (!window.ApiClient) throw new Error('ApiClient 未加载');
   if (onlineRemixState.drafting) throw new Error('草稿仍在写入，请稍候再生成');
   const workIdStr = onlineWorkIdForGenerate();
-  // Prefer safe Number for grouping when possible; always send string for precision.
   const workIdNum = onlineNumericWorkId();
   const workMeta = (onlineRemixState.data && onlineRemixState.data.work) || {};
   const images = Array.isArray(onlineRemixState.data?.images) ? onlineRemixState.data.images : [];
@@ -658,9 +657,11 @@ async function generateOnlineDraftEntry(entry, { quiet = false } = {}) {
   const sourceThumb = String(
     pageImg.thumbnail_url || pageImg.thumb_url || pageImg.url || workMeta.thumbnail_url || ''
   ).trim();
-  // Annotate comment for generated-gallery source labels (stripped before NAI body).
-  if (comment && typeof comment === 'object') {
-    comment._aitag_source = {
+  const snapshot = (typeof structuredClone === 'function')
+    ? structuredClone(comment)
+    : JSON.parse(JSON.stringify(comment));
+  if (snapshot && typeof snapshot === 'object') {
+    snapshot._aitag_source = {
       work_id: workIdStr || '',
       page_index: pageIdx,
       title: sourceTitle,
@@ -670,7 +671,7 @@ async function generateOnlineDraftEntry(entry, { quiet = false } = {}) {
   const res = await window.ApiClient.request('/api/nai/generate', {
     method: 'POST',
     body: {
-      patched_comment: comment,
+      patched_comment: snapshot,
       work_id: workIdNum != null ? workIdNum : (workIdStr || null),
       work_id_str: workIdStr || '',
       remote_work_id: workIdStr || '',
@@ -678,24 +679,41 @@ async function generateOnlineDraftEntry(entry, { quiet = false } = {}) {
       source_title: sourceTitle,
       source_thumb: sourceThumb,
       page_index: pageIdx,
+      copies: 1,
       force_free: true,
       prompt_profile: 'native',
-      wait_for_slot: true,
     },
-    timeoutMs: 180000,
+    timeoutMs: 60000,
   });
-  if (!res?.ok && !res?.image_url) {
+  if (!res?.ok) {
     throw new Error(res?.message || res?.detail || res?.error || '生图失败');
   }
+  const taskId = res.task_id || (res.batch && res.batch.task_id) || '';
+  if (!taskId) throw new Error('未返回生成任务 ID');
+  const job = await window.ApiClient.pollJob(taskId);
+  if (String(job.status || '') === 'unknown') {
+    throw new Error(job.message || '这次可能已扣费，不要自动重试；要重出请再确认。');
+  }
+  const items = Array.isArray(job.items) ? job.items : [];
+  const lastOk = [...items].reverse().find((item) => item && item.ok && (item.image_url || item.gallery_url));
+  if (!lastOk) throw new Error(job.message || '生图失败');
+  const shaped = {
+    ok: true,
+    image_url: lastOk.image_url || '',
+    gallery_url: lastOk.gallery_url || job.gallery_url || '',
+    message: lastOk.message || job.message || '完成',
+    task_id: taskId,
+    free_eligible: lastOk.free_eligible,
+  };
   if (!quiet) {
     const preview = document.getElementById('onlineGenPreview');
     const img = document.getElementById('onlineGenPreviewImg');
-    if (preview && img && res.image_url) {
-      img.src = `${res.image_url}${res.image_url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+    if (preview && img && shaped.image_url) {
+      img.src = `${shaped.image_url}${shaped.image_url.includes('?') ? '&' : '?'}t=${Date.now()}`;
       preview.classList.remove('hidden');
     }
   }
-  return res;
+  return shaped;
 }
 
 async function generateOnlineCurrentDraft() {

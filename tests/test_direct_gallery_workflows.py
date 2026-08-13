@@ -126,6 +126,6 @@ def test_batch_queue_isolated_by_gallery_and_sends_gallery_to_backend():
     assert "gallery_id: currentBatchGalleryId" in batch
     assert "gallery_id: x.gallery_id" in batch
     assert "batchKey(x.work_id, x.page_index, x.gallery_id)" in batch
-    assert 'data-gallery-id="${item.gallery_id}"' in batch
+    assert 'data-gallery-id="${esc(item.gallery_id)}"' in batch
     assert "currentBatchGalleryId" in plugin
     assert "batchKey(x.work_id, x.page_index, x.gallery_id)" in plugin

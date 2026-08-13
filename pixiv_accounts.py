@@ -19,7 +19,12 @@ import httpx
 ROOT = Path(__file__).resolve().parent
 from atomic_io import atomic_write_text
 from paths import data_dir as _config_data_dir
-from local_secrets import PREFIX as SECRET_PREFIX, protect_secret, unprotect_secret
+from local_secrets import (
+    PREFIX as SECRET_PREFIX,
+    SecretProtectionUnavailable,
+    protect_secret,
+    unprotect_secret,
+)
 
 DATA_DIR = _config_data_dir()
 ACCOUNTS_PATH = DATA_DIR / "pixiv_accounts.local.json"
@@ -177,8 +182,11 @@ def _read_accounts_secret_file(path: Path) -> dict[str, Any]:
         raw = str(account["refresh_token"])
         account["refresh_token"] = unprotect_secret(raw)
         if raw and not raw.startswith(SECRET_PREFIX):
-            data["accounts"][index]["refresh_token"] = protect_secret(raw)
-            migrated = True
+            try:
+                data["accounts"][index]["refresh_token"] = protect_secret(raw)
+                migrated = True
+            except SecretProtectionUnavailable:
+                pass
     if migrated:
         atomic_write_text(
             path,

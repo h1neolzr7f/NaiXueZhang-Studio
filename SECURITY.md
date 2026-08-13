@@ -40,13 +40,19 @@
 - `/api/session-token` 仅对回环客户端（`127.0.0.1`/`::1`）发放令牌：即使设置 `GALLERY_ALLOW_REMOTE=1` 监听局域网，远程客户端也只能读取、无法获取写操作令牌（返回 403）；
 - CORS 仅允许本机可信 Origin；
 - 通过 `GALLERY_HOST` 覆盖监听地址为非 loopback 时，必须同时设置 `GALLERY_ALLOW_REMOTE=1` 明确确认，否则拒绝启动；
-- NovelAI Token 与 Pixiv refresh token 在 Windows 上通过 DPAPI 加密落盘；
+- NovelAI Token 与 Pixiv refresh token 在 Windows 上通过 DPAPI 加密落盘；非 Windows 无法加密时拒绝写入 `data/`，不会改称已加密却保存明文；
 - 主文件、备份和临时文件有明文凭据回归测试；
 - 更新清单和更新包必须使用 HTTPS，SHA-256 必填并校验；
 - 图片和本地素材路径执行允许根目录检查；
 - 作者清理先移动到 `data/_trash/`，避免不可恢复误删；
 - 发布包排除数据库、图库、Cookie、凭据、缓存和本地日志；
-- GitHub Actions 在 Windows 上执行安全与公开版回归测试。
+- 付费生图走持久化任务：HTTP 5xx 有响应时不自动重试，崩溃恢复标记扣费未知；
+- 会话令牌拉取失败时写请求 fail-closed，401/403 只刷新一次；
+- 生成库队列、运营页和换角灯箱对不可信字符串转义，不再把 API `message` 直接写入 `innerHTML`；
+- 小镜三条车道分离：解答只读、检修只跑具名剧本、生产必须亮票；检修不会改系统代理、不会自动拉起采集；
+- 主图库为空时，启动/配置采集和 `modify_setting` 启用采集都会被拒绝；
+- 小镜自动模式配置写入 `data_dir()` 下的 `butler_auto.json`，不再写死项目根 `data/`；
+- 生成库启动维护失败会打印 WARNING，不再静默吞掉。
 
 ## 凭据泄露处置
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 from pathlib import Path
 from typing import Any
 
@@ -40,17 +41,12 @@ except ImportError:
 _JOB_MANAGER = GenerationJobManager(
     state_path=Path(data_dir()) / "generation_jobs.json",
 )
-_RETRYABLE_ERRORS = frozenset({"busy", "cooldown", "provider_unavailable"})
+_RETRYABLE_ERRORS = frozenset({"busy", "cooldown", "rate_limited", "connect_failed"})
 _RETRYABLE_TEXT = (
     "429",
-    "500",
-    "502",
-    "503",
-    "504",
-    "timeout",
-    "temporary",
-    "unavailable",
     "too frequent",
+    "retry later",
+    "tls/connect failed before request",
 )
 # 批处理重试退避按 provider 分离：
 # - NAI 官方 API 冷却短（_COOLDOWN_SEC=3s），重试等待给少量余量即可
@@ -133,7 +129,11 @@ def _is_retryable_failure(item: dict[str, Any]) -> bool:
     error = str(item.get("error") or "").lower()
     if error in _RETRYABLE_ERRORS:
         return True
+    if item.get("retry_safe") and item.get("request_attempted") is False:
+        return True
     message = str(item.get("message") or "").lower()
+    if any(marker in message for marker in (" 500", " 502", " 503", " 504", "error 500", "error 502", "error 503", "error 504")):
+        return False
     return any(part in message for part in _RETRYABLE_TEXT)
 
 
@@ -148,12 +148,16 @@ def _is_quota_exhausted(item: dict[str, Any]) -> bool:
 
 async def _generate_for_target(
     patched_comment: dict[str, Any],
-    work_id: int,
+    work_id: int | None,
     *,
     force_free: bool,
     prompt_profile: str = "native",
     source_gallery_id: str = "site",
     generation_series_id: str = "",
+    source_title: str = "",
+    source_thumb: str = "",
+    remote_work_id: str = "",
+    token_id: str = "",
     job: GenerationJob | None = None,
 ) -> dict[str, Any]:
     """Generate once per round; outer rounds provide visible, cancellable retry."""
@@ -164,6 +168,7 @@ async def _generate_for_target(
             "message": "cancelled before provider request",
             "request_attempted": False,
         }
+    label = f"#{work_id}" if work_id else "studio"
     if job is not None:
         current = queue_status()
         _JOB_MANAGER.update_progress(
@@ -171,31 +176,40 @@ async def _generate_for_target(
             current_phase="generate",
             message=str(
                 current.get("message")
-                or f"#{work_id} waiting for generation provider slot"
+                or f"{label} waiting for generation provider slot"
             ),
             active=current.get("active") or [],
         )
     result = await generate_image(
         patched_comment,
-        work_id=work_id,
+        work_id=work_id if work_id else None,
         source_gallery_id=source_gallery_id,
         force_free=force_free,
         prompt_profile=prompt_profile,
+        token_id=token_id,
         generation_series_id=generation_series_id,
+        source_title=source_title,
+        source_thumb=source_thumb,
+        remote_work_id=remote_work_id,
+        wait_for_slot=True,
     )
     result.setdefault(
         "request_attempted",
         str(result.get("error") or "").lower()
-        not in {"busy", "cooldown", "missing_token"},
+        not in {"busy", "cooldown", "rate_limited", "missing_token", "connect_failed"},
     )
     return result
 
 
 def _base_item(raw: dict[str, Any], retry_round: int) -> dict[str, Any]:
+    try:
+        work_id = int(raw.get("work_id") or 0)
+    except (TypeError, ValueError):
+        work_id = 0
     return {
         "target_index": int(raw.get("_target_index", 0)),
         "gallery_id": str(raw.get("gallery_id") or "site"),
-        "work_id": int(raw["work_id"]),
+        "work_id": work_id or None,
         "page_index": int(raw.get("page_index") or 0),
         "retry_round": int(retry_round),
         "ok": False,
@@ -220,17 +234,26 @@ async def _process_target(
         current_work_id=work_id,
         current_page_index=page_index,
         current_phase="prepare",
-        message=f"#{work_id} p{page_index} preparing recipe",
+        message=f"#{work_id or 'studio'} p{page_index} preparing recipe",
     )
     try:
-        prepare_kwargs: dict[str, Any] = {
-            "recipe": recipe,
-            "patched_comment": raw.get("patched_comment"),
-        }
-        source_gallery_id = str(raw.get("gallery_id") or "site")
-        if source_gallery_id != "site":
-            prepare_kwargs["gallery_id"] = source_gallery_id
-        prepared = prepare_work_draft(work_id, page_index, **prepare_kwargs)
+        if raw.get("frozen_comment") and isinstance(raw.get("patched_comment"), dict):
+            prepared = {
+                "ok": True,
+                "patched_comment": copy.deepcopy(raw["patched_comment"]),
+                "summary": "click-time snapshot",
+                "style_replacements": 0,
+                "message": "using frozen generation snapshot",
+            }
+        else:
+            prepare_kwargs: dict[str, Any] = {
+                "recipe": recipe,
+                "patched_comment": raw.get("patched_comment"),
+            }
+            source_gallery_id = str(raw.get("gallery_id") or "site")
+            if source_gallery_id != "site":
+                prepare_kwargs["gallery_id"] = source_gallery_id
+            prepared = prepare_work_draft(int(work_id or 0), page_index, **prepare_kwargs)
     except Exception as exc:
         item.update(error="prepare_failed", message=str(exc))
         return item
@@ -262,25 +285,33 @@ async def _process_target(
         return item
 
     source_gallery_id = str(raw.get("gallery_id") or "site")
+    generate_kwargs = {
+        "force_free": force_free,
+        "prompt_profile": str(recipe.get("prompt_profile") or "native"),
+        "source_gallery_id": source_gallery_id,
+        "generation_series_id": job.task_id,
+        "source_title": str(raw.get("source_title") or ""),
+        "source_thumb": str(raw.get("source_thumb") or ""),
+        "remote_work_id": str(raw.get("remote_work_id") or ""),
+        "token_id": str(recipe.get("token_id") or ""),
+        "job": job,
+    }
     generated = await _generate_for_target(
         prepared["patched_comment"],
         work_id,
-        force_free=force_free,
-        prompt_profile=str(recipe.get("prompt_profile") or "native"),
-        source_gallery_id=source_gallery_id,
-        generation_series_id=job.task_id,
-        job=job,
+        **generate_kwargs,
     )
-    # 提速：短冷却（槽位轮转等待）直接在 worker 内等完重试一次，
-    # 避免整批进入 defer 退避（NAI 1-3s 冷却不值得等 8s 整批重试）。
-    cooldown_wait = float(generated.get("wait") or 0.0)
+    # 短冷却 / 429 Retry-After：请求尚未扣费时，在 worker 内等完再打一次。
+    retry_wait = float(generated.get("wait") or 0.0)
+    retry_error = str(generated.get("error") or "").lower()
     if (
         not generated.get("ok")
-        and str(generated.get("error") or "").lower() == "cooldown"
-        and 0 < cooldown_wait <= 5.0
+        and retry_error in {"cooldown", "rate_limited"}
+        and 0 < retry_wait <= 30.0
+        and not generated.get("billing_uncertain")
         and not job.cancel_requested
     ):
-        if await _JOB_MANAGER.wait_or_cancel(job, cooldown_wait):
+        if await _JOB_MANAGER.wait_or_cancel(job, retry_wait):
             item.update(generated)
             item["work_id"] = work_id
             item["page_index"] = page_index
@@ -289,11 +320,7 @@ async def _process_target(
         generated = await _generate_for_target(
             prepared["patched_comment"],
             work_id,
-            force_free=force_free,
-            prompt_profile=str(recipe.get("prompt_profile") or "native"),
-            source_gallery_id=str(raw.get("gallery_id") or "site"),
-            generation_series_id=job.task_id,
-            job=job,
+            **generate_kwargs,
         )
     item.update(generated)
     item["work_id"] = work_id
@@ -742,3 +769,89 @@ def retry_batch(task_id: str) -> dict[str, Any]:
         preview_only=bool(request.get("preview_only", False)),
         _retry_of=task_id,
     )
+
+
+STUDIO_COPY_MAX = 8
+
+
+def start_studio_generate(
+    patched_comment: dict[str, Any],
+    *,
+    work_id: int | None = None,
+    page_index: int = 0,
+    copies: int = 1,
+    source_gallery_id: str = "site",
+    seed_policy: str = "",
+    force_free: bool = True,
+    prompt_profile: str = "native",
+    source_title: str = "",
+    source_thumb: str = "",
+    remote_work_id: str = "",
+    token_id: str = "",
+) -> dict[str, Any]:
+    """Enqueue a click-time snapshot as one durable job (1 copy still a job)."""
+
+    copies = max(1, min(STUDIO_COPY_MAX, int(copies or 1)))
+    snapshot = copy.deepcopy(patched_comment if isinstance(patched_comment, dict) else {})
+    raw_seed = snapshot.get("seed")
+    seed_num: int | None
+    try:
+        if raw_seed in (None, "", -1, "-1"):
+            seed_num = None
+        else:
+            seed_num = int(raw_seed)
+            if seed_num < 0:
+                seed_num = None
+    except (TypeError, ValueError):
+        seed_num = None
+    policy = str(seed_policy or "").strip().lower()
+    if policy not in {"random", "increment", "fixed"}:
+        policy = "random" if seed_num is None else "increment"
+    gallery_id = str(source_gallery_id or "site").strip() or "site"
+    if gallery_id not in {"site", "aitag-online", "codex", "qqgroup"}:
+        gallery_id = "site"
+    targets: list[dict[str, Any]] = []
+    for index in range(copies):
+        comment = copy.deepcopy(snapshot)
+        if policy == "random":
+            comment["seed"] = -1
+        elif policy == "increment" and seed_num is not None:
+            comment["seed"] = seed_num + index
+        elif policy == "fixed" and seed_num is not None:
+            comment["seed"] = seed_num
+        comment["_studio_snapshot"] = True
+        targets.append(
+            {
+                "work_id": int(work_id or 0),
+                "page_index": int(page_index or 0),
+                "gallery_id": gallery_id,
+                "patched_comment": comment,
+                "frozen_comment": True,
+                "source_title": str(source_title or ""),
+                "source_thumb": str(source_thumb or ""),
+                "remote_work_id": str(remote_work_id or ""),
+                "_target_index": index,
+            }
+        )
+    recipe = {
+        "prompt_profile": str(prompt_profile or "native"),
+        "token_id": str(token_id or ""),
+        "kind": "studio_snapshot",
+        "seed_policy": policy,
+        "copies": copies,
+        "retry_policy": "no-5xx-retry",
+        "source_gallery_id": gallery_id,
+        "page_index": int(page_index or 0),
+    }
+    started = start_batch(
+        targets,
+        recipe,
+        force_free=force_free,
+        generate=True,
+        preview_only=False,
+    )
+    if started.get("ok"):
+        started["message"] = (
+            "generation queued" if started.get("queued") else "generation started"
+        )
+    return started

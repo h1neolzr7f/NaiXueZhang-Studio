@@ -169,8 +169,8 @@
     {
       "name": "rebuild_knowledge_catalog",
       "label": "增量更新本地知识库",
-      "risk": "read",
-      "description": "只读取内置可信软件文档并增量重建本地索引，不调用模型。"
+      "risk": "confirm",
+      "description": "检修剧本：只读取内置可信软件文档并增量重建本地索引，不调用模型。需要确认或已开启自动检修。"
     },
     {
       "name": "prepare_character_reference",
@@ -308,19 +308,19 @@
       "name": "modify_setting",
       "label": "修改软件配置",
       "risk": "confirm",
-      "description": "修改本机软件配置（白名单项，不含密钥）：ai_model/ai_api_base 改 AI 模型与接口地址；port 改服务端口（重启后生效）；enabled/source_mode/search_queries/user_ids/rankings/request_delay_sec/proxy_url/browser_mode/watch_interval_sec 改采集任务。"
+      "description": "修改本机软件配置（白名单项，不含密钥与接口）：ai_model 改 AI 模型；enabled/source_mode/search_queries/user_ids/rankings/request_delay_sec/browser_mode/watch_interval_sec 改采集任务。接口地址、代理和端口请到 /settings#ai-service。"
     },
     {
       "name": "set_auto_mode",
       "label": "最大权限自动化",
       "risk": "confirm",
-      "description": "开启/关闭应用内最大权限自动化：开启后确认类工具不再逐次询问（上传、密钥、任意文件仍被禁止），并允许自动修复常见故障。"
+      "description": "开启/关闭自动检修。生产工单（生成、投稿准备、采集）始终需要确认；auto_repair 只允许跳过具名检修剧本。"
     },
     {
       "name": "auto_repair",
       "label": "自动修复故障",
       "risk": "confirm",
-      "description": "自动诊断常见故障并尝试修复：清理失效代理环境变量、重启采集进程、调整请求间隔、重试隔离区；无法自动修复的给出人工步骤。"
+      "description": "自动诊断常见故障：检查用户代理环境变量（只报告、不修改）、采集是否在跑（空库或未运行时只提示，不拉起爬虫）、调整过小请求间隔、重试隔离区。"
     }
   ]
 }

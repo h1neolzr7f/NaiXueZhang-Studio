@@ -39,7 +39,7 @@ Pixiv NAI Gallery / Nai学长工作室是一套**本地优先的 AI 插画素材
 
 ## 官方版本与第三方修改版
 
-官方仓库：`h1neolzr7f/pixiv-nai-gallery-public`
+官方仓库：`h1neolzr7f/NaiXueZhang-Studio`
 
 维护者仅对该仓库及其官方 Releases 页面提供的原始版本作出说明。第三方 Fork、重新编译版本、插件、镜像、托管服务和修改后的安装包不代表维护者行为。
 
@@ -61,7 +61,7 @@ Pixiv NAI Gallery / Nai学长工作室是一套**本地优先的 AI 插画素材
 
 - 软件默认只监听 `127.0.0.1`；
 - 图库、数据库、Prompt、生成历史和确认记录默认保存在本机；
-- NovelAI Token 和 Pixiv refresh token 在 Windows 上使用 DPAPI 加密落盘；
+- NovelAI Token 和 Pixiv refresh token 在 Windows 上使用 DPAPI 加密落盘；非 Windows 拒绝明文持久化；
 - 项目不设置用于收集用户图库的官方遥测服务器；
 - 用户主动启用的第三方服务仍可能接收相应请求数据。
 
@@ -71,4 +71,4 @@ Pixiv NAI Gallery / Nai学长工作室是一套**本地优先的 AI 插画素材
 
 ---
 
-_最后更新：2026-08-04_
+_最后更新：2026-08-13_

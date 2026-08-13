@@ -1,5 +1,5 @@
 import { state, saveCurrentDraftToCache, loadDraftFromCache, clearDraftCacheForWork, BATCH_MAX_DEFAULT, normalizeWorkId, normalizeGalleryId } from "./state.js?v=f80b97d795";
-import { api, $, deepClone, setMsg, flashMsg, copyText, loadPluginConfig } from "./api.js?v=4b585c9a04";
+import { api, $, deepClone, setMsg, flashMsg, copyText, loadPluginConfig, esc } from "./api.js?v=01f205facd";
 import { fillStylePresetSelects } from "./presets.js?v=f16dbe971d";
 import { buildRecipeFromForm, syncBatchTargetSlot } from "./batch_recipe.js?v=cde99cf67e";
 import { draftCommentForPage, getBatchMax } from "./draft_helpers.js?v=71bb7ead54";
@@ -331,9 +331,9 @@ export function renderBatchQueueList() {
       return;
     }
     listEl.innerHTML = queue.map((item) => `
-      <div class="char-swap-batch-item" data-wid="${item.work_id}" data-pi="${item.page_index || 0}" data-gallery-id="${item.gallery_id}">
-        <a href="/i/${item.work_id}?gallery=${encodeURIComponent(item.gallery_id)}" target="_blank" rel="noopener">#${item.work_id}</a>
-        <span class="meta">${item.gallery_id} · p${item.page_index || 0}${item.from_draft ? " · 草稿" : ""}</span>
+      <div class="char-swap-batch-item" data-wid="${esc(item.work_id)}" data-pi="${esc(item.page_index || 0)}" data-gallery-id="${esc(item.gallery_id)}">
+        <a href="/i/${encodeURIComponent(item.work_id)}?gallery=${encodeURIComponent(item.gallery_id)}" target="_blank" rel="noopener">#${esc(item.work_id)}</a>
+        <span class="meta">${esc(item.gallery_id)} · p${esc(item.page_index || 0)}${item.from_draft ? " · 草稿" : ""}</span>
         <button type="button" class="char-swap-btn char-swap-batch-rm">移除</button>
       </div>`).join("");
     listEl.querySelectorAll(".char-swap-batch-rm").forEach((btn) => {
@@ -427,7 +427,10 @@ export function openGenLightbox(url) {
     if (!url) return;
     const backdrop = document.createElement("div");
     backdrop.className = "char-swap-gen-lightbox";
-    backdrop.innerHTML = `<img src="${url}" alt="试生成预览" />`;
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "试生成预览";
+    backdrop.replaceChildren(img);
     backdrop.addEventListener("click", () => backdrop.remove());
     document.body.appendChild(backdrop);
   }

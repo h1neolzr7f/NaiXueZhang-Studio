@@ -74,7 +74,8 @@
   </main>
   <script src="/assets/shared/site-nav.js?v=a4360cf0a3"></script>
   <script src="/assets/shared/quick-dock.js?v=bbc9c81e12"></script>
-  <script src="/assets/shared/api-client.js?v=62da8a9d76"></script>
+  <script src="/assets/shared/escape.js?v=cf491c2912"></script>
+  <script src="/assets/shared/api-client.js?v=96524289cc"></script>
   <script>
     const fmtBytes = (n) => {
       if (!Number.isFinite(n)) return "-";
@@ -93,23 +94,33 @@
       const strategy = strategyPayload.strategy;
       const health = healthPayload.health;
       document.getElementById("positioning").textContent = `${strategy.positioning}：${strategy.one_liner}`;
-      document.getElementById("coreLoop").innerHTML = strategy.core_loop.map(x => `<span class="pill">${x}</span>`).join("");
+      document.getElementById("coreLoop").innerHTML = strategy.core_loop.map(x => `<span class="pill">${escapeHtml(x)}</span>`).join("");
       const checks = health.checks || {};
-      document.getElementById("healthSummary").innerHTML = Object.entries(checks).map(([k,v]) => `<div>${k}: ${bool(v)}</div>`).join("");
+      document.getElementById("healthSummary").innerHTML = Object.entries(checks).map(([k,v]) => `<div>${escapeHtml(k)}: ${bool(v)}</div>`).join("");
       const data = health.data || {};
       document.getElementById("dataSummary").innerHTML = [
         `DB: ${fmtBytes(data.database && data.database.bytes || 0)}`,
         `Images: ${(data.images && data.images.files) || 0} 文件 / ${fmtBytes(data.images && data.images.bytes || 0)}`,
         `Generated: ${(data.generated && data.generated.files) || 0} 文件 / ${fmtBytes(data.generated && data.generated.bytes || 0)}`,
-      ].map(x => `<div>${x}</div>`).join("");
+      ].map(x => `<div>${escapeHtml(x)}</div>`).join("");
       const git = health.git || {};
+      const changed = Number(git.changed_files || 0);
       document.getElementById("gitSummary").innerHTML = git.dirty
-        ? `<div class="warn">工作区有 ${git.changed_files} 个变更项，建议小步提交。</div>`
+        ? `<div class="warn">工作区有 ${escapeHtml(changed)} 个变更项，建议小步提交。</div>`
         : `<div class="ok">工作区干净。</div>`;
       const verification = verifyPayload.verification;
-      document.getElementById("verifySummary").innerHTML = verification.manual_urls.map(u => `<div><a href="${u.replace('http://127.0.0.1:8797','')}" target="_blank">${u}</a></div>`).join("");
-      document.getElementById("modules").innerHTML = strategy.modules.map(m => `<p><b>${m.name}</b> <a href="${m.route}">${m.route}</a><br><span class="muted">${m.value}</span></p>`).join("");
-      document.getElementById("roadmap").innerHTML = strategy.roadmap.map(r => `<li><b>${r.phase} ${r.title}</b><br><span class="muted">${r.outcomes.join(" / ")}</span></li>`).join("");
+      document.getElementById("verifySummary").innerHTML = verification.manual_urls.map((u) => {
+        const raw = String(u || "");
+        const href = raw.replace("http://127.0.0.1:8797", "");
+        const safe = href.startsWith("/") ? href : "#";
+        return `<div><a href="${escapeHtml(safe)}" target="_blank" rel="noopener">${escapeHtml(raw)}</a></div>`;
+      }).join("");
+      document.getElementById("modules").innerHTML = strategy.modules.map((m) => {
+        const route = String(m.route || "");
+        const safeRoute = route.startsWith("/") ? route : "#";
+        return `<p><b>${escapeHtml(m.name)}</b> <a href="${escapeHtml(safeRoute)}">${escapeHtml(route)}</a><br><span class="muted">${escapeHtml(m.value)}</span></p>`;
+      }).join("");
+      document.getElementById("roadmap").innerHTML = strategy.roadmap.map(r => `<li><b>${escapeHtml(r.phase)} ${escapeHtml(r.title)}</b><br><span class="muted">${escapeHtml((r.outcomes || []).join(" / "))}</span></li>`).join("");
       document.getElementById("rawHealth").textContent = JSON.stringify(health, null, 2);
     }
     main().catch(err => {

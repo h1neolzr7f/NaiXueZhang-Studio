@@ -12,7 +12,7 @@ import {
   loadPluginConfig, 
   $,
   flashMsg
-} from "./api.js?v=4b585c9a04";
+} from "./api.js?v=01f205facd";
 import { 
   buildPanel, 
   initDraft, 
@@ -21,7 +21,7 @@ import {
   mountSettings,
   bindToolbar,
   bindSeedControls
-} from "./panel.js?v=db1facad88";
+} from "./panel.js?v=9ce9824be0";
 import { 
   fillStylePresetSelects,
   applyStylePreset
@@ -39,7 +39,7 @@ import {
   mountQuickFab, 
   unmountGenSidebar, 
   mountGenSidebar 
-} from "./batch.js?v=03bcc3c5d9";
+} from "./batch.js?v=9bacccf8a9";
 
 const PLUGIN_VERSION = "56-mount-gen";
 window.__CHAR_SWAP_PLUGIN_VERSION__ = PLUGIN_VERSION;

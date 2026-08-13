@@ -598,7 +598,11 @@ class ButlerWorkflowRuntime:
         index = int(state.get("action_index") or 0)
         if index >= len(actions):
             return "finalize"
-        return "auto" if actions[index]["tool"] in legacy._AUTO_TOOLS else "approval"
+        return "auto" if actions[index]["tool"] in legacy._AUTO_TOOLS else (
+            "auto"
+            if actions[index]["tool"] in legacy._REPAIR_TOOLS and legacy._auto_repair_enabled()
+            else "approval"
+        )
 
     def _route_approval(self, state: ButlerState) -> str:
         approval = state.get("approval")

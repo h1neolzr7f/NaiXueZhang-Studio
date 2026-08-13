@@ -830,67 +830,91 @@
       setStatus("请先填写 Prompt / Base / 角色槽", false, true);
       return;
     }
-    const batch = Math.max(1, Math.min(8, parseInt($("studioBatchCount")?.value || "1", 10) || 1));
+    const copies = Math.max(1, Math.min(8, parseInt($("studioBatchCount")?.value || "1", 10) || 1));
+    const snapshot = commentFromForm();
+    const seedVal = ($("studioSeed") || {}).value;
+    const seedPolicy = (seedVal === "" || seedVal === "-1") ? "random" : "increment";
+    const isAitag = state.sourceProvider === "aitag-online";
+    const remoteId = String(state.onlineWorkIdStr || "").trim();
+    let workIdPayload = state.workId || null;
+    if (isAitag && remoteId) {
+      const asNum = Number(remoteId);
+      workIdPayload = (Number.isSafeInteger(asNum) && asNum > 0) ? asNum : remoteId;
+    }
+    if (isAitag && snapshot && typeof snapshot === "object") {
+      snapshot._aitag_source = {
+        work_id: remoteId,
+        page_index: state.pageIndex || 0,
+        title: state.onlineSourceTitle || "",
+        thumb: state.onlineSourceThumb || "",
+      };
+    }
+    const sourceGalleryId = isAitag ? "aitag-online" : (state.sourceProvider || "site");
     state.generating = true;
     if ($("studioGenerate")) $("studioGenerate").disabled = true;
-    showGenProgress(true, batch > 1 ? `生成中 0/${batch}…` : "生成中…");
-    let lastUrl = "";
+    showGenProgress(true, copies > 1 ? `入队中 0/${copies}…` : "入队中…");
     try {
-      for (let i = 0; i < batch; i++) {
-        showGenProgress(true, batch > 1 ? `生成中 ${i + 1}/${batch}…` : "生成中…");
-        setStatus(batch > 1 ? `提交生成 ${i + 1}/${batch}…` : "提交生成…", true);
-        // Force random seed per extra image when batch > 1 and seed empty
-        if (batch > 1 && i > 0 && (!$("studioSeed")?.value)) {
-          // leave empty for random
-        } else if (batch > 1 && i > 0 && $("studioSeed")?.value) {
-          // Increment by 1 each image (not triangular s+i on mutated value).
-          const s = parseInt($("studioSeed").value, 10);
-          if (Number.isFinite(s)) $("studioSeed").value = String(s + 1);
+      setStatus(copies > 1 ? `提交 ${copies} 张生成任务…` : "提交生成任务…", true);
+      const res = await api("/api/nai/generate", {
+        method: "POST",
+        body: {
+          patched_comment: snapshot,
+          work_id: workIdPayload,
+          work_id_str: isAitag ? remoteId : "",
+          remote_work_id: isAitag ? remoteId : "",
+          source_gallery_id: sourceGalleryId,
+          source_title: isAitag ? (state.onlineSourceTitle || "") : "",
+          source_thumb: isAitag ? (state.onlineSourceThumb || "") : "",
+          page_index: state.pageIndex || 0,
+          copies,
+          seed_policy: seedPolicy,
+          force_free: true,
+          prompt_profile: "native",
+        },
+      });
+      if (!res.ok) throw new Error(res.message || res.error || "生成失败");
+      const taskId = res.task_id || (res.batch && res.batch.task_id) || "";
+      if (!taskId) throw new Error("未返回生成任务 ID");
+      setStatus("任务已入队，正在出图…", true);
+      const job = await window.ApiClient.pollJob(taskId, (status) => {
+        const done = Number(status.done || 0);
+        const total = Number(status.total || copies);
+        const msg = String(status.message || "");
+        showGenProgress(true, total > 1 ? `生成中 ${done}/${total}… ${msg}` : (msg || "生成中…"));
+        setStatus(msg || (total > 1 ? `生成中 ${done}/${total}` : "生成中…"), true);
+        const items = Array.isArray(status.items) ? status.items : [];
+        const lastOk = [...items].reverse().find((item) => item && item.ok && item.image_url);
+        if (lastOk && lastOk.image_url) {
+          setPreviewImage(lastOk.image_url + (lastOk.image_url.includes("?") ? "&" : "?") + "t=" + Date.now());
         }
-        const comment = commentFromForm();
-        const isAitag = state.sourceProvider === "aitag-online";
-        const remoteId = String(state.onlineWorkIdStr || "").trim();
-        let workIdPayload = state.workId || null;
-        if (isAitag && remoteId) {
-          // Prefer safe Number for grouping; always send string for precision.
-          const asNum = Number(remoteId);
-          workIdPayload = (Number.isSafeInteger(asNum) && asNum > 0) ? asNum : remoteId;
-        }
-        if (isAitag && comment && typeof comment === "object") {
-          comment._aitag_source = {
-            work_id: remoteId,
-            page_index: state.pageIndex || 0,
-            title: state.onlineSourceTitle || "",
-            thumb: state.onlineSourceThumb || "",
-          };
-        }
-        const res = await api("/api/nai/generate", {
-          method: "POST",
-          body: {
-            patched_comment: comment,
-            work_id: workIdPayload,
-            work_id_str: isAitag ? remoteId : "",
-            remote_work_id: isAitag ? remoteId : "",
-            source_gallery_id: isAitag
-              ? "aitag-online"
-              : (state.sourceProvider || "site"),
-            source_title: isAitag ? (state.onlineSourceTitle || "") : "",
-            source_thumb: isAitag ? (state.onlineSourceThumb || "") : "",
-            page_index: state.pageIndex || 0,
-            force_free: true,
-            prompt_profile: "native",
-            wait_for_slot: true,
-          },
-        });
-        if (!res.ok) throw new Error(res.message || res.error || "生成失败");
-        lastUrl = res.image_url || lastUrl;
-        if (res.image_url) {
-          setPreviewImage(res.image_url + (res.image_url.includes("?") ? "&" : "?") + "t=" + Date.now());
-          pushHistory(res.image_url, { seed: comment.seed });
-        }
-        setStatus(res.message || `第 ${i + 1} 张完成`, true);
+      });
+      if (String(job.status || "") === "unknown") {
+        const warn = job.message || "这次可能已扣费，不要自动重试；要重出请再确认。";
+        setStatus(warn, false, true);
+        toast(warn, "err");
+        return;
       }
-      toast(batch > 1 ? `已生成 ${batch} 张` : "生成完成", "ok");
+      const items = Array.isArray(job.items) ? job.items : [];
+      const okItems = items.filter((item) => item && item.ok && item.image_url);
+      okItems.forEach((item) => {
+        pushHistory(item.image_url, { seed: snapshot.seed, task_id: taskId });
+      });
+      if (okItems.length) {
+        const last = okItems[okItems.length - 1];
+        setPreviewImage(last.image_url + (last.image_url.includes("?") ? "&" : "?") + "t=" + Date.now());
+      }
+      if (job.status === "cancelled") {
+        throw new Error(job.message || "已取消");
+      }
+      const failed = Number(job.effective_fail_count || job.fail_count || 0);
+      if (!okItems.length) {
+        throw new Error(job.message || "生成失败");
+      }
+      const doneMsg = failed
+        ? `完成 ${okItems.length} 张，失败 ${failed}（5xx 未自动重试）`
+        : (copies > 1 ? `已生成 ${okItems.length} 张` : "生成完成");
+      setStatus(job.message || doneMsg, true);
+      toast(doneMsg, failed ? "err" : "ok");
     } catch (e) {
       setStatus(String(e.message || e), false);
       toast(String(e.message || e), "err");
