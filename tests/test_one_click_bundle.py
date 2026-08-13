@@ -96,7 +96,8 @@ def test_sample_database_hash_is_finalized_once_before_isolated_server_import() 
     assert release.index(call) < release.index(verifier)
     verifier_source = _read("scripts/verify_release_stage.py")
     assert 'TemporaryDirectory(prefix="pixiv-nai-release-verify-")' in verifier_source
-    assert 'isolated_config["data_dir"] = runtime_data' in verifier_source
+    assert 'isolated_config["data_dir"] = str(isolated_root)' in verifier_source
+    assert "_seed_isolated_data_dir(stage, isolated_root)" in verifier_source
     assert "browser_mode" in release
 
 

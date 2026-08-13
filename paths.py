@@ -75,6 +75,16 @@ def normalize_image_relative(path: str | None) -> str:
     return relative
 
 
+def seed_data_file(name: str) -> Path:
+    """Prefer the active data_dir copy, else the package seed under <root>/data/."""
+    filename = Path(str(name)).name
+    active = data_dir() / filename
+    if active.is_file():
+        return active
+    bundled = project_root() / "data" / filename
+    return bundled if bundled.is_file() else active
+
+
 def storage_paths(config: dict, root: Path | None = None) -> dict[str, str]:
     """返回图库相关目录的绝对路径（供进度页/图库页展示）。"""
     root = root or project_root()
