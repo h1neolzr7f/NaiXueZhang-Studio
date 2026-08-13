@@ -174,11 +174,25 @@ _WORKFLOW_TASKS: set[asyncio.Task[Any]] = set()
 
 
 def _load_butler_catalog() -> dict[str, Any]:
-    path = DATA_DIR / "butler_catalog.json"
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        raise RuntimeError(f"缺少管家目录数据文件：{path}") from None
+    candidates = (Path(DATA_DIR) / "butler_catalog.json", Path(ROOT) / "data" / "butler_catalog.json")
+    seen: set[Path] = set()
+    last_missing = candidates[0]
+    for path in candidates:
+        last_missing = path
+        try:
+            resolved = path.resolve()
+        except OSError:
+            resolved = path
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            continue
+        except ValueError as exc:
+            raise RuntimeError(f"管家目录数据损坏：{path}") from exc
+    raise RuntimeError(f"缺少管家目录数据文件：{last_missing}") from None
 
 
 _BUTLER_CATALOG = _load_butler_catalog()
