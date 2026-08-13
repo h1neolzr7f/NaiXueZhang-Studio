@@ -341,6 +341,9 @@ $fullRootFiles = @(
     "pixiv_public_source.py",
     "pixiv_char_tags.py",
     "pixiv_launch.py",
+    "pixiv_launch_config.py",
+    "pixiv_launch_tags.py",
+    "pixiv_ai_transport.py",
     "pixiv_nai_crawler.py",
     "pixiv_nai_intake.py",
     "pixiv_nai_preflight.py",
@@ -383,8 +386,9 @@ $fullRootFiles = @(
     "start_crawl_all.bat",
     "start_crawl_qq.bat",
     "start_crawl_site.bat",
-    "status.py",
     "slot_gender.py",
+    "static_asset_security.py",
+    "status.py",
     "tag_translate.py"
 )
 $coreRootFiles = @(

@@ -58,6 +58,10 @@ def test_full_release_preserves_all_features_and_new_pixiv_nai_dependencies() ->
         "gallery_snapshot.py",
         "nai_tag_index.py",
         "pixiv_nai_preflight.py",
+        "static_asset_security.py",
+        "pixiv_launch_config.py",
+        "pixiv_ai_transport.py",
+        "pixiv_launch_tags.py",
     ):
         assert f'"{relative}"' in full_block
     assert 'Copy-DirRel "routes"' in release
