@@ -4,6 +4,8 @@
 
 ### Local-first NovelAI factory for illustration workflows
 
+[English](README_EN.md)
+
 **素材发现 · NAI 元数据验证 · Prompt 资产管理 · 角色换角 · 批量生成 · 后处理 · Pixiv 发布**
 
 ![Release](https://img.shields.io/badge/Release-v1.4.0_修复版-1f6feb)
