@@ -20,6 +20,9 @@
 
 </div>
 
+> [!WARNING]
+> **这是已冻结的 v1.4.0 稳定版。** 当前开发、问题修复和新版下载已迁移到 [`NaiXueZhang-Studio-Upgrade`](https://github.com/h1neolzr7f/NaiXueZhang-Studio-Upgrade)。需要旧界面兼容性时可继续使用本仓库；新用户请从升级版开始。
+
 > [!IMPORTANT]
 > **非官方项目。** 本项目与 pixiv Inc.、NovelAI（Anlatan Inc.）及其他第三方平台不存在隶属、授权或合作关系。使用者应自行确认访问、下载、处理与发布行为符合适用法律、平台规则及第三方权利要求。维护者不为绕过访问控制、干扰平台运行、未经授权的数据采集或侵权传播提供支持。详见 [免责声明](DISCLAIMER.md) 与 [负责任使用说明](RESPONSIBLE_USE.md)。
 
