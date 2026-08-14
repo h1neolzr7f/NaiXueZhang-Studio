@@ -20,6 +20,10 @@
 
 </div>
 
+> [!NOTE]
+> **版本线说明：** 本仓库保留 **v1.4.0 稳定版**及其历史 Release，适合希望继续使用已冻结界面的用户。当前持续开发、面向新用户的 **v1.5+ 主线**已迁移到 [NaiXueZhang-Studio-Upgrade](https://github.com/h1neolzr7f/NaiXueZhang-Studio-Upgrade)。第一次安装建议直接下载 [v1.5.0 Windows 一键包](https://github.com/h1neolzr7f/NaiXueZhang-Studio-Upgrade/releases/tag/v1.5.0)。
+
+
 > [!IMPORTANT]
 > **非官方项目。** 本项目与 pixiv Inc.、NovelAI（Anlatan Inc.）及其他第三方平台不存在隶属、授权或合作关系。使用者应自行确认访问、下载、处理与发布行为符合适用法律、平台规则及第三方权利要求。维护者不为绕过访问控制、干扰平台运行、未经授权的数据采集或侵权传播提供支持。详见 [免责声明](DISCLAIMER.md) 与 [负责任使用说明](RESPONSIBLE_USE.md)。
 
