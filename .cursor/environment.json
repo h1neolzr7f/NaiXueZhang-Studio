@@ -1,0 +1,10 @@
+{
+  "name": "NaiXueZhang-Studio",
+  "install": "bash .cursor/install.sh",
+  "terminals": [
+    {
+      "name": "gallery-server",
+      "command": ".venv/bin/python server.py"
+    }
+  ]
+}
